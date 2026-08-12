@@ -1,0 +1,62 @@
+<header class="header" id="header">
+  <a class="header_logo" href="../main/index.html">
+    <img class="header_logo_img" data-header-logo src="../../asset/logos/header_logo-02.svg" alt="Tchai Kim">
+  </a>
+
+  <button class="header_toggle" type="button" id="header_toggle" aria-expanded="false" aria-controls="header_inner">
+    <span class="header_toggle_bar" aria-hidden="true"></span>
+    <span class="a11y_hidden header_toggle_label">Open menu</span>
+  </button>
+
+  <div class="header_inner" id="header_inner">
+    <nav class="header_nav" aria-label="Main">
+      <ul class="header_menu">
+        <li class="header_menu_item"><a class="header_menu_link" data-nav-page="brand" href="../brand/index.html">BRAND</a></li>
+        <li class="header_menu_item"><a class="header_menu_link" data-nav-page="shop" href="../shop/index.html" data-shop-transition>SHOP</a></li>
+        <li class="header_menu_item"><a class="header_menu_link" data-nav-page="bespoke" href="../bespoke/index.html">BESPOKE</a></li>
+        <li class="header_menu_item"><a class="header_menu_link" data-nav-page="collection" href="../col_chaikimyoungjin/index.html">COLLECTION</a></li>
+      </ul>
+    </nav>
+
+    <div class="header_right">
+      <div class="header_currency" data-currency-menu>
+        <button class="header_currency_trigger" type="button" id="header_currency_trigger" aria-haspopup="menu" aria-expanded="false" aria-controls="header_currency_menu" aria-label="Currency, USD">
+          <span data-currency-value>USD</span>
+          <img class="header_currency_icon" src="../../common/assets/icons/caret_down_white.svg" alt="" aria-hidden="true" width="13" height="8">
+        </button>
+        <div class="header_currency_menu" id="header_currency_menu" role="menu" aria-label="Currency">
+          <button class="header_currency_option" type="button" role="menuitemradio" aria-checked="true" data-currency="USD">USD</button>
+          <button class="header_currency_option" type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-currency="KRW" disabled title="Currently unavailable">KRW</button>
+          <button class="header_currency_option" type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-currency="EUR" disabled title="Currently unavailable">EUR</button>
+          <button class="header_currency_option" type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-currency="JPY" disabled title="Currently unavailable">JPY</button>
+          <button class="header_currency_option" type="button" role="menuitemradio" aria-checked="false" aria-disabled="true" data-currency="GBP" disabled title="Currently unavailable">GBP</button>
+        </div>
+      </div>
+
+      <button class="header_cart" type="button" aria-haspopup="dialog" aria-controls="cart_drawer" aria-expanded="false">
+        <img class="header_cart_icon" src="../../common/assets/icons/shopping_bag_white.svg" alt="" aria-hidden="true" width="21" height="18">
+        <span class="header_cart_count" data-cart-count hidden aria-hidden="true">0</span>
+        <span class="a11y_hidden">Shopping bag</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="cart_drawer" id="cart_drawer" aria-labelledby="cart_drawer_title" aria-describedby="cart_drawer_description">
+  <div class="cart_drawer_panel">
+    <div class="cart_drawer_header">
+      <h2 class="cart_drawer_title" id="cart_drawer_title">Shopping Bag</h2>
+      <button class="cart_drawer_close" type="button" data-cart-drawer-close aria-label="Close shopping bag">
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="cart_drawer_body">
+      <p class="cart_drawer_status" data-cart-drawer-status aria-live="polite">0 ITEMS</p>
+      <p class="cart_drawer_heading" data-cart-drawer-heading>Your bag is empty.</p>
+      <p class="cart_drawer_description" id="cart_drawer_description" data-cart-drawer-description>Discover pieces from the latest collection.</p>
+    </div>
+
+    <button class="cart_drawer_action" type="button" data-cart-drawer-close>CONTINUE SHOPPING</button>
+  </div>
+</dialog>

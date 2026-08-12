@@ -1,0 +1,93 @@
+<footer class="footer" id="footer">
+  <div class="footer_inner">
+    <div class="footer_top">
+      <nav class="footer_nav" aria-label="Footer">
+        <ul class="footer_menu">
+          <li class="footer_menu_item"><a class="footer_menu_link" href="../main/index.html">Home</a></li>
+          <li class="footer_menu_item"><a class="footer_menu_link" href="../brand/index.html">Brand</a></li>
+          <li class="footer_menu_item"><a class="footer_menu_link" href="../shop/index.html" data-shop-transition>Shop</a></li>
+          <li class="footer_menu_item"><a class="footer_menu_link" href="../bespoke/index.html">Bespoke</a></li>
+          <li class="footer_menu_item"><a class="footer_menu_link" href="../col_chaikimyoungjin/index.html">Collection</a></li>
+        </ul>
+      </nav>
+
+      <div class="footer_newsletter_row">
+        <form class="footer_newsletter" id="footer_newsletter" novalidate>
+          <p class="footer_newsletter_label" id="footer_newsletter_label">STAY IN TOUCH WITH THE STUDIO</p>
+          <div class="footer_email_field">
+            <label class="a11y_hidden" for="footer_email_input">Email address</label>
+            <input class="footer_email_input" id="footer_email_input" type="email" name="email"
+              placeholder="Email address" autocomplete="email"
+              aria-describedby="footer_newsletter_label footer_email_message">
+            <button class="footer_email_submit" type="submit">
+              <img src="../../common/assets/icons/arrow_right.svg" alt="" aria-hidden="true" width="26" height="26">
+              <span class="a11y_hidden">Subscribe</span>
+            </button>
+          </div>
+          <p class="footer_email_message" id="footer_email_message" role="status"></p>
+        </form>
+
+        <ul class="footer_social">
+          <li class="footer_social_item">
+            <a class="footer_social_link" href="https://www.instagram.com/tchaikim/" target="_blank" rel="noopener noreferrer">
+              Instagram
+              <img src="../../common/assets/icons/arrow_up_right.svg" alt="" aria-hidden="true" width="18" height="18">
+              <span class="a11y_hidden">(opens in a new tab)</span>
+            </a>
+          </li>
+          <!-- Blog는 아직 주소가 없습니다. 위 약관과 같은 이유로 링크가 아닌 글입니다.
+               ★ 화살표와 "(opens in a new tab)" 안내도 함께 뺐습니다 — 열리는 곳이
+                 없는데 새 탭에서 열린다고 알려 주면 안 됩니다.
+               ★ 주소가 생기면 Instagram·Facebook 항목과 똑같은 형태로 되돌리세요. -->
+          <li class="footer_social_item">
+            <span class="footer_social_link">
+              Blog
+            </span>
+          </li>
+          <li class="footer_social_item">
+            <a class="footer_social_link" href="https://www.facebook.com/p/%EC%B0%A8%EC%9D%B4%ED%82%B4-tchaikim-100065260490460/" target="_blank" rel="noopener noreferrer">
+              Facebook
+              <img src="../../common/assets/icons/arrow_up_right.svg" alt="" aria-hidden="true" width="18" height="18">
+              <span class="a11y_hidden">(opens in a new tab)</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <img class="footer_wordmark" src="../../asset/logos/footer_logo.svg" alt="" aria-hidden="true">
+
+    <div class="footer_bottom">
+      <!-- 약관 네 항목은 아직 페이지가 없습니다. a href="#"로 두면 눌리는 것처럼
+           보이는데 실제로는 페이지가 맨 위로 튀고, Tab이 네 번 헛돌고, 읽기 도구가
+           "링크"라고 알려 줍니다. 그래서 링크가 아닌 글로 둡니다.
+           밖으로 나가는 화살표 아이콘도 링크 표시라 같이 뺐습니다.
+           ★ 페이지가 생기면 span을 a href로 되돌리고 아이콘을 다시 넣으면 됩니다
+             (layout.css의 hover 규칙이 a에만 걸려 있어 자동으로 되살아납니다). -->
+      <ul class="footer_policy">
+        <li class="footer_policy_item">
+          <span class="footer_policy_link">
+            <span class="footer_policy_text">Terms &amp;<br>Conditions</span>
+          </span>
+        </li>
+        <li class="footer_policy_item">
+          <span class="footer_policy_link">
+            <span class="footer_policy_text">Privacy<br>Policy</span>
+          </span>
+        </li>
+        <li class="footer_policy_item">
+          <span class="footer_policy_link">
+            <span class="footer_policy_text">Returns &amp;<br>Exchange</span>
+          </span>
+        </li>
+        <li class="footer_policy_item">
+          <span class="footer_policy_link">
+            <span class="footer_policy_text">Shipping &amp;<br>Delivery</span>
+          </span>
+        </li>
+      </ul>
+
+      <p class="footer_copyright">&copy; 2026 Tchai Kimyoungjin. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

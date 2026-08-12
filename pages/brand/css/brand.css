@@ -1,0 +1,1499 @@
+@charset "utf-8";
+
+/* =========================================================
+brand 페이지
+기준 캔버스 1920px
+========================================================= */
+
+:root {
+  --brand_black: #120f0f;
+  --brand_olive: #585a4d;
+  --brand_gray: #f7f7f7;
+  --brand_text_soft: #262626;
+}
+
+.main {
+  display: block;
+  width: 100%;
+
+  /*
+   * 전체 brand 페이지의 배경.
+   * 섹션마다 배경을 따로 지정하지 않고 main 전체에서
+   * 하나의 긴 그라데이션이 이어지도록 설정합니다.
+   */
+  background: linear-gradient(
+    to bottom,
+    #585a4d 0%,
+    #6a6a5e 8%,
+    #f0ebe0 22%,
+    #f7f7f7 42%,
+    #fffdf9 68%,
+    #fffdf9 100%
+  );
+}
+
+/* =========================================================
+mood
+문 열림 인터랙션
+========================================================= */
+
+/* .mood_stage는 더 이상 1920px 고정 폭이 아니라 width: 100%입니다 —
+   1920px보다 넓은 화면(예: 2560px 모니터)에서도 배경 사진이 좌우 여백
+   없이 화면 전체를 채우도록 하기 위해서입니다(요청: "너비를 가득
+   채워야 한다"). 그 안의 문 열림 인터랙션(js/brand.js)은 그대로 두되,
+   문이 다 열렸을 때의 목표 폭도 고정 1920px 대신 "100%"를 쓰도록
+   맞췄습니다(initMoodReveal의 timeline.to(reveal, { width: "100%" })
+   참고) — 실제 화면 폭이 얼마든 px 비율 계산 없이 그대로 채워집니다.
+   글(.mood_left)·무드 단어(.mood_right)가 들어 있는 .mood_inner는
+   Figma 실측값 그대로 1920px 고정폭을 유지하고, margin-inline: auto로
+   넓어진 무대 가운데에 정렬됩니다. */
+.mood {
+  position: relative;
+  width: 100%;
+  background-color: var(--brand_black);
+  overflow-x: clip;
+}
+
+.mood_stage {
+  position: relative;
+  width: 100%;
+  height: 1080px;
+  /* 닫힌 문(.mood_reveal이 30 × 484로 작을 때) 바깥 전부가 이 배경으로
+     덮여 #120f0f 한 색만 보입니다. */
+  background-color: var(--brand_black);
+}
+
+.mood_reveal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 1080px;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+.mood_room {
+  /* px 비율 계산 없이 object-fit: cover 하나로 어떤 화면 폭에서도
+     .mood_reveal(문)을 여백 없이 채웁니다. 문이 자라는 도중에도(30 ×
+     484 → 100% × 1080) 매 크기마다 다시 계산되는 값이라 별도 좌표가
+     필요 없습니다 — 그 대가로 사진이 더 이상 텍스트를 따라 좌우로
+     슬라이드하지 않습니다(js/brand.js initMoodReveal 주석 참고). */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+}
+
+.mood_inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 1920px;
+  height: 1080px;
+  /* .mood_reveal이 1920px보다 넓어질 수 있어(위 참고), 1920px 고정폭인
+     이 안쪽(글 + 무드 단어)을 가운데로 밀어 둡니다. */
+  margin-inline: auto;
+}
+
+.mood_left {
+  position: relative;
+  flex-shrink: 0;
+  width: 768px;
+  height: 1080px;
+}
+
+.mood_copy {
+  position: absolute;
+  top: 218px;
+  left: 0;
+  width: 768px;
+  height: 644px;
+  /* .mood_word_title/desc처럼 어두운 mood 배경(var(--brand_black)) 위에
+     놓이는 글이라 on-dark 토큰을 씁니다. var(--color_text)(#0a0a0a)는
+     밝은 배경용이라 이 배경 위에서는 거의 안 보였습니다. */
+  color: var(--color_text_on_dark);
+  /* mood_right(2분할 초록 패널)이 슬라이드해 들어오는 동안 이 박스와
+     잠깐 겹칩니다(설계상 — 아래 mood_copy_title 주석 참고). z-index를
+     올려 그 구간에서도 글이 항상 위에 그려지고 패널에 가려지지
+     않도록 합니다. */
+  z-index: 2;
+}
+
+.mood_copy_title {
+  position: absolute;
+  top: 0;
+  /* ★ Figma mood_inner2/mood_inner3(node 1962:6949 / 1962:6954) 실측으로
+     다시 잡았습니다. 이전엔 본문을 타이틀 아래에 세로로 쌓았는데,
+     실제 시안은 타이틀(왼쪽 블록) 옆에 본문이 나란히 오는 좌우 배치라
+     완전히 다시 재야 했습니다 — 자세한 계산은 js/brand.js의
+     REVEAL_TEXT_SLIDE 주석 참고. */
+  left: 72px;
+  font-family: var(--font_display);
+  font-weight: 600;
+  font-size: 64px;
+  line-height: 1.13;
+  letter-spacing: -1.28px;
+  white-space: nowrap;
+}
+
+.mood_copy_body {
+  position: absolute;
+  /* ★ 타이틀 아래가 아니라 타이틀 옆(오른쪽)에 옵니다 — Figma 실측으로
+     타이틀 left(72px) 기준 오른쪽으로 약 300px, 위로는 타이틀의 두 번째
+     줄("into") 높이쯤에서 시작합니다. */
+  top: 145px;
+  left: 372px;
+  font-family: var(--font_body);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.58;
+  white-space: nowrap;
+}
+
+.mood_copy_body p + p {
+  margin-top: 1.58em;
+}
+
+.mood_right {
+  position: relative;
+  flex-shrink: 0;
+  width: 1152px;
+  height: 1080px;
+  background-color: #3b3c32;
+}
+
+.mood_word {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.mood_word_media {
+  overflow: hidden;
+}
+
+.mood_word_media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mood_word_unique {
+  top: 263px;
+  left: 130px;
+  width: 298px;
+}
+
+.mood_word_unique .mood_word_media {
+  width: 298px;
+  height: 189px;
+}
+
+.mood_word_modern {
+  top: 639px;
+  left: 458px;
+  width: 220px;
+}
+
+.mood_word_modern .mood_word_media {
+  width: 200px;
+  height: 240px;
+}
+
+.mood_word_modern .mood_word_media img {
+  object-position: bottom;
+}
+
+.mood_word_elegant {
+  top: 390px;
+  left: 748px;
+  width: 306px;
+}
+
+.mood_word_elegant .mood_word_media {
+  width: 306px;
+  height: 180px;
+}
+
+.mood_word_title {
+  font-family: var(--font_display);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--color_border_disabled);
+}
+
+.mood_word_desc {
+  font-family: var(--font_body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.63;
+  color: var(--color_border_disabled);
+}
+
+/* =========================================================
+kimyoungjin
+브랜드의 출발점
+========================================================= */
+
+.kimyoungjin {
+  position: relative;
+  width: 100%;
+
+  /* .main의 배경(전체 페이지 높이에 걸친 하나의 그라데이션, 0~100%)에
+     기대지 않고 이 섹션 자체의 색을 직접 지정합니다. mood·tchaikim·
+     heritage가 각자 다른 길이로 화면을 붙잡아 두는(pin) 스크롤
+     인터랙션이 있어서, 문서 전체 높이가 화면 폭마다(그리고 같은 폭
+     에서도 pin이 켜지는 1920px 경계를 넘나들 때마다) 크게 달라집니다
+     — .main의 그라데이션은 그 전체 높이에 대한 %이므로, kimyoungjin이
+     실제 화면 몇 %쯤에서 시작하는지가 흔들리고 그만큼 이 섹션 배경색도
+     따라 흔들렸습니다("반응형에서도 1920px 기준과 같은 배경 유지"
+     요청). 1920px·pin이 켜진 상태에서 이 섹션이 시작·끝나는 지점의
+     .main 그라데이션 색을 그대로 옮겨(시작 약 25.06% → #f1ece3,
+     끝 약 42.33% → #f7f7f7) 이 섹션 자신의 높이 기준 그라데이션으로
+     고정했습니다 — 문서 전체 높이가 어떻게 바뀌든 이 두 색과 섹션
+     내부에서의 위치 관계는 항상 그대로입니다. */
+  background: linear-gradient(to bottom, #f1ece3 0%, #f7f7f7 100%);
+
+  overflow-x: clip;
+}
+
+.kimyoungjin_frame {
+  position: relative;
+  width: 1920px;
+  height: 2560px;
+  margin-left: calc(50% - 960px);
+  padding-top: 400px;
+
+  /*
+   * 기존 개별 배경 제거.
+   */
+  background: transparent;
+}
+
+.youngjin_group {
+  display: flex;
+  align-items: flex-end;
+  gap: 200px;
+  height: 600px;
+}
+
+.youngjin_group_first {
+  width: 1103px;
+}
+
+.youngjin_group_second {
+  position: absolute;
+  top: 1109px;
+  right: 0;
+  width: 1071px;
+}
+
+.youngjin_side {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 403px;
+}
+
+.youngjin_photo {
+  position: relative;
+  overflow: hidden;
+}
+
+.youngjin_photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.youngjin_photo_red {
+  width: 500px;
+  height: 600px;
+}
+
+.youngjin_photo_blue {
+  width: 468px;
+  height: 600px;
+}
+
+.youngjin_photo_yellow,
+.youngjin_photo_black {
+  width: 403px;
+  height: 269px;
+}
+
+.youngjin_title {
+  font-family: var(--font_display);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--color_text);
+}
+
+.youngjin_desc {
+  font-family: var(--font_body);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--color_text);
+}
+
+.youngjin_wordmark {
+  position: absolute;
+  top: 1960px;
+  left: 80px;
+  display: flex;
+  align-items: center;
+  height: 600px;
+  color: transparent;
+  font-family: var(--font_display);
+  font-size: 600px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-text-stroke: 3px rgba(10, 10, 10, 0.07);
+  padding-top: 20px;
+}
+
+.youngjin_handmade {
+  position: absolute;
+  top: 2260px;
+  left: 731px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 457px;
+}
+
+.youngjin_title_center,
+.youngjin_desc_center {
+  text-align: center;
+}
+
+/* =========================================================
+tchaikim
+가로 5장면
+========================================================= */
+
+.tchaikim {
+  position: relative;
+  width: 100%;
+
+  /*
+   * 기존 개별 gradient 제거.
+   */
+  background: transparent;
+
+  overflow-x: clip;
+}
+
+.tchaikim_track {
+  width: 1920px;
+  margin-left: calc(50% - 960px);
+  padding-block: 600px;
+}
+
+.tchaikim_tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 27px;
+  margin-bottom: 120px;
+}
+
+.tchaikim_tab {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  border: 1px solid var(--color_border);
+  border-radius: 35px;
+  background-color: var(--color_surface);
+  color: var(--color_text_sub);
+  font-family: var(--font_body);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.38;
+  letter-spacing: 1.28px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.tchaikim_tab:hover,
+.tchaikim_tab.is_active {
+  border-color: var(--color_text_sub);
+}
+
+.tchaikim_tab.is_active {
+  box-shadow: inset 0 0 0 1px var(--color_text_sub);
+}
+
+.tchaikim_panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1920px;
+}
+
+.tchaikim_panel[hidden] {
+  display: none;
+}
+
+.tchaikim_con {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 1700px;
+}
+
+/* 폭을 고정합니다. 폭이 없으면 flex가 장면마다 글 길이에 맞춰 이 상자와
+   .tchaikim_media 크기를 다시 나눠서, 탭을 바꿀 때마다 영상·글 자리가
+   조금씩 달라집니다. 596px인 이유: 1700(.tchaikim_con) − 1040(미디어) −
+   64(영상과의 간격) = 596. .tchaikim_con이 justify-content: space-between
+   이고 자식이 이 둘뿐이라, 두 폭의 합을 컨테이너보다 작게 두면 남는
+   공간이 정확히 그 사이 간격이 됩니다. */
+.tchaikim_txt {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  align-items: flex-end;
+  width: 596px;
+  gap: 4px;
+  text-align: right;
+}
+
+.tchaikim_panel_title {
+  font-family: var(--font_display);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--color_text);
+}
+
+/* min-height: 224px = 20px × 1.6 × 7줄. 5개 장면 중 설명이 가장 긴
+   Forward/Seasons가 7줄이고 나머지는 6줄입니다. 높이를 맞추지 않으면
+   [제목+설명] 덩어리 전체 높이가 장면마다 달라지고, .tchaikim_con의
+   align-items: center가 그 덩어리를 매번 다른 위치에서 가운데 정렬해
+   제목 자리가 장면마다 달라집니다(짧은 설명일수록 제목이 아래로).
+   높이를 고정하면 덩어리 총 높이가 항상 같아져 제목이 항상 같은
+   자리에 옵니다 — 짧은 설명은 이 상자 아래쪽에 빈 자리만 남습니다. */
+.tchaikim_panel_desc {
+  min-height: 224px;
+  font-family: var(--font_body);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--color_text);
+}
+
+.tchaikim_media {
+  width: 1040px;
+  height: 520px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.tchaikim_video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* =========================================================
+atelier
+사진 7장
+========================================================= */
+
+.atelier {
+  position: relative;
+  width: 100%;
+  padding-block: 400px;
+
+  /*
+   * 배경 없음.
+   * main의 그라데이션이 그대로 이어집니다.
+   */
+  background: transparent;
+
+  overflow-x: clip;
+}
+
+.atelier_row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  width: 2380px;
+  margin-left: calc(50% - 1190px);
+}
+
+.atelier_row.is_marquee {
+  justify-content: flex-start;
+  width: max-content;
+  margin-left: 0;
+  will-change: transform;
+  cursor: grab;
+  touch-action: pan-y;
+  animation:
+    atelier_marquee var(--atelier_duration, 40s)
+    linear infinite;
+}
+
+/* 커서로 당기는 동안 — JS(initAtelierMarquee)가 붙였다 뗍니다.
+   애니메이션을 잠깐 끄고 transform을 직접 쓰는 동안 이미지 드래그·
+   텍스트 선택이 끼어들지 않도록 막습니다. */
+.atelier_row.is_dragging {
+  cursor: grabbing;
+  animation: none;
+  user-select: none;
+}
+
+.atelier_row.is_dragging .atelier_photo img {
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+@keyframes atelier_marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform:
+      translate3d(
+        calc(-1 * var(--atelier_period, 0px)),
+        0,
+        0
+      );
+  }
+}
+
+.atelier_photo {
+  position: relative;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.atelier_photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.atelier_photo_1,
+.atelier_photo_7 {
+  width: 380px;
+  height: 507px;
+}
+
+.atelier_photo_2,
+.atelier_photo_6 {
+  width: 220px;
+  height: 293px;
+}
+
+.atelier_photo_3,
+.atelier_photo_5 {
+  width: 300px;
+  height: 400px;
+}
+
+.atelier_photo_4 {
+  width: 460px;
+  height: 613px;
+}
+
+.atelier_desc {
+  margin-top: 100px;
+  font-family: var(--font_body);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.58;
+  color: var(--brand_text_soft);
+  text-align: center;
+}
+
+/* =========================================================
+heritage
+========================================================= */
+
+.heritage {
+  position: relative;
+  width: 100%;
+
+  /*
+   * 개별 배경 제거.
+   */
+  background: transparent;
+
+  overflow-x: clip;
+}
+
+.heritage_stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: 1080px;
+  padding: 100px 240px;
+}
+
+.heritage_split {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+  padding: 100px 240px;
+}
+
+.heritage_photos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
+}
+
+/* 1280px 미만에서 사진 세 장이 겹쳐 크로스페이드되는 인터랙션의 래퍼입니다
+   (js/brand.js initHeritageResponsiveReveal 참고). 기본값은 display:contents라
+   레이아웃에 아무 영향이 없습니다 — 데스크톱(.is_pinned)과 JS가 없을 때의
+   정적 스택 레이아웃 둘 다 이 래퍼가 없는 것처럼 동작합니다. 아래
+   ".heritage.is_photo_swap_ready" 규칙에서만 실제 박스로 켜집니다. */
+.heritage_photos_frame {
+  display: contents;
+}
+
+.heritage_info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 480px;
+  text-align: center;
+}
+
+.heritage.is_pinned .heritage_frame {
+  position: relative;
+  height: 100vh;
+}
+
+.heritage.is_pinned .heritage_stage_title {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.heritage.is_pinned .heritage_split {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 0;
+}
+
+.heritage.is_pinned .heritage_photos {
+  position: relative;
+  width: 400px;
+  height: 714px;
+  flex-shrink: 0;
+}
+
+.heritage.is_pinned .heritage_photos .heritage_stage {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  padding: 0;
+  display: block;
+}
+
+.heritage.is_pinned .heritage_info {
+  text-align: left;
+}
+
+.heritage_headline {
+  font-family: var(--font_display);
+  font-weight: 600;
+  font-size: 138px;
+  line-height: 1.13;
+  letter-spacing: -2.76px;
+  color: var(--color_point);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.heritage_figure {
+  width: 400px;
+  height: 714px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.heritage_figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heritage_info_title {
+  font-family: var(--font_display);
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--color_text);
+}
+
+.heritage_info_desc {
+  font-family: var(--font_body);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.6;
+  color: var(--color_text);
+}
+
+.heritage_button {
+  margin-top: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 60px;
+  background-color: var(--color_point);
+  font-family: var(--font_body);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1.55;
+  letter-spacing: 2.42px;
+  color: var(--color_text_inverse);
+  text-transform: uppercase;
+  transition:
+    background-color var(--duration_base, 0.4s)
+    ease;
+}
+
+.heritage_button:hover,
+.heritage_button:focus-visible {
+  background-color: var(--color_text);
+}
+
+
+
+/* =========================================================
+반응형 — 1024 / 768 / 390
+
+이 페이지는 전부 1920px 캔버스 기준 절대좌표라, 반응형은 폭이 좁아질수록
+"같은 자리를 그대로 축소"하지 않고 정상적인 흐름(위아래로 쌓기)으로
+바꿉니다. 자리를 다시 잡을 때 시안 좌표를 그대로 옮길 수 없는 경우가
+많아, 잘리거나 겹치지 않는 선에서 간격·정렬을 다시 판단했습니다.
+
+mood/kimyoungjin/tchaikim의 스크롤 인터랙션(문 열림 pin+scrub, kimyoungjin
+scrub, tchaikim 정지 pin)은 js/brand.js에서 1280px 미만이면 켜지지 않습니다
+(gsap.matchMedia — heritage/scroll과 같은 기준). 그래서 1024/768/390에서는
+전부 "다 끝난 정적인 모습"만 CSS로 배치하면 됩니다.
+
+★ 첫 블록 기준을 1024가 아니라 1279로 잡았습니다. JS는 1280 미만에서
+바로 꺼지는데 CSS가 1024까지 기다리면, 그 사이(1025~1279px)에 아무
+규칙도 없어 1920 고정 레이아웃이 그대로 남습니다. heritage_headline
+("Find Your Difference", 138px nowrap)이 이 틈에서 overflow-x: clip에
+실제로 잘렸던 문제입니다. 1279로 맞춰 그 틈을 없앴습니다 — 값 자체는
+1024 기준으로 잡은 것을 그대로 씁니다(1025~1279 구간은 약간 여유 있게
+보일 뿐, 잘리지는 않습니다).
+
+mood는 이 섹션들과 별도로, 파일 맨 끝의 "MOOD RESPONSIVE" 블록
+(1920 / 767 / 390 기준)에서 다룹니다. mood_stage는 1920px 고정 캔버스라
+다른 섹션과 같은 1280 기준을 쓰면 1280~1919 구간에서 무대가 뷰포트보다
+넓어져 무드 단어가 잘려 나갑니다 — 그래서 mood만 JS 게이트(js/brand.js의
+MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
+상한으로 씁니다. 여기서는 mood를 건드리지 않습니다. */
+
+@media (max-width: 1279px) {
+  /* ---- kimyoungjin -------------------------------------------------------
+     솔로 사진 + 곁사진/텍스트 → 그룹2 → wordmark → handmade 순서로
+     위아래로 쌓습니다. initYoungjinMotion()의 스크럽 등장은 좁은 화면에서도
+     그대로 재생됩니다(가벼운 페이드/슬라이드라 pin과 달리 폭 제한이
+     없습니다) — 여기서는 자리만 다시 잡습니다. */
+  .kimyoungjin_frame {
+    width: 100%;
+    height: auto;
+    margin-left: 0;
+    padding: 96px 56px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 96px;
+  }
+
+  .youngjin_group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    height: auto;
+  }
+
+  .youngjin_group_first {
+    width: 100%;
+  }
+
+  .youngjin_group_second {
+    position: static;
+    top: auto;
+    right: auto;
+    width: 100%;
+  }
+
+  .youngjin_side {
+    width: 100%;
+  }
+
+  .youngjin_photo_red,
+  .youngjin_photo_blue {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 5 / 6;
+  }
+
+  .youngjin_photo_yellow,
+  .youngjin_photo_black {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+  }
+
+  .youngjin_wordmark {
+    position: static;
+    height: auto;
+    font-size: 22vw;
+    justify-content: center;
+    padding-top: 0;
+    -webkit-text-stroke-width: 2px;
+  }
+
+  .youngjin_handmade {
+    position: static;
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
+  }
+
+  /* ---- tchaikim ----------------------------------------------------------
+     탭 + 장면(글 위, 영상 아래)으로 세로 배치. tchaikim_media는 1040×520
+     고정 대신 비율만 유지한 유동 폭으로 바꿉니다. */
+  .tchaikim_track {
+    width: 100%;
+    margin-left: 0;
+    padding: 160px 56px 120px;
+    box-sizing: border-box;
+  }
+
+  .tchaikim_tabs {
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 64px;
+  }
+
+  .tchaikim_panel {
+    width: 100%;
+  }
+
+  .tchaikim_con {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .tchaikim_txt {
+    width: 100%;
+    max-width: 640px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .tchaikim_media {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    aspect-ratio: 1040 / 520;
+  }
+
+  /* ---- atelier -------------------------------------------------------------
+     흐르는 마퀴(JS)는 그대로 동작하고, 사진 크기만 줄입니다.
+     .atelier_row의 width·margin-left는 줄어든 사진 합계에 맞춘 값입니다
+     (JS/모션이 꺼졌을 때의 정지 크롭 화면 전용 — is_marquee가 켜지면
+     width: max-content로 덮어써 무시됩니다). */
+  .atelier {
+    padding-block: 200px;
+  }
+
+  .atelier_row {
+    width: 1791px;
+    margin-left: calc(50% - 896px);
+    gap: 16px;
+  }
+
+  .atelier_photo_1,
+  .atelier_photo_7 {
+    width: 285px;
+    height: 380px;
+  }
+
+  .atelier_photo_2,
+  .atelier_photo_6 {
+    width: 165px;
+    height: 220px;
+  }
+
+  .atelier_photo_3,
+  .atelier_photo_5 {
+    width: 225px;
+    height: 300px;
+  }
+
+  .atelier_photo_4 {
+    width: 345px;
+    height: 460px;
+  }
+
+  .atelier_desc {
+    margin-top: 64px;
+    font-size: 20px;
+  }
+
+  /* ---- heritage --------------------------------------------------------
+     1280 미만은 이미 pin 없이 위아래로 쌓인 정적 레이아웃입니다(JS 게이트).
+     여기서는 그 정적 레이아웃의 여백·글자 크기만 줄입니다 — 원래 패딩
+     (240px)과 사진 폭(400px)이 이미 1024보다 좁은 화면에서 넘칩니다. */
+  .heritage_stage,
+  .heritage_split {
+    padding: 96px 56px;
+  }
+
+  .heritage_stage {
+    height: auto;
+  }
+
+  /* ★ .heritage_photos는 원래 .heritage.is_pinned일 때만(1280px 이상,
+     JS가 붙이는 class) width:400px를 받습니다 — 1280 미만에서는 이
+     class가 절대 안 붙으므로 폭이 없는 채로 남습니다. 부모
+     (.heritage_split)의 align-items:center가 기본 stretch를 막아서,
+     폭 없는 flex 컨테이너 안에서는 .heritage_figure의 퍼센트 폭(390px
+     이하 구간, 아래 참고)이 기준으로 삼을 폭이 없어 붕괴합니다
+     (실측: 20×36px까지 찌그러짐). .heritage_photos 자신뿐 아니라 그
+     안의 .heritage_stage(사진 하나를 감싸는 상자)도 같은 이유로
+     한 단계 더 붕괴하고 있어서(align-items:center가 여기서도 다시
+     막음) 두 단계 모두 폭을 줘야 합니다. */
+  .heritage_photos {
+    width: 100%;
+  }
+
+  /* .heritage_stage의 기본 padding(100px 240px, 위 규칙에서 96px 56px로
+     축소)은 title 화면(.heritage_stage_title) 전용입니다. 사진을 감싸는
+     .heritage_stage(.heritage_photos 안)에도 같은 선택자라 그대로
+     상속되어, 사진(.heritage_figure) 위아래에 96px씩 빈 여백이 더 붙고
+     .heritage_photos의 gap(60px)과 합쳐져 사진 사이가 총 252px(96+60+96)
+     이나 벌어졌습니다. 사진 간 간격은 .heritage_photos의 gap 하나로만
+     맞추고, 이 안쪽 stage는 padding을 지웁니다. */
+  .heritage_photos .heritage_stage {
+    width: 100%;
+    padding: 0;
+  }
+
+  .heritage_headline {
+    font-size: 96px;
+    white-space: normal;
+  }
+
+  .heritage_figure {
+    width: 320px;
+    height: auto;
+    aspect-ratio: 400 / 714;
+  }
+
+  /* is_pinned(1280px 이상, JS pin)일 때만 .heritage_info가 text-align:left로
+     바뀌고 버튼도 왼쪽 텍스트에 맞춰 왼쪽에 붙습니다. 여기(1280 미만,
+     text-align:center)에서는 버튼도 같이 가운데로 와야 하는데, flex
+     자식이라 auto margin이 없으면 왼쪽에 붙어 위 문단(가운데 정렬)과
+     어긋나 보였습니다. */
+  .heritage_button {
+    margin-inline: auto;
+  }
+
+  /* ★ "세 장이 나란히 하나씩 나타나는 게 아니라 한 자리에서 사진만
+     바뀌어야 한다"는 요청 — js/brand.js가 이 폭에서 인터랙션을 켤 때만
+     .heritage에 붙이는 class입니다. 위 기본 반응형 규칙(사진 세 장을
+     위아래로 쌓기)을 이 class로 덮어써, 사진 한 장 자리만 화면에
+     붙잡아 두고(position: sticky) 그 안에서 스크롤에 따라 사진이
+     겹쳐 바뀌는 레이아웃으로 바꿉니다. */
+  .heritage.is_photo_swap_ready .heritage_photos {
+    position: relative;
+    display: block;
+    width: 100%;
+    /* js/brand.js의 HERITAGE_SWAP_TRACK_VH와 같은 값이어야 합니다 —
+       사진을 넘기는 스크롤 구간의 실제 길이입니다. */
+    height: 250vh;
+  }
+
+  /* sticky는 뷰포트 기준 위치라, 공통 헤더(66px) 밑에 여백을 조금 더
+     둡니다. */
+  .heritage.is_photo_swap_ready .heritage_photos_frame {
+    display: block;
+    position: sticky;
+    top: 96px;
+    width: 320px;
+    aspect-ratio: 400 / 714;
+    margin-inline: auto;
+  }
+
+  .heritage.is_photo_swap_ready .heritage_photos_frame .heritage_stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+  }
+
+  .heritage.is_photo_swap_ready .heritage_figure {
+    width: 100%;
+    height: 100%;
+  }
+
+}
+
+@media (max-width: 768px) {
+  /* mood는 파일 맨 끝 "MOOD RESPONSIVE" 블록(767px 기준)에서 다룹니다. */
+
+  /* ---- kimyoungjin ------------------------------------------------------- */
+  .kimyoungjin_frame {
+    padding: 80px 32px;
+    gap: 72px;
+  }
+
+  .youngjin_wordmark {
+    font-size: 26vw;
+    -webkit-text-stroke-width: 1.5px;
+  }
+
+  /* ---- tchaikim ----------------------------------------------------------- */
+  .tchaikim_track {
+    padding: 120px 32px 96px;
+  }
+
+  .tchaikim_panel_title {
+    font-size: 20px;
+  }
+
+  .tchaikim_panel_desc {
+    font-size: 17px;
+  }
+
+  /* ---- atelier -------------------------------------------------------------- */
+  .atelier {
+    padding-block: 140px;
+  }
+
+  .atelier_row {
+    width: 1315px;
+    margin-left: calc(50% - 658px);
+    gap: 12px;
+  }
+
+  .atelier_photo_1,
+  .atelier_photo_7 {
+    width: 209px;
+    height: 279px;
+  }
+
+  .atelier_photo_2,
+  .atelier_photo_6 {
+    width: 121px;
+    height: 161px;
+  }
+
+  .atelier_photo_3,
+  .atelier_photo_5 {
+    width: 165px;
+    height: 220px;
+  }
+
+  .atelier_photo_4 {
+    width: 253px;
+    height: 337px;
+  }
+
+  /* ---- heritage ------------------------------------------------------------- */
+  .heritage_stage,
+  .heritage_split {
+    padding: 80px 32px;
+  }
+
+  .heritage_headline {
+    font-size: 64px;
+  }
+
+  .heritage_figure {
+    width: 280px;
+  }
+
+  .heritage_info_title {
+    font-size: 22px;
+  }
+
+  .heritage_info_desc {
+    font-size: 17px;
+  }
+
+
+}
+
+@media (max-width: 390px) {
+  /* mood는 파일 맨 끝 "MOOD RESPONSIVE" 블록(390px 기준)에서 다룹니다. */
+
+  /* ---- kimyoungjin --------------------------------------------------------- */
+  .kimyoungjin_frame {
+    padding: 64px 20px;
+    gap: 56px;
+  }
+
+  .youngjin_wordmark {
+    font-size: 30vw;
+    -webkit-text-stroke-width: 1px;
+  }
+
+  .youngjin_title {
+    font-size: 20px;
+  }
+
+  .youngjin_desc {
+    font-size: 16px;
+  }
+
+  /* ---- tchaikim ------------------------------------------------------------- */
+  .tchaikim_track {
+    padding: 96px 20px 64px;
+  }
+
+  .tchaikim_tabs {
+    gap: 10px;
+  }
+
+  .tchaikim_tab {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .tchaikim_panel_title {
+    font-size: 18px;
+  }
+
+  .tchaikim_panel_desc {
+    font-size: 15px;
+  }
+
+  /* ---- atelier ---------------------------------------------------------------- */
+  .atelier {
+    padding-block: 96px;
+  }
+
+  .atelier_row {
+    width: 952px;
+    margin-left: calc(50% - 476px);
+    gap: 8px;
+  }
+
+  .atelier_photo_1,
+  .atelier_photo_7 {
+    width: 152px;
+    height: 203px;
+  }
+
+  .atelier_photo_2,
+  .atelier_photo_6 {
+    width: 88px;
+    height: 117px;
+  }
+
+  .atelier_photo_3,
+  .atelier_photo_5 {
+    width: 120px;
+    height: 160px;
+  }
+
+  .atelier_photo_4 {
+    width: 184px;
+    height: 245px;
+  }
+
+  .atelier_desc {
+    margin-top: 48px;
+    font-size: 16px;
+  }
+
+  /* ---- heritage ----------------------------------------------------------------- */
+  .heritage_stage,
+  .heritage_split {
+    padding: 64px 20px;
+  }
+
+  .heritage_headline {
+    font-size: 40px;
+    letter-spacing: -0.8px;
+  }
+
+  .heritage_figure {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .heritage_button {
+    width: 100%;
+    max-width: 240px;
+  }
+
+
+}
+
+/* =========================================================
+접근성
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .atelier_row.is_marquee {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* 1920px 발표 화면에서는 공통 html zoom(0.75)이 Brand의 1920px 무대를
+   다시 1440px로 축소합니다. Brand 콘텐츠 영역에서만 역줌해 원래 설계 폭과
+   전체 화면 높이를 복원합니다. 헤더·푸터와 다른 페이지에는 적용되지 않습니다. */
+@media (min-width: 1850px) and (max-width: 1990px) {
+  body[data-page="brand"] .main {
+    zoom: calc(1 / var(--site_view_scale));
+  }
+}
+
+/* =========================================================
+   MOOD RESPONSIVE
+   Breakpoint — 1919.98px 하나뿐입니다
+
+   JS 인터랙션(문 열림 scrub)은 js/brand.js의 MOOD_MIN_WIDTH(1920)로
+   "min-width: 1920px"일 때만 켜집니다. 이 블록은 정수 1919px이 아니라
+   1919.98px을 상한으로 씁니다 — 화면 배율이 정수 배(100%/150%/200%)가
+   아니면(예: Windows 175%) 실제 뷰포트 CSS px 폭이 소수로 떨어져,
+   정수 innerWidth가 1919로 읽혀도 실제 media query 판정 폭은 1920에
+   더 가까운 값(예: 1919.4~1919.9px)일 수 있습니다.
+
+   ★ 예전에는 이 아래로 767.98px/390.98px 두 단계를 더 두고 각 단계마다
+   padding·gap·font-size를 다른 고정 px로 다시 썼습니다. 창 폭을
+   천천히 줄이면 그 경계(767.98↔768, 390.98↔391)에서 값이 툭 튀어
+   "뚝뚝 끊기며 전환된다"는 지적을 받았습니다. 지금은 그 두 단계를
+   없애고 이 블록 하나만 남겨, 모든 값을 vw/clamp로 이어지게 했습니다
+   — 1920px에서 390px까지 창을 천천히 줄이면 글자 크기·좌표·카드
+   폭·여백이 전부 같은 속도로 매끄럽게 줄어들고, 어디에도 값이
+   튀는 경계가 없습니다.
+
+   ★ 텍스트(mood_left)는 1920px 좌표를 px 그대로 축소하지 않고 vw로
+   옮겨 씁니다 — "1920px에서 본 위치와 같은 비율로 줄어들어야 한다"는
+   요청입니다. 1920px 캔버스 기준 값 ÷ 1920 × 100을 vw로 쓰면 화면
+   폭이 얼마든 1920px에서 본 것과 정확히 같은 비율(글자 크기·좌표·
+   사진 높이까지)로 줄어듭니다(계산은 각 규칙 옆 주석). 다만 순수
+   vw만 쓰면 390px에서 본문이 5px대까지 줄어들어 읽을 수 없어서,
+   최소 크기만 clamp()로 막아 두었습니다(제목 18px / 본문 11px) —
+   1920 비율은 화면이 그 아래로 좁아지기 전까지는 그대로 유지되고,
+   그 아래에서도 vw → 고정 최소값으로 값 자체는 clamp()가 연속적으로
+   이어줍니다(끊기지 않습니다).
+
+   ★ 무드 단어(mood_right)는 더 이상 사진 위에 겹치는 코너 카드가
+   아니라 사진·텍스트 아래로 내려간 별도 블록입니다("아래로 내려가게
+   해달라"는 요청). .mood_reveal을 세로 flex로 바꿔 mood_left(사진 위
+   텍스트) → mood_right(카드, 자기 배경 #3b3c32) 순서로 쌓습니다.
+   사진(.mood_room)은 이 세로 배치와 별개로 위쪽 자리에만 높이가
+   고정돼(아래 56.25vw 참고) mood_right 밑까지 늘어나지 않습니다.
+   mood_right는 더 이상 폭에 상한(max-width)을 두지 않습니다 — "화면이
+   좁아질수록 mood_right도 너비를 채워서 보여야 한다"는 요청으로,
+   화면 폭 그대로(100%) 채웁니다.
+   ========================================================= */
+
+@media (max-width: 1919.98px) {
+
+  .mood {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .mood_stage {
+    position: relative;
+    width: 100%;
+    height: auto;
+    margin-left: 0;
+  }
+
+  .mood_reveal {
+    position: relative;
+    top: auto;
+    left: auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: auto;
+    transform: none;
+    overflow: hidden;
+  }
+
+  /* 사진 — 1080 ÷ 1920 × 100 = 56.25vw(= 1920:1080과 같은 16:9 비율).
+     세로 flex의 첫 자리(mood_left)와 같은 높이만큼만 차지하고 그 아래
+     mood_right로 이어집니다. */
+  .mood_reveal .mood_room {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 56.25vw;
+
+    max-width: none;
+
+    object-fit: cover;
+    object-position: center center;
+
+    z-index: 0;
+  }
+
+  .mood_reveal .mood_inner {
+    display: contents;
+  }
+
+  /* 사진 위 텍스트. flex-column의 첫 항목이라 자연히 맨 위(사진과 같은
+     자리)에서 시작합니다. min-height를 사진과 같은 56.25vw로 둬 글이
+     짧아도 mood_right가 사진 영역을 침범하지 않고 그 아래에서
+     시작합니다. */
+  .mood_reveal .mood_left {
+    position: relative;
+    z-index: 2;
+
+    width: 100%;
+    /* base(desktop) 규칙의 height: 1080px을 풀지 않으면 mood_right가
+       사진 바로 아래가 아니라 1080px 아래로 밀려납니다. */
+    height: auto;
+    min-height: 56.25vw;
+  }
+
+  /* mood_copy/mood_copy_title/mood_copy_body — 1920px 좌표를 그대로
+     ÷ 1920 × 100 = vw로 옮깁니다. mood_left(사진과 같은 폭) 기준
+     absolute라 desktop과 같은 자리(왼쪽 위)에 비율 그대로 놓입니다.
+     white-space는 처음부터 normal입니다 — 비율이 유지되는 동안은
+     줄바꿈이 필요 없고(1920에서 이미 <br>로 줄이 나뉘어 있음), 아래쪽
+     clamp() 최소값 구간에서만 필요할 때 자연스럽게 줄바꿈됩니다 —
+     별도 breakpoint 없이 이어집니다. */
+  .mood_reveal .mood_copy {
+    position: absolute;
+    top: 11.3542vw;    /* 218px */
+    /* base(desktop) 규칙의 left: 0을 풀지 않으면 left/width/right가
+       모두 지정된 상태(over-constrained)가 되어 CSS 규칙상 right가
+       무시되고 계속 왼쪽에 붙습니다. */
+    left: auto;
+    right: 0;
+    width: 40vw;       /* 768px */
+    height: auto;
+  }
+
+  .mood_reveal .mood_copy_title {
+    position: absolute;
+    top: 0;
+    left: 3.75vw;      /* 72px */
+    margin: 0;
+
+    font-size: clamp(18px, 3.3333vw, 64px);   /* 64px */
+    line-height: 1.13;
+    letter-spacing: -0.0667vw;                /* -1.28px */
+    white-space: normal;
+  }
+
+  .mood_reveal .mood_copy_body {
+    position: absolute;
+    top: 7.5521vw;     /* 145px */
+    left: 19.375vw;    /* 372px */
+    margin-top: 0;
+
+    font-size: clamp(11px, 1.25vw, 24px);     /* 24px */
+    line-height: 1.58;
+    white-space: normal;
+  }
+
+  /* Unique / Modern / Elegant — flex-column의 두 번째 항목으로 사진·
+     텍스트 아래에 내려옵니다. 상한(max-width) 없이 화면 폭 그대로
+     채웁니다. padding·gap도 vw/clamp라 창 폭에 맞춰 매끄럽게 줄어들고,
+     767px·390px 같은 별도 경계에서 값이 튀지 않습니다. */
+  .mood_reveal .mood_right {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    height: auto;
+
+    display: flex;
+    flex-wrap: nowrap;
+    gap: clamp(8px, 1.5vw, 16px);
+
+    padding: clamp(20px, 4vw, 40px) clamp(16px, 5vw, 64px);
+    box-sizing: border-box;
+  }
+
+  /* 카드 3장(.mood_word_unique/modern/elegant)의 desktop 좌표(top:263px/
+     639px/390px, left:130px/458px/748px)는 base 규칙(.mood_word)의
+     position: absolute를 그대로 물려받습니다. 여기서 static으로 풀어야
+     .mood_right의 flex 행 위에 순서대로 놓입니다. */
+  .mood_reveal .mood_word {
+    position: static;
+    flex: 1;
+    width: auto;
+    min-width: 0;
+  }
+
+  .mood_reveal .mood_word_unique,
+  .mood_reveal .mood_word_modern,
+  .mood_reveal .mood_word_elegant {
+    top: auto;
+    left: auto;
+    width: auto;
+  }
+
+  /* mood_word_media도 base 규칙에서 고정 px 크기(298×189 등)를 물려받아
+     카드 폭보다 넓어져 옆 카드와 겹쳤습니다. 카드 폭을 그대로 채우도록
+     비율만 유지합니다. */
+  .mood_reveal .mood_word_media {
+    width: 100%;
+    height: auto;
+  }
+
+  .mood_reveal .mood_word_unique .mood_word_media {
+    aspect-ratio: 298 / 189;
+  }
+
+  .mood_reveal .mood_word_modern .mood_word_media {
+    aspect-ratio: 200 / 240;
+  }
+
+  .mood_reveal .mood_word_elegant .mood_word_media {
+    aspect-ratio: 306 / 180;
+  }
+
+  /* 카드 제목·설명 — 예전에는 767.98px에서 고정 11px로 튀고, 설명은
+     아예 display:none으로 사라졌습니다(가장 눈에 띄는 "뚝뚝 끊김").
+     지금은 clamp()로 계속 줄어들기만 하고 사라지지 않습니다. */
+  .mood_reveal .mood_word_title {
+    margin-top: clamp(4px, 1vw, 12px);
+    font-size: clamp(10px, 1.25vw, 24px);
+    line-height: 1.25;
+  }
+
+  .mood_reveal .mood_word_desc {
+    font-size: clamp(9px, 0.85vw, 16px);
+    line-height: 1.4;
+  }
+}

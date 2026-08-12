@@ -1,0 +1,249 @@
+.shop_transition {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--color_text, #0a0a0a);
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0s linear 1.15s;
+}
+
+.shop_transition[hidden] {
+  display: none;
+}
+
+.shop_transition.is_active,
+.has_shop_transition_entry .shop_transition {
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.shop_transition.is_exiting {
+  visibility: visible;
+  pointer-events: none;
+}
+
+.shop_transition_steps {
+  position: absolute;
+  inset: 0;
+}
+
+.shop_transition_steps span {
+  --step_delay: 0ms;
+  --exit_delay: 315ms;
+  position: absolute;
+  right: -2px;
+  left: -2px;
+  height: calc(12.5% + 3px);
+  background: var(--color_surface_subtle, #f5efe4);
+  transform: translateX(-105%);
+  transition: transform 0.72s cubic-bezier(0.76, 0, 0.24, 1);
+  transition-delay: var(--step_delay);
+}
+
+/* ★ will-change는 전환이 실제로 재생되는 동안에만 겁니다.
+   기본 규칙에 두면 이 오버레이가 숨겨져 있는 평소에도 8개 요소가 GPU 레이어를
+   차지한 채 남아, 이 파일을 불러오는 모든 페이지의 스크롤에 부담이 됩니다.
+   will-change는 힌트일 뿐이라 켜고 끄는 시점만 달라지고 보이는 결과는 같습니다. */
+.shop_transition.is_active .shop_transition_steps span,
+.shop_transition.is_exiting .shop_transition_steps span,
+.has_shop_transition_entry .shop_transition_steps span {
+  will-change: transform;
+}
+
+.shop_transition_steps span:nth-child(1) { top: 0; --step_delay: 0ms; --exit_delay: 315ms; }
+.shop_transition_steps span:nth-child(2) { top: 12.5%; --step_delay: 45ms; --exit_delay: 270ms; }
+.shop_transition_steps span:nth-child(3) { top: 25%; --step_delay: 90ms; --exit_delay: 225ms; }
+.shop_transition_steps span:nth-child(4) { top: 37.5%; --step_delay: 135ms; --exit_delay: 180ms; }
+.shop_transition_steps span:nth-child(5) { top: 50%; --step_delay: 180ms; --exit_delay: 135ms; }
+.shop_transition_steps span:nth-child(6) { top: 62.5%; --step_delay: 225ms; --exit_delay: 90ms; }
+.shop_transition_steps span:nth-child(7) { top: 75%; --step_delay: 270ms; --exit_delay: 45ms; }
+.shop_transition_steps span:nth-child(8) { top: 87.5%; --step_delay: 315ms; --exit_delay: 0ms; }
+
+.shop_transition.is_active .shop_transition_steps span,
+.has_shop_transition_entry .shop_transition_steps span {
+  transform: translateX(0);
+}
+
+.shop_transition.is_exiting .shop_transition_steps span {
+  transform: translateX(105%);
+  transition-delay: var(--exit_delay);
+}
+
+.shop_transition_inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  width: min(760px, calc(100vw - 48px));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  transition-delay: 0s;
+}
+
+.shop_transition.is_active .shop_transition_inner,
+.has_shop_transition_entry .shop_transition_inner {
+  opacity: 1;
+  transition-delay: 0.48s;
+}
+
+.shop_transition.is_exiting .shop_transition_inner {
+  opacity: 0;
+  transition-delay: 0s;
+}
+
+.shop_transition_kicker,
+.shop_transition_phrase {
+  margin: 0;
+  text-align: center;
+}
+
+.shop_transition_kicker {
+  overflow: hidden;
+  font-family: var(--font_ui, "Montserrat", sans-serif);
+  font-size: clamp(9px, 0.75vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.42em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.shop_transition_kicker span {
+  display: block;
+  opacity: 0;
+  transform: translateY(120%);
+  transition: opacity 0.45s ease, transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shop_transition_phrase {
+  display: grid;
+  margin-top: clamp(20px, 2vw, 30px);
+  font-family: var(--font_display, "Trirong", serif);
+  font-size: clamp(38px, 6.2vw, 96px);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.92;
+}
+
+.shop_transition_line {
+  display: flex;
+  justify-content: center;
+  gap: 0.22em;
+  overflow: hidden;
+}
+
+.shop_transition_word {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(115%) rotate(2deg);
+  transform-origin: left bottom;
+  transition: opacity 0.45s ease,
+              filter 0.65s ease,
+              transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shop_transition_word:nth-child(1) { transition-delay: 0.58s; }
+.shop_transition_word:nth-child(2) { transition-delay: 0.7s; }
+.shop_transition_line:nth-child(2) .shop_transition_word:nth-child(1) { transition-delay: 0.78s; }
+.shop_transition_line:nth-child(2) .shop_transition_word:nth-child(2) { transition-delay: 0.9s; }
+
+.shop_transition.is_active .shop_transition_kicker span,
+.has_shop_transition_entry .shop_transition_kicker span,
+.shop_transition.is_active .shop_transition_word,
+.has_shop_transition_entry .shop_transition_word {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0) rotate(0);
+}
+
+.shop_transition.is_active .shop_transition_kicker span,
+.has_shop_transition_entry .shop_transition_kicker span {
+  transition-delay: 0.48s;
+}
+
+.shop_transition.is_exiting .shop_transition_kicker span,
+.shop_transition.is_exiting .shop_transition_word {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(-115%) rotate(-2deg);
+  transition-delay: 0s;
+}
+
+/* Shop 문서에서 전환 스크립트가 실패해도 4초 뒤에는 페이지를 막지 않습니다. */
+.has_shop_transition_entry .shop_transition {
+  animation: shop_transition_fail_safe 0s 4s forwards;
+}
+
+.has_shop_transition_entry.is_shop_transition_ready .shop_transition {
+  animation: none;
+}
+
+html.is_shop_transitioning,
+html.is_shop_transitioning body,
+html.has_shop_transition_entry,
+html.has_shop_transition_entry body {
+  overflow: hidden;
+}
+
+@keyframes shop_transition_fail_safe {
+  to {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* Shop list -> product detail: a short editorial fade, separate from the full Shop intro. */
+html.is_shop_detail_leaving,
+html.has_shop_detail_transition_entry {
+  background: var(--color_bg, #fffdf9);
+}
+
+html.is_shop_detail_leaving body {
+  opacity: 0;
+  transform: scale(0.992);
+  pointer-events: none;
+  transition: opacity 0.36s ease,
+              transform 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html.has_shop_detail_transition_entry body {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: shop_detail_entry_fail_safe 0s 2s forwards;
+}
+
+html.has_shop_detail_transition_entry.is_shop_detail_ready body {
+  opacity: 1;
+  transform: translateY(0);
+  animation: none;
+  transition: opacity 0.46s ease,
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes shop_detail_entry_fail_safe {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop_transition_steps span,
+  .shop_transition_inner,
+  .shop_transition_kicker span,
+  .shop_transition_word {
+    transition-duration: 0.12s;
+    transition-delay: 0s;
+  }
+
+  html.is_shop_detail_leaving body,
+  html.has_shop_detail_transition_entry.is_shop_detail_ready body {
+    transform: none;
+    transition-duration: 0.12s;
+  }
+}

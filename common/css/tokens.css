@@ -1,0 +1,124 @@
+@charset "utf-8";
+
+/* Tchai Kim shared design tokens.
+   Keep page-specific values in each page stylesheet. */
+:root {
+  --color_bg: #fffdf9;
+  --color_text: #0a0a0a;
+  --color_text_sub: #2e2e2e;
+  --color_point: #1f433f;
+  /* 두 번째 포인트 색(핑크). 기존 --color_point(딥그린)와 나란히 씁니다.
+     ★ 기존 이름을 --color_point_green으로 바꾸지 마세요 — 9개 페이지가 쓰고 있습니다.
+
+     ★★ 그린만큼 진하지 않습니다. 상대휘도가 그린 0.0466 대 이 색 0.1669이라
+        대비가 절반 아래입니다. 쓰기 전에 아래 실측값을 보세요.
+
+     | 조합 | 대비 | AA 본문(4.5) |
+     |---|---|---|
+     | 핑크 글자 · 크림 배경(#fffdf9) | 4.76 | 통과(여유 0.26) |
+     | 크림/흰 글자 · 핑크 배경 | 4.76 / 4.84 | 통과 |
+     | **검정 글자(#0a0a0a) · 핑크 배경** | **4.09** | **미달** |
+     | **핑크 글자 · 그린 배경** | **2.24** | **미달** |
+
+     즉 **핑크 위에는 크림/흰 글자만** 얹을 수 있고, 검정 글자는 안 됩니다
+     (그린 배경에서는 크림 10.69로 넉넉했는데 여기서는 그렇지 않습니다).
+     그리고 opacity로 흐리게 쓰면 4.76에서 바로 아래로 떨어집니다.
+
+     ★ 짝이 되는 짙은 단계는 아래 --color_point_pink_deep입니다. */
+  --color_point_pink: #966658;
+  /* 핑크의 호버용 짙은 짝. **눈으로 고른 값이 아니라 그린 짝에서 계산한 값입니다.**
+     그린은 #1f433f → #16332f로 상대휘도가 (L+0.05) 기준 정확히 1.248배 어두워집니다.
+     같은 배수를 핑크에 적용한 목표 휘도가 0.1238이고, 이 색이 0.1251입니다.
+     색조는 그대로입니다(HSL 색상 13.6° → 13.3°).
+     덕분에 호버에서 대비가 **4.76 → 5.90**으로 올라갑니다 — 그린이 10.69 → 13.35로
+     올라가는 것과 같은 방향입니다(호버하면 더 잘 읽혀야 합니다).
+     ★ 한쪽만 바꾸면 이 관계가 깨집니다. --color_point_pink를 바꾸면 이 값도
+       같은 방법으로 다시 계산하세요.
+     ★ 그린 쪽 짙은 값(#16332f)은 아직 토큰이 아닙니다 — pages/main/css/main.css의
+       --brand_stack_action_deep과 common.css의 .main_button:hover에 각각 적혀
+       있습니다. 이번 범위 밖이라 그대로 뒀습니다. */
+  --color_point_pink_deep: #83594d;
+  --color_line: rgba(0, 0, 0, 0.5);
+  --color_text_on_dark: #ffffff;
+  --color_text_on_dark_sub: #dddddd;
+  --color_text_on_dark_menu: rgba(255, 255, 255, 0.85);
+  --color_line_on_dark: rgba(255, 255, 255, 0.6);
+  --color_error: #b3261e;
+
+  /* Figma 변수 세트 (surface / border / text 단계).
+     Bespoke 예약 화면에서 처음 쓰였고, 다른 페이지도 그대로 씁니다.
+     주의: --color_text_secondary(#4a4a42)는 기존 --color_text_sub(#2e2e2e)와 다른 값입니다.
+     Figma가 두 값을 따로 두고 있어 덮어쓰지 않고 나란히 둡니다. */
+  --color_surface: #ffffff;
+  --color_surface_subtle: #f5efe4;
+  --color_surface_muted: #f2f2f1;
+  --color_border: #e2ddd5;
+  --color_border_disabled: #c9c9c9;
+  --color_text_secondary: #4a4a42;
+  --color_text_muted: #888880;
+  --color_text_subtle: #aaaaaa;
+  --color_text_inverse: #fffdf9;
+
+  --font_display: "Trirong", "Times New Roman", serif;
+  --font_body: "Montserrat", "Pretendard Variable", sans-serif;
+  --font_ui: "Montserrat", "Pretendard Variable", sans-serif;
+
+  --fs_display_64: clamp(36px, 4.5vw, 64px);
+  --fs_display_48: clamp(28px, 3.5vw, 48px);
+  --fs_display_32: clamp(24px, 2.4vw, 32px);
+  --fs_body_24: clamp(18px, 1.6vw, 24px);
+  --fs_body_20: clamp(16px, 1.4vw, 20px);
+  --fs_ui_20: 20px;
+  --fs_ui_16: 16px;
+  --fs_ui_15: 15px;
+  --fs_ui_14: 14px;
+
+  --lh_display_64: 1.5;
+  --lh_display_48: 1.292;
+  --lh_display_32: 1.406;
+  --lh_body_24: 1.583;
+  --lh_body_20: 1.6;
+
+  --ls_tight: -0.02em;
+  --ls_tight_sm: -0.01em;
+
+  --layout_canvas: 1920px;
+  --layout_inner: 1600px;
+  --layout_gutter: 20px;
+  --header_height: 64px;
+  /* ★ 헤더 로고 크기는 여기서만 바꿉니다. 워드마크 원본이 300 × 45(가로세로 6.667:1)라
+     높이는 폭 ÷ 6.667입니다 — 150px → 22.5px, 180px → 27px, 225px → 34px.
+     데스크톱 값은 아래 1280px 블록에 있습니다. */
+  --header_logo_width: 150px;
+
+  --radius_button: 5px;
+
+  --duration_fast: 0.2s;
+  --duration_base: 0.4s;
+  --easing_base: cubic-bezier(0.33, 1, 0.68, 1);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --layout_gutter: 40px;
+    --header_height: 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --layout_gutter: 64px;
+    --header_height: 64px;
+    /* 데스크톱 로고. 225px(높이 34px)일 때 20px 메뉴 글씨보다 눈에 띄게 커서
+       180px(높이 27px)로 줄였습니다. 더 줄이려면 165px(24.8px)까지가 무난하고,
+       150px 아래로는 워드마크가 읽히지 않습니다. */
+    --header_logo_width: 170px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration_fast: 0.01ms;
+    --duration_base: 0.01ms;
+  }
+}

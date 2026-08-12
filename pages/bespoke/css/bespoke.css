@@ -1,0 +1,2461 @@
+@charset "utf-8";
+
+/* =========================================================
+   page tokens
+   출처: Figma 4조 한복판 - 차이킴, node 1554:14836 (bespoke)
+   base.css의 --color_text_sub(#2e2e2e)보다 옅은 2단계 톤이 시안에 있어 페이지 범위로 추가.
+   ========================================================= */
+
+:root {
+  --color_text_secondary: #4a4a42;
+  --color_text_muted: #888880;
+  --color_text_inverse: #fffdf9;
+  --color_border_default: #e2ddd5;
+
+  --fs_display_24: 24px;
+
+  /* ★ 시안 캔버스 단위. 파일 끝 1840 블록의 값이 전부 이 단위로 적혀 있습니다
+     (`gap: calc(179 * var(--bespoke_unit))` = 시안 179px).
+     기본은 1px이라 지금까지와 똑같고, 아래 75% 블록에서만 커집니다. */
+  --bespoke_unit: 1px;
+}
+
+/* =========================================================
+   ★ 75% 화면 스케일에 맞춘 레이아웃 밀도 (2026-08-10)
+
+   `common/css/common.css`가 1850~1990px 구간에서 `html { zoom: 0.75 }`를
+   겁니다(커밋 `0765b4b`). **그 축소는 그대로 둡니다.**
+
+   ★ 문제는 축소가 아니라 **폭·여백 값이 1920 캔버스에 고정**된 것입니다.
+   zoom 0.75에서 레이아웃이 쓰는 폭은 1905가 아니라
+   **1905 ÷ 0.75 = 2540 CSS px**입니다. 그런데 `--layout_inner`가 1600px,
+   아래 1840 블록의 컨테이너가 1700px이라 화면의 63~67%만 쓰고 좌우를
+   비웁니다. 타이포 clamp 상한(64/48/24px)도 마찬가지라 화면에는
+   48/36/18px로 보입니다. 그래서 "여백이 넓고 콘텐츠가 작다"가 됩니다.
+
+   전체를 다시 확대하지 않고(그건 zoom을 끄는 것과 같습니다)
+   **캔버스가 넓어진 배수만큼 레버 값을 키웁니다.** 배수는
+   `--site_view_scale`에서 끌어오므로 공통 파일에서 0.75를 바꾸면 따라갑니다.
+
+   같은 블록이 `bespoke_base.css`에도 있습니다 — index는 이 파일을,
+   예약·완료는 그 파일을 부릅니다. **한쪽만 고치면 세 페이지가 어긋납니다.**
+   ========================================================= */
+
+@media (min-width: 1850px) and (max-width: 1990px) {
+  :root {
+    /* 0.75 → 1.3333 */
+    --bespoke_canvas: calc(1 / var(--site_view_scale));
+
+    /* 1840 블록의 시안 값이 전부 이 단위로 곱해집니다. */
+    --bespoke_unit: calc(1px * var(--bespoke_canvas));
+
+    --layout_inner: calc(1600px * var(--bespoke_canvas));
+    --layout_gutter: calc(64px * var(--bespoke_canvas));
+
+    /* 타이포도 같은 이유로 화면에서는 0.75배로 보입니다. clamp의 vw 항과
+       상한을 함께 키워, 넓은 화면에서 시안 크기(64/48/32/24/20px)가
+       그대로 나오게 합니다. */
+    --fs_display_64: clamp(36px, calc(4.5vw * var(--bespoke_canvas)), calc(64 * var(--bespoke_unit)));
+    --fs_display_48: clamp(28px, calc(3.5vw * var(--bespoke_canvas)), calc(48 * var(--bespoke_unit)));
+    --fs_display_32: clamp(24px, calc(2.4vw * var(--bespoke_canvas)), calc(32 * var(--bespoke_unit)));
+    --fs_body_24: clamp(18px, calc(1.6vw * var(--bespoke_canvas)), calc(24 * var(--bespoke_unit)));
+    --fs_body_20: clamp(16px, calc(1.4vw * var(--bespoke_canvas)), calc(20 * var(--bespoke_unit)));
+    --fs_ui_20: calc(20 * var(--bespoke_unit));
+    --fs_ui_16: calc(16 * var(--bespoke_unit));
+    --fs_ui_15: calc(15 * var(--bespoke_unit));
+    --fs_ui_14: calc(14 * var(--bespoke_unit));
+  }
+
+  .page_bespoke {
+    --bespoke_section_gap: calc(160px * var(--bespoke_canvas));
+    --bespoke_head_gap: calc(80px * var(--bespoke_canvas));
+    --bespoke_fs_hero: calc(64px * var(--bespoke_canvas));
+    --bespoke_fs_section: calc(48px * var(--bespoke_canvas));
+    --bespoke_fs_card: calc(24px * var(--bespoke_canvas));
+  }
+
+  /* ★ 푸터는 공통 파일이 `zoom: calc(1 / --site_view_scale)`로 역보정해
+     이미 원래 크기입니다. 여기까지 폭을 키우면 2133px이 1905 화면을 넘겨
+     **가로 스크롤이 생깁니다.** 안에서는 원래 값으로 되돌립니다. */
+  .common_footer_slot {
+    --layout_inner: 1600px;
+    --layout_gutter: 64px;
+  }
+
+  /* 본문 확대 토큰은 유지하되 공통 헤더 안에서는 원래 공통값으로 복원합니다. */
+  .common_header_slot {
+    --layout_inner: 1600px;
+    --layout_gutter: 64px;
+    --fs_ui_20: 20px;
+    --fs_ui_16: 16px;
+    --fs_ui_15: 15px;
+    --fs_ui_14: 14px;
+  }
+
+  .common_header_slot .header {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+}
+
+/* Bespoke footer spacing differs from the shared Main/Shop footer. */
+.footer_inner {
+  gap: 80px;
+}
+
+.footer_wordmark {
+  margin: 0;
+}
+
+@media (min-width: 1280px) {
+  .footer_wordmark {
+    margin-left: -9px;
+  }
+}
+
+/* =========================================================
+   공통 섹션 리듬 — 바깥 여백을 footer_inner(layout.css)와 동일하게:
+   최대폭 1600px + 좌우 gutter, 가운데 정렬.
+   ========================================================= */
+
+.main section {
+  width: 100%;
+  max-width: calc(var(--layout_inner) + var(--layout_gutter) * 2);
+  margin: 0 auto;
+  padding: 60px var(--layout_gutter);
+}
+
+@media (min-width: 1280px) {
+  .main section {
+    padding: 100px var(--layout_gutter);
+  }
+}
+
+/* 시안에서 philosophy와 quote는 배경이 화면 좌우 끝까지 닿는 통짜 띠다.
+   위의 max-width(1728px)를 그대로 두면 1920 화면에서 양옆에 96px씩 크림색 띠가 남는다.
+   reservation은 시안에서도 좌우 여백이 있는 안쪽 배치라 여기 포함하지 않는다.
+   좌우 padding은 다른 섹션의 글 시작점(1600px 컨테이너)과 같은 자리를 유지한다.
+   선택자에 .main을 붙여야 한다 — 위의 `.main section`이 특정도(0,1,1)로 더 세다. */
+.main .philosophy,
+.main .quote {
+  max-width: none;
+  padding-inline: max(var(--layout_gutter), calc((100% - var(--layout_inner)) / 2));
+}
+
+/* =========================================================
+   hero
+   ========================================================= */
+
+/* ★ 순서가 이 섹션의 요구사항이다 (2026-08-10, 사용자 피드백)
+
+       카피  →  화면 폭을 꽉 채우는 영상  →  스크롤  →  영상 fade-out
+                                                      +  아이보리 배너가 위로
+
+   카피(`.bespoke_hero_body`)는 **일반 흐름으로 맨 위**에 있다. 영상 위에 겹치거나
+   영상이 먼저 화면을 차지하게 만들지 말 것.
+
+   영상은 좌우 여백 없이 화면 폭을 다 쓴다. `.main section`(0,1,1)이 쥔
+   max-width·padding을 풀어야 화면 끝까지 닿는다(philosophy·quote와 같은 처리라
+   선택자에 `.main`이 필요하다).
+
+   ★ 여기서 `100vw`를 쓰면 안 된다. 1850~1990px 구간의 `html { zoom: 0.75 }`
+   때문에 vw가 축소 전 폭으로 계산돼 좌우에 벽이 생긴다. `width: 100%`면
+   부모(.main = body 폭)를 그대로 받으므로 어느 구간에서도 정확하다. */
+.main .bespoke_hero {
+  max-width: none;
+  padding: 0;
+}
+
+/* 카피 — **헤더 로고와 같은 왼쪽 선**에 맞춘다 (2026-08-10, 사용자 요청).
+
+   ★ 그 선은 `--layout_gutter`다. 헤더 로고의 왼쪽 x를 재 보면 정확히 이 값이고
+   (1920 화면에서 64px), 공통 헤더가 자체 컨테이너 없이 gutter만 쓰기 때문이다.
+   그래서 여기서도 `padding-inline: var(--layout_gutter)`만 주면 두 줄이 맞는다 —
+   폭이 바뀌어도 gutter가 같이 움직이므로 어느 화면에서든 어긋나지 않는다.
+
+   ★ `margin-inline: auto`를 쓰면 안 된다. 가운데 정렬이 되어 글이 로고보다
+   안쪽으로 들어간다(예전에 캔버스 570px에 서 있었다). `max-width`는 남겨 두되
+   가운데로 밀지 않는다. */
+.bespoke_hero_body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: calc(var(--layout_inner) + var(--layout_gutter) * 2);
+  margin-inline: 0;
+  padding: 60px var(--layout_gutter);
+}
+
+@media (min-width: 1280px) {
+  .bespoke_hero_body {
+    padding-block: 100px 80px;
+  }
+}
+
+.bespoke_hero_stage {
+  position: relative;
+}
+
+/* 영상 상자 — 화면 폭 전체 × 화면 높이. 원본은 1920 × 1080(16:9)이고
+   `object-fit: cover`가 비율을 지킨 채 넘치는 쪽만 잘라 낸다(늘어나지 않는다). */
+.bespoke_hero_video {
+  position: relative;
+  width: 100%;
+  /* svh를 모르는 브라우저용 폴백 → iOS Safari 주소창 대응 */
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background-color: #000;
+}
+
+/* ★★ 자막이 잘리지 않게 **아래를 기준으로 크롭**한다 (2026-08-10, 사용자 지적).
+
+   이 영상은 자막이 화면에 구워져 있다. 프레임을 뽑아 실측한 자막 위치:
+
+   | | 원본 1920 × 1080 기준 |
+   |---|---|
+   | 세로 | y **932 ~ 1034** (아래 여백이 **46px**뿐) |
+   | 가로 | x **248 ~ 1673** (가장 긴 자막, 가운데 정렬) |
+
+   ★ `object-position` 기본값은 `50% 50%`라 **위아래를 똑같이 잘라 낸다.**
+   실제 브라우저 창은 브라우저 UI 때문에 1080보다 낮아서(예: 937px) 상자가
+   16:9보다 납작해지고, 그러면 세로가 잘린다 — 실측으로 **자막 아래쪽 29px이
+   잘렸다.** 자막이 바닥에서 46px밖에 안 떨어져 있어 조금만 잘려도 글자가 상한다.
+
+   `50% 100%`는 프레임의 **아랫변을 상자 아랫변에 붙인다.** 잘리는 몫이 전부
+   위쪽으로 가므로 자막은 어떤 창 높이에서도 온전하다. 위쪽은 천장·벽 여백이라
+   잘려도 그림이 상하지 않는다. **`50%`로 되돌리면 자막이 다시 잘린다.** */
+.bespoke_hero_video video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+/* ★★ 세로로 긴 화면(태블릿 세로 · 휴대폰)에서는 **영상을 원본 비율 그대로** 둔다.
+
+   `cover`는 좌우를 크게 잘라 자막을 양옆으로 상하게 한다. 보이는 가로 비율은
+   `상자폭 ÷ (상자높이 × 16/9)`인데, 자막이 가로의 74.2%를 차지하므로 상자
+   비율(가로/세로)이 **1.32 아래로 내려가면 글자가 잘린다** — 768 × 1024에서는
+   가운데 41%만 보여 문장 대부분이 사라진다.
+
+   ★ `object-fit: contain`으로 해결하려다 되돌렸다. 100svh 상자 안에 16:9 영상을
+   넣으면 768 × 1024에서 **검은 띠가 600px** 생긴다(실측). 자막은 살지만 화면
+   대부분이 검정이라 더 나쁘다.
+
+   그래서 상자 자체를 16:9로 만든다. 잘리는 곳이 아예 없고 검은 띠도 없다.
+   화면 폭은 그대로 다 쓰므로 "가로를 꽉 채운다"는 조건도 지킨다.
+   대신 세로는 한 화면이 아니게 되는데, 이 구간에서는 js가 sticky 전환도 끄기
+   때문에(`HERO_GATE`) 카피 → 영상 → philosophy가 평범하게 이어진다.
+
+   ★ 경계값을 js와 **겹치지 않게** 나눈다. 둘 다 `4/3`으로 두면 정확히 1024 × 768
+   같은 화면에서 두 규칙이 동시에 걸려 레이아웃이 깨진다. */
+@media (max-aspect-ratio: 1332 / 1000) {
+  .bespoke_hero_video {
+    height: auto;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.bespoke_hero_brand {
+  align-self: flex-start;
+  color: var(--color_text);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+.bespoke_hero_eyebrow {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+.bespoke_hero_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_64);
+  font-weight: 600;
+  line-height: 1.13;
+  letter-spacing: var(--ls_tight);
+}
+
+.bespoke_hero_desc {
+  color: var(--color_text_secondary);
+  font-family: var(--font_body);
+  font-size: var(--fs_body_20);
+  line-height: var(--lh_body_20);
+}
+
+/* ---------------------------------------------------------
+   히어로 전환 연출 (js/bespoke.js가 붙이는 .is_hero_ready)
+
+   스크롤을 내리면 영상이 화면에 **고정된 채 가운데로 오므라들며 사라지고,
+   그 자리에 philosophy 섹션이 떠오른다** (2026-08-10 사용자 요청).
+   두 장면이 같은 자리에서 교차하는 것이지, 배너가 화면 밑에서 한 화면을
+   걸어 올라오는 것이 아니다.
+
+   고정은 ScrollTrigger `pin`이 아니라 CSS sticky다 — pin-spacer가 끼면
+   philosophy부터 모든 섹션의 문서 좌표가 밀린다(atelier 무대와 같은 이유).
+
+   ★★ 두 변수의 역할이 완전히 다르다. 헷갈리면 배너가 어긋난다.
+
+   | 변수 | 성격 | 뜻 |
+   |---|---|---|
+   | `--bespoke_hero_run`  | **자유롭게 조절** | 영상이 고정돼 있는 거리 = 전환 길이 |
+   | `--bespoke_hero_lift` | **고정 상수 100svh** | philosophy를 끌어올리는 양 |
+
+   `--bespoke_hero_lift`가 100svh여야 하는 이유는 기하학이다:
+     philosophy 문서 위치 = 카피 + 영상 100svh + run − lift
+     전환이 끝나는 스크롤     = 카피 + run
+   둘의 차가 0이어야 전환이 끝나는 순간 philosophy 윗변이 화면 top에 정확히
+   맞는다 → `100svh − lift = 0`. **run과는 무관하다.** 그래서 run만 자유롭다.
+
+   `run`을 줄이면 전환이 짧고 빨라지고, 늘리면 느긋해진다.
+
+   ★★★ **활주로를 섹션의 `padding-bottom`으로 만들면 안 된다.**
+   sticky는 부모의 **content box** 안에서만 움직인다 — padding 안으로는 들어가지
+   못한다. 실제로 그렇게 뒀다가 **무대가 한 번도 고정되지 않고 그냥 흘러갔다**
+   (스크롤 855에서 무대가 화면 top **−243**에 있었다. 0이어야 한다).
+
+   그래서 활주로는 **무대 자신의 height**다:
+     .bespoke_hero_stage  height = 100svh + run   ← 평범한 블록(활주로)
+     .bespoke_hero_video  position: sticky        ← 실제로 화면에 붙는 것
+   무대가 활주로이고 그 안에서 영상이 `run`px 동안 붙어 있다. 새 요소가 없다.
+
+   ★ 무대에 `overflow: hidden`을 주면 안 된다. 그 순간 무대가 스크롤 컨테이너가
+   되어 안쪽 sticky가 무대 기준으로 묶이는데, 무대는 스크롤되지 않으므로 영상이
+   영영 붙지 않는다. 잘라내기는 영상 자신이 이미 하고 있다.
+   --------------------------------------------------------- */
+
+.page_bespoke {
+  /* 전환 길이 = 영상이 화면에 붙어 있는 거리.
+     ★ 여기만 고치면 된다 — js는 `무대 높이 − 영상 높이`로 읽어 따라온다.
+
+     ★★ 2026-08-10 **80svh → 120svh**. 두 가지를 한 번에 해결한 값이다
+     ("퍼지는 속도가 너무 빠르다" + "글이 다 나오면 한번 픽스"):
+     같은 비율이라도 구간이 길어져 번짐이 약 1.4배 느려지고, 늘어난 만큼이
+     글이 다 뜬 뒤 **붙잡아 두는 구간**(진행도 0.8~1, 약 24svh)이 된다.
+     구간 비율은 js의 `HERO_REVEAL_*` / `HERO_TITLE_*` / `HERO_DESC_*`에 있다.
+
+     ★ 2026-08-11 같은 요청("퍼지는 효과가 너무 빨리 퍼진다")으로 **120 → 150svh**.
+     js의 구간 비율도 함께 조정해서 늘어난 30svh가 **전부 번짐에만** 가도록 했다
+     (번짐 58.8 → 88.5svh, 글 두 덩이는 14.4 → 15svh로 사실상 그대로).
+     자세한 표는 js의 `HERO_REVEAL_START` 위 주석에 있다. */
+  --bespoke_hero_run: 150svh;
+  /* ★ 건드리지 말 것. 위 주석의 기하학적 상수다. */
+  --bespoke_hero_lift: 100svh;
+}
+
+/* 무대 = 활주로. 영상 한 화면 + 고정돼 있을 거리. */
+.bespoke_hero.is_hero_ready .bespoke_hero_stage {
+  position: relative;
+  z-index: 0;
+  height: calc(100vh + var(--bespoke_hero_run));
+  height: calc(100svh + var(--bespoke_hero_run));
+}
+
+/* ★★ 영상에는 **어떤 스크롤 애니메이션도 걸지 않는다** (2026-08-10 사용자 지적).
+
+   전에는 여기에 `scale`·`clip-path`·`opacity`를 스크롤에 묶어 뒀는데, 그러면
+   영상 상자가 실제로 움직인다 — 실측으로 진행도 0.40에서 `left 15.9 / top 9.0`,
+   0.72에서 `left 428.6 / top 243.0`까지 밀렸다. 여기에 `scrub: 0.3`이 겹쳐
+   스크롤을 멈춘 뒤에도 0.3초 동안 계속 따라오니 "미세하게 흔들린다"가 된다.
+   스케일되는 `<video>`가 매 프레임 리샘플링되어 화면이 어른거리는 것도 같은 원인.
+
+   ★ sticky·Lenis·scrub·부모 transform은 **무혐의다.** 트윈이 없는 구간(진행도
+   0.15 이전)에서 100px을 굴려 보면 `left 0.00 / top 0.00 / w 1905.00`으로
+   소수점까지 고정이다. 그래서 `position: fixed`로 덮어쓸 필요가 없다 —
+   **트윈을 빼는 것만으로 완전히 고정된다.**
+
+   영상을 없애는 처리도 하지 않는다. philosophy가 마지막에 화면을 다 덮으므로
+   영상은 덮인 채 뒤에 남아 있다가 무대가 끝나면 그대로 지나간다. */
+.bespoke_hero.is_hero_ready .bespoke_hero_video {
+  position: sticky;
+  top: 0;
+}
+
+/* philosophy = 고정된 영상 **위에서 먹물처럼 번져 나오는** 레이어.
+   디자인·콘텐츠는 그대로이고, js가 `mask-image`만 키운다.
+
+   ★★ `clip-path: circle()`을 버렸다. 수학적으로 정확한 경계라 안티에일리어싱
+   1px 외에는 번짐이 전혀 없고, 그 안쪽이 불투명한 크림이라 **"원형 판이 올라온
+   것"**으로 보였다(사용자 지적). 대신 가장자리가 부드럽게 사라지는
+   radial-gradient 마스크를 여러 겹 겹쳐 쓴다 — 자세한 것은 js의 `inkMask()`.
+
+   ★ `mask-repeat: no-repeat`이 필요하다. 마스크 레이어의 기본값이 `repeat`이라
+   그대로 두면 그라디언트가 타일처럼 반복될 수 있다.
+
+   ★ `z-index`와 **불투명한 배경**이 둘 다 필요하다. philosophy는 원래 배경색이
+   `transparent`라(body 크림이 비쳐 보이던 것) 그대로 두면 번지는 자리에 영상이
+   비친다. 크림을 깔아도 지금까지와 화면은 똑같다 — body가 같은 색이다.
+
+   ★ 인접 선택자다. 두 섹션 사이에 요소를 끼워 넣으면 조용히 끊긴다.
+   ★ 처음 상태(마스크 0)는 **js가 준다.** css에 박아 두면 스크립트가 실패했을 때
+     섹션이 영영 안 보인다. */
+.bespoke_hero.is_hero_ready + .philosophy {
+  position: relative;
+  z-index: 1;
+  margin-top: calc(var(--bespoke_hero_lift) * -1);
+  background-color: var(--color_bg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  /* 합성 레이어로 올려 두면 마스크 다시 그리기가 눈에 띄게 가벼워진다. */
+  will-change: transform;
+}
+
+/* =========================================================
+   philosophy
+   ========================================================= */
+
+.philosophy {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-height: 480px;
+}
+
+.philosophy_bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------
+   philosophy 스크롤 인터랙션 (js/bespoke.js가 붙이는 class)
+
+   .is_motion_ready는 GSAP·ScrollTrigger가 있고 모션 감소 설정이 아닐 때만
+   붙는다. JS가 없거나 꺼져 있으면 이 아래 규칙이 전부 적용되지 않고
+   위의 기본 레이아웃 그대로 보인다(기존 hero_gallery와 같은 방식).
+
+   배경을 위아래로 밀면 섹션 위/아래에 빈 줄이 드러나므로, 미리 그만큼
+   이미지를 키워 둔다.
+
+   ★★ 2026-08-11: **배경 패럴랙스를 제거했습니다**(사용자 요청 — "이미지가
+   흔들린다"). 그래서 이 값이 덮어야 하는 이동은 이제 **등장 트윈 하나**뿐입니다
+   (`PHILOSOPHY_BG_RISE` 2.5%, 약 26px). 예전에는 패럴랙스 110px까지 더해야 해서
+   176px이 필요했습니다.
+
+   ★ 그런데 **값은 176px 그대로 둡니다.** 이 상자는 `object-fit: cover`라
+   **세로로 키운 만큼 좌우가 잘려 나갑니다** — 줄이면 잘림이 줄어들면서 배경
+   사진의 구도가 실제로 바뀝니다(1905px 화면에서 한쪽 345px → 253px 수준).
+   흔들림을 없애 달라는 요청이지 구도를 바꿔 달라는 요청이 아니므로, 지금
+   화면과 **똑같이 보이도록** 크기를 유지합니다. 남는 몫은 `overflow: hidden`에
+   잘려 보이지 않으니 손해가 없습니다.
+
+   구도를 조정할 일이 생기면 이 값을 내리면 됩니다. 등장 트윈만 덮으면 되므로
+   **48px까지 안전합니다**(필요치 26px + 여유).
+
+   ※ 여기 있던 `will-change: transform, opacity`를 뺐습니다. 패럴랙스가 사라져
+   **데스크톱에서는 이 배경에 걸리는 transform이 아예 없는데**, 그대로 두면
+   1920 × 1000짜리 배경이 페이지 내내 GPU 레이어로 떠 있게 됩니다. 게다가
+   따로 떠 있는 레이어는 주변과 반올림이 달라져 스크롤 중 1px씩 어긋나 보이는
+   원인이 되기도 합니다 — "움직이지 않게" 해 달라는 요청과 정확히 반대입니다.
+   (같은 이유로 저장소에서 `.detail_lens_img`와 페이지 전환 조각들의 상시
+   `will-change`를 이미 걷어냈습니다.)
+   --------------------------------------------------------- */
+
+.philosophy {
+  --philosophy_bg_overscan: 176px;
+}
+
+.philosophy.is_motion_ready .philosophy_bg {
+  top: calc(var(--philosophy_bg_overscan) * -1);
+  height: calc(100% + var(--philosophy_bg_overscan) * 2);
+}
+
+.philosophy.is_motion_ready .philosophy_title,
+.philosophy.is_motion_ready .philosophy_desc {
+  will-change: transform, opacity;
+}
+
+.philosophy_body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 720px;
+}
+
+.philosophy_eyebrow {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+.philosophy_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_48);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: var(--ls_tight);
+}
+
+.philosophy_desc {
+  color: var(--color_text_secondary);
+  font-family: var(--font_body);
+  font-size: var(--fs_body_20);
+  line-height: var(--lh_body_20);
+}
+
+@media (min-width: 1280px) {
+  .philosophy {
+    min-height: 720px;
+  }
+}
+
+/* =========================================================
+   atelier
+   ========================================================= */
+
+.atelier {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* 이 상자가 사진의 경계다. `overflow: hidden`이 확대분을 잘라내므로
+   안쪽 img를 아무리 키워도 오른쪽 글 영역을 침범할 수 없다.
+   상자 자체는 크기가 바뀌지 않으므로 섹션 높이도 그대로다. */
+.atelier_image {
+  width: 100%;
+  aspect-ratio: 554 / 648;
+  overflow: hidden;
+}
+
+.atelier_image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------------------------------------------------------
+   atelier 사진 — 스크롤에 따라 아주 조금 커진다
+   (js/bespoke.js가 붙이는 is_zoom_ready class)
+
+   philosophy와 같은 방식이다 — JS나 GSAP이 없거나 모션 감소 설정이면
+   class가 붙지 않고 아래 규칙이 전혀 적용되지 않는다.
+
+   **크기를 바꾸는 대상은 상자가 아니라 안쪽 img다.** 상자(.atelier_image)를
+   키우면 flex 형제인 .atelier_body를 밀어내지만, img는 상자에 잘리므로
+   레이아웃이 전혀 움직이지 않는다. `transform`만 쓰므로 reflow도 없다.
+
+   transform-origin이 중앙이어야 사진이 상자 안에서 사방으로 고르게
+   커진다. 기본값이지만 의도를 남기려고 적어 둔다.
+   --------------------------------------------------------- */
+
+.atelier.is_zoom_ready .atelier_image img {
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+/* ---------------------------------------------------------
+   atelier 글 — 글자가 하나씩 올라온다
+   (js/bespoke.js가 넣는 span과 is_text_ready class)
+
+   **단어 상자(.atelier_word)가 반드시 있어야 한다.** 글자마다
+   inline-block을 주면 줄바꿈이 글자 사이 어디에서나 일어나 단어가
+   중간에서 끊긴다. 단어를 한 겹 더 감싸야 줄바꿈이 단어 경계에서만 생긴다.
+
+   글자에는 will-change를 주지 않는다. 이 섹션의 글자가 200개쯤 되는데
+   전부 합성 레이어로 올리면 얻는 것보다 잃는 것이 크다.
+
+   class가 없으면(모션 감소 설정 등) 두 span 모두 평범한 inline이라
+   원래 글과 똑같이 흐른다.
+   --------------------------------------------------------- */
+
+.atelier.is_text_ready .atelier_word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.atelier.is_text_ready .atelier_char {
+  display: inline-block;
+}
+
+.atelier_body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 다른 섹션 제목(materials · reservation · begin)과 같은 단계다 —
+   `--fs_display_32` / 500 / `--lh_display_32` / `--ls_tight_sm`.
+   히어로·philosophy의 64px 단계가 아니다. */
+.atelier_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_32);
+  font-weight: 500;
+  line-height: var(--lh_display_32);
+  letter-spacing: var(--ls_tight_sm);
+}
+
+.atelier_lead,
+.atelier_desc {
+  color: var(--color_text_secondary);
+  font-family: var(--font_body);
+  font-size: var(--fs_body_20);
+  line-height: var(--lh_body_20);
+}
+
+@media (min-width: 1280px) {
+  .atelier {
+    flex-direction: row;
+    align-items: center;
+    gap: 100px;
+  }
+
+  .atelier_image {
+    flex: 0 0 42%;
+  }
+
+  .atelier_body {
+    flex: 1 1 auto;
+  }
+}
+
+/* =========================================================
+   designer quote
+   ========================================================= */
+
+.quote {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 320px;
+  text-align: right;
+}
+
+.quote_bg {
+  /* index.html에서 쓰는 designer_quote_section.png는 폭 전체를 채우는 이미지라
+     philosophy_bg/reservation_bg와 동일하게 섹션 전체를 덮는 배경으로 둔다. */
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.quote_body {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 var(--layout_gutter);
+}
+
+.quote_text {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-style: italic;
+  font-size: var(--fs_display_24);
+  line-height: 1.25;
+}
+
+/* 시안: 한 줄로 나오는 문구. 줄바꿈이 필요 없는 폭(1280px+)에서만 강제로 한 줄 유지. */
+@media (min-width: 1280px) {
+  .quote_text {
+    white-space: nowrap;
+  }
+}
+
+.quote_cite {
+  display: block;
+  margin-top: 16px;
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-style: normal;
+  font-size: var(--fs_ui_16);
+}
+
+@media (min-width: 1280px) {
+  .quote {
+    min-height: 588px;
+  }
+}
+
+/* =========================================================
+   process — 큰 사진 한 장 + 아래 번호 목록
+
+   j-cat.co.jp의 Project Story 섹션을 참고했다. 실측한 구성:
+     · 콘텐츠 폭 1080 안에서 사진이 **723 x 506** — 폭의 67%를 사진이 먹는다
+     · 번호(Vol. 01)와 글은 사진 옆·아래에 작게 붙는다(제목 57px, 본문 13px)
+     · 슬라이드를 넘기면 사진이 바뀐다
+   즉 **사진이 주인공이고 글이 딸린다.** 이전 아코디언 방식은 사진이 행 안에
+   들어가 작을 수밖에 없었는데, 그 관계를 뒤집었다.
+
+   배치: **왼쪽에 01~05 번호 목록 + 현재 단계 글, 오른쪽에 큰 사진.**
+
+   ★ 사진을 원본 크기까지 쓴다.
+   에셋은 785 x 928(consultation만 853 x 960)이다. 1840+에서 **780px**으로
+   그리면 원본(785)에 딱 붙어 확대가 없다 — 이 파일들이 가장 크고 선명하게
+   보이는 한계다. **여기서 더 올리면 원본을 늘리는 것이라 오히려 뭉개진다.**
+   세로 900은 비율 0.867로 원본 0.846과 거의 같아 잘라내는 부분이 거의 없다.
+   가로로 크롭하면(16:9 등) 인물 머리가 잘리고 "만들어 넣은 컷" 느낌이 나서
+   원본 세로 비율을 지켰다.
+   ========================================================= */
+
+.process {
+  --process_fill_duration: 0.55s;
+  --process_fade_duration: 0.7s;
+  --process_ease: cubic-bezier(0.33, 1, 0.68, 1);
+
+  /* 번호 목록 행에 차오르는 색. 포인트 색을 크림 배경 위에 옅게 깐 것이라
+     같은 계열이면서 글자는 검은색 그대로 읽힌다.
+     **0.4를 넘기면 제목 대비가 떨어지므로 글자색도 같이 봐야 한다.** */
+  --process_fill_color: rgb(31 67 63 / 0.16);
+
+  --process_media_width: 600px;
+  --process_media_height: 556px;
+  --process_row_padding: 18px;
+  --process_pad_inline: 20px;
+  --process_num_width: 52px;
+  --process_head_gap: 32px;
+}
+
+/* 좁은 화면에서는 사진 → 번호 목록 → 글 순서로 쌓인다(DOM 순서 그대로).
+   넓은 화면에서만 두 열로 나뉘고, order가 사진을 오른쪽으로 보낸다. */
+.process_layout {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ---------------------------------------------------------
+   process 고정 구간 (js/bespoke.js가 붙이는 .is_scroll_ready)
+
+   다섯 단계가 다 지나갈 때까지 섹션을 화면에 붙여 둔다.
+   구조는 히어로 무대와 같다 — **섹션 자신이 활주로**이고, 안쪽 상자가 붙는다.
+
+       .process.is_scroll_ready         height = 100svh + 단계 5칸  ← 활주로
+       .process.is_scroll_ready 안의 layout   position: sticky      ← 붙는 것
+
+   ★ 활주로를 `padding`으로 만들면 안 된다. sticky는 부모의 padding 안으로
+   들어가지 못해서 상자가 한 번도 붙지 않는다(히어로에서 실제로 겪은 함정).
+   그래서 세로 padding을 0으로 두고 **height**로 길이를 만든다. 여백은
+   붙는 상자가 100svh이고 내용이 그 안에서 가운데 정렬되어 생긴다.
+
+   ★ 활주로 길이와 js의 단계 나누기는 **서로 맞물려 있다.** js는 구간을
+   `steps.length`(5)로 나누므로 여기도 5칸이어야 한 칸이 정확히 한 단계다.
+   ★ 한 단계에 머무는 거리를 바꾸려면 `--process_step_run`만 고치면 된다.
+   --------------------------------------------------------- */
+/* ★★ 선택자에 `.main`이 필요하다 — 특정도 (0,3,0).
+   파일 끝 1840 블록이 `.main .process { padding-block: calc(272 * ...) }`로
+   세로 padding을 도로 넣는데, 그쪽이 (0,2,0)이면서 **소스 순서가 뒤라** 같은
+   특정도로는 진다. 실제로 1920에서 padding이 되살아나 sticky 상자가 섹션의
+   content box 안에 갇혔고, **고정이 일찍 풀려 내용이 화면 위로 92px 잘렸다.**
+   (atelier 스토리가 `.main .atelier.is_story_ready`로 같은 문제를 푼다.) */
+.main .process.is_scroll_ready {
+  --process_step_run: 32svh;
+
+  height: calc(100vh + var(--process_step_run) * 5);
+  height: calc(100svh + var(--process_step_run) * 5);
+  padding-block: 0;
+}
+
+/* ★★ 가운데 정렬을 `align-items`로 하면 **두 열의 관계가 바뀐다.**
+   넓은 화면 규칙이 `align-items: flex-start`라 사진(556)과 글(633)이 윗변을
+   맞추고 있는데, `center`로 바꾸면 각자 따로 가운데로 가서 사진만 39px 내려간다.
+
+   그래서 항목이 아니라 **줄(flex line)을 가운데**로 보낸다. `flex-wrap: wrap`을
+   켜면 `align-content`가 살아나고, 한 줄짜리 이 줄(높이 = 큰 쪽 633)이 100svh
+   안에서 가운데에 놓인다. 줄 **안에서는** 여전히 `flex-start`라 두 열의 윗변이
+   그대로 맞는다 — 디자인은 한 픽셀도 바뀌지 않는다.
+
+   ★ `justify-content: center`를 쓰면 안 된다. 줄 방향이 가로라 그건 좌우
+   정렬이고, 세로 가운데와는 아무 상관이 없다(실제로 그렇게 뒀다가
+   내용이 화면 위에 붙고 아래가 267px 비었다). */
+.main .process.is_scroll_ready .process_layout {
+  position: sticky;
+  top: 0;
+  flex-wrap: wrap;
+  align-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+.process_aside {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .process {
+    --process_fill_duration: var(--duration_base);
+    --process_fade_duration: var(--duration_base);
+  }
+}
+
+/* --- 사진 무대 -------------------------------------------------------- */
+
+/* 사진 다섯 장을 겹쳐 두고 크로스페이드한다. 상자가 고정 크기라
+   어느 단계로 옮겨도 레이아웃이 움직이지 않는다. */
+.process_stage_media {
+  position: relative;
+  width: 100%;
+  max-width: var(--process_media_width);
+  height: var(--process_media_height);
+  overflow: hidden;
+}
+
+.process_stage_img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  /* 들어오는 사진이 아주 조금 큰 상태에서 내려앉는다. 상자에 잘리므로
+     레이아웃에는 영향이 없다. 1.03을 넘기면 원본보다 확대돼 흐려진다. */
+  transform: scale(1.03);
+  transition:
+    opacity var(--process_fade_duration) var(--process_ease),
+    transform var(--process_fade_duration) var(--process_ease);
+}
+
+.process_stage_img.is_visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* 글 다섯 벌을 같은 자리에 겹쳐 두고 활성인 것만 보인다.
+   grid 한 칸에 전부 얹어서 가장 긴 글이 높이를 정하므로, 단계를 옮겨도
+   무대 높이가 변하지 않는다(JS로 높이를 재지 않아도 된다). */
+.process_stage_body {
+  display: grid;
+}
+
+.process_stage_item {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  visibility: hidden;
+  transition:
+    opacity var(--process_fade_duration) var(--process_ease),
+    transform var(--process_fade_duration) var(--process_ease),
+    visibility 0s linear var(--process_fade_duration);
+}
+
+.process_stage_item.is_active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  visibility: visible;
+  transition-delay: 0.08s, 0.08s, 0s;
+}
+
+/* j-cat의 "Vol. 01"에 해당한다. 총 개수를 옅게 붙여 어디쯤인지 알려 준다. */
+.process_stage_count {
+  color: var(--color_point);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.process_stage_count_total {
+  color: var(--color_text_muted);
+}
+
+.process_stage_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_32);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--ls_tight_sm);
+}
+
+.process_stage_desc {
+  color: var(--color_text_secondary);
+  font-family: var(--font_body);
+  font-size: var(--fs_body_20);
+  line-height: var(--lh_body_20);
+}
+
+/* --- 번호 목록 -------------------------------------------------------- */
+
+/* 행 사이는 gap이 아니라 선으로 나뉜다. gap을 쓰면 색이 차오를 때
+   행 사이가 끊겨 보인다. */
+.process_list {
+  display: flex;
+  flex-direction: column;
+}
+
+.process_step {
+  position: relative;
+  border-top: 1px solid var(--color_border_default);
+}
+
+.process_step:last-child {
+  border-bottom: 1px solid var(--color_border_default);
+}
+
+.process_step_fill {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--process_fill_color);
+  transform: scaleY(0);
+  transform-origin: bottom center;
+  transition: transform var(--process_fill_duration) var(--process_ease);
+  pointer-events: none;
+}
+
+.process_step.is_active .process_step_fill {
+  transform: scaleY(1);
+}
+
+/* 행 전체가 누를 수 있는 영역이다. reset.css가 button의 색·글꼴·여백을
+   상속으로 되돌려 두어서 글자 크기와 색은 마크업 그대로 나온다. */
+.process_step_head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--process_head_gap);
+  width: 100%;
+  padding: var(--process_row_padding) var(--process_pad_inline);
+  text-align: left;
+}
+
+.process_step_num {
+  flex: 0 0 auto;
+  min-width: var(--process_num_width);
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  transition: color var(--process_fill_duration) var(--process_ease);
+}
+
+/* 목록은 인덱스라 제목을 본문 크기로 둔다 — 큰 제목은 위 무대에 있다.
+   전환 시간은 번호(`.process_step_num`)와 같은 값이라 둘이 함께 움직인다. */
+.process_step_title {
+  color: var(--color_text);
+  font-family: var(--font_body);
+  font-size: var(--fs_body_20);
+  line-height: var(--lh_body_20);
+  transition: color var(--process_fill_duration) var(--process_ease);
+}
+
+/* 바탕이 옅어서(`--process_fill_color` 알파 0.16) 글자를 뒤집지 않는다.
+   대신 **번호와 제목이 함께 포인트 색으로 올라온다.**
+
+   ★ 2026-08-11(사용자 요청): 제목을 `:hover`가 아니라 `.is_active`에 걸었다.
+   같은 날 hover 경로를 걷어냈기 때문이다(js의 `mouseover` 리스너 포함) —
+   이제 활성 단계를 옮기는 것은 **스크롤**이므로, 스크롤을 내리면 번호·바탕·제목이
+   한꺼번에 따라온다. **여기에 `:hover`를 다시 넣지 말 것.**
+
+   전환 시간이 둘 다 `--process_fill_duration`이라 함께 움직인다. */
+.process_step.is_active .process_step_num,
+.process_step.is_active .process_step_title {
+  color: var(--color_point);
+}
+
+/* ★ js가 없을 때만 의미가 있는 규칙이다. js가 살아 있으면 `focusin`이 그 단계를
+   활성으로 만들어 위 규칙이 이미 제목을 포인트 색으로 올린다. js가 죽으면 단계가
+   아예 안 바뀌므로, 이것이 키보드 사용자가 자기가 짚은 행을 알아볼 유일한 표시다. */
+.process_step_head:focus-visible .process_step_title {
+  color: var(--color_point);
+}
+
+/* --- 넓은 화면: 번호 목록 왼쪽 / 큰 사진 오른쪽 ------------------------- */
+
+@media (min-width: 1024px) {
+  .process_layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 80px;
+  }
+
+  /* 사진은 DOM에서 먼저 오지만(좁은 화면에서 맨 위여야 한다) 여기서는
+     오른쪽으로 보낸다. 번호가 왼쪽에 온다. */
+  .process_stage_media {
+    order: 1;
+    flex: 0 0 var(--process_media_width);
+  }
+
+  .process_aside {
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .process {
+    --process_row_padding: 14px;
+    --process_pad_inline: 12px;
+    --process_num_width: 36px;
+    --process_head_gap: 16px;
+  }
+
+  .process_layout,
+  .process_aside {
+    gap: 32px;
+  }
+
+  /* 좁은 화면에서는 폭에 맞추고 비율만 지킨다. 고정 높이를 두면
+     사진이 좌우로 잘린다. */
+  .process_stage_media {
+    max-width: none;
+    height: auto;
+    aspect-ratio: 785 / 928;
+  }
+
+  .process_stage_desc {
+    font-size: var(--fs_ui_16);
+    line-height: 1.63;
+  }
+}
+
+/* =========================================================
+   materials
+   ========================================================= */
+
+/* 시안 구조: 제목이 위에 통째로 걸리고, 그 아래에 [텍스처 이미지 | 스와치+목록+캡션] 2열이 온다.
+
+   인터랙션은 eternalblue.co.nz의 `.ingredient-slider__grid`를 따랐다.
+   그쪽 구조를 실측해 보니 이 섹션과 배치가 거의 같았다 —
+   [큰 사진 | 머리글 + 썸네일 줄 + (이름 목록 | 설명)]. 그래서 레이아웃을
+   새로 짜지 않고 상태 규칙만 얹었다.
+
+   레퍼런스에서 가져온 값:
+   · 썸네일  `opacity: .5` → `.active { opacity: 1 }`, `transition: .4s ease-in-out`
+   · 이름 행 `opacity: .5` → `.active { opacity: 1 }`, `transition: opacity .3s ease`
+   · 큰 사진 `transition: opacity .4s ease`, `.is-fading { opacity: 0 }`
+     (페이드 아웃 → src 교체 → 페이드 인. 크로스페이드가 아니다)
+   · 이름 행의 화살표는 활성 행에만 보인다
+
+   **이름 행만 불투명도 대신 기존 색 전환을 유지한다.** 시안이 이미
+   muted → text 색 변화를 쓰고 있어서, 폰트 색을 그대로 두라는 요구에 맞춘다.
+   전환 시간만 레퍼런스(.3s)를 따라간다.
+
+   ★ 2026-08-10: **썸네일의 `opacity: .5`도 버렸다**(사용자 피드백).
+   레퍼런스는 원단이 아니라 화장품 성분 아이콘이라 흐려도 무엇인지 알아볼 수
+   있지만, 여기 여섯 장은 **질감을 보고 고르는 원단 사진**이다. 반투명하게
+   눌러 두면 고를 근거 자체가 사라진다. 지금은 여섯 장 모두 원본 그대로이고
+   활성 표시는 번호(`[n]`) 색이 맡는다.
+   ========================================================= */
+
+/* ※ 2026-08-10: 여기 있던 `--materials_fade`(0.4s)를 지웠다. 유일한 사용처가
+   스와치의 `opacity: 0.5 → 1` 전환이었는데, 그 흐리기 자체를 걷어냈다
+   (아래 `.materials_swatch_button` 주석 참고). 남겨 두면 쓰이지 않는 토큰이
+   다음 사람에게 "여기 페이드가 있다"고 잘못 알려 준다. */
+.materials {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.materials_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_32);
+  font-weight: 500;
+  line-height: var(--lh_display_32);
+  letter-spacing: var(--ls_tight_sm);
+}
+
+.materials_body {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.materials_texture {
+  width: 100%;
+  max-width: 466px;
+  aspect-ratio: 466 / 678;
+  overflow: hidden;
+}
+
+/* ★ 큰 사진에는 페이드를 걸지 않는다. 클릭하면 그 자리에서 갈아 끼운다.
+
+   예전에는 레퍼런스대로 `is_fading`으로 0.4초 흐렸다가 src를 바꿨는데,
+   그 0.4초 동안 **자리가 비어 보였다**("눌렀는데 한참 뒤에 뜬다").
+   여기에 opacity transition을 다시 넣으면 그 증상이 그대로 돌아온다. */
+.materials_texture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.materials_content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* 레퍼런스의 `.ingredient-slider__static-content`.
+   본문 톤은 캡션과 같게 두되 폭만 조금 넓게 잡는다. */
+.materials_intro {
+  max-width: 604px;
+  color: var(--color_text_secondary);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  line-height: 1.63;
+}
+
+/* `--materials_zoom`은 **고른 스와치가 커지는 배율**이다(아래 `.is_active` 규칙).
+   여기 기본값은 **좁은 폭 기준**이고, 자리가 넉넉한 1280 이상에서 올려 잡는다.
+
+   ★★ 한 값으로 통일할 수 없다. 배율이 같아도 **사진이 클수록 실제로 밀고 나가는
+   px이 커지는데**, 이 그리드는 폭에 따라 열 수가 2 → 3 → 6으로 바뀌면서 사진
+   크기가 크게 달라지기 때문이다. 아래로 나가는 거리는
+
+       사진높이 × (배율 − 1) + 테두리 × 배율
+
+   이고, 이것이 **줄 사이 여백**보다 작아야 아래 줄 번호에 닿지 않는다.
+
+   | 폭 | 열 | 사진 높이(그 폭대 최대) | 줄 사이 | 배율 | 남는 여백 |
+   |---|---|---|---|---|---|
+   | ~767 | 3 | 257 (767에서) | 16 | 1.03 | 5.2 |
+   | 768~1279 | 3 | **429 (1279에서)** | 20 | 1.03 | **4.0** ← 가장 빡빡 |
+   | 1280~ | 6 | 94 ~ 273 | **아래 줄 없음**(한 줄) | **1.07** | 26 ~ 60 |
+
+   1280 이상만 여유가 큰 이유는 여섯 장이 **한 줄**에 들어가서 아래에 다음 줄이
+   아예 없기 때문이다. 그 아래는 `.materials_content`의 gap(40 / 1840+에서 77)이라
+   훨씬 넉넉하다.
+
+   ★ 반대로 **1279가 이 페이지에서 사진이 가장 큰 지점이다**(386 × 429). 3열인데
+   줄 사이는 20px뿐이라 **1.03이 상한이다** — 1.04로 올리면 20.3px을 밀고 나가
+   아래 줄 번호를 덮는다. 폭이 넓을수록 안전할 것 같지만 열 수가 바뀌기 직전인
+   1279가 최악이라는 점을 놓치기 쉽다. */
+.materials_swatches {
+  --materials_zoom: 1.03;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* 스와치는 이제 누를 수 있다. button 자체가 원래 li가 하던 세로 배치를 맡는다
+   (reset.css가 button의 색·글꼴·여백을 이미 상속으로 되돌려 둔다).
+
+   ★ 2026-08-10: 여기 있던 `opacity: 0.5`를 걷어냈다(사용자 피드백).
+   레퍼런스(eternalblue.co.nz)를 따라 **고르지 않은 다섯 장을 반투명**으로
+   눌러 두고 있었는데, 그 결과 여섯 장 중 다섯 장이 크림 배경에 섞여
+   "원단이 뿌옇게 보인다"가 됐다. 원단 사진은 **질감을 보고 고르는 것**이라
+   흐리게 만드는 순간 고를 근거가 사라진다.
+
+   ★ 사진을 눌러서 만들던 활성 표시는 아래 `.materials_swatch_index`의
+   **색**이 대신한다. 사진 위에 덧칠하지 않으므로 여섯 장 모두 원본 그대로다.
+   (활성 상태는 이 외에도 이름 목록의 색·화살표, 큰 사진, 설명 세 곳에서
+   이미 드러난다. 색만으로 전달하지 않는다는 규칙은 `aria-pressed`가 받친다.)
+
+   ★★ 2026-08-11: **호버와 선택이 서로 구분되지 않던 문제를 고쳤다**(사용자 피드백:
+   "눌러도 선택됐다는 걸 알기 어렵다").
+
+   원인이 두 가지였다.
+
+   1. `.is_active`와 `:hover`가 **완전히 같은 선언**이었다 — 둘 다
+      `.materials_swatch_index`를 `--color_text`로만 바꿨다. 그래서 마우스를 올린
+      것과 실제로 고른 것이 화면에서 똑같아 보였다.
+   2. 유일한 신호가 **14px짜리 `[n]` 번호 색 하나**였다. 정작 사용자가 보고 있는
+      것은 그 위의 사진인데 사진 쪽에는 아무 표시도 없었다.
+
+   지금은 세 단계가 서로 다르다. 위로 갈수록 강해진다.
+
+   | 상태 | 번호 `[n]` | 사진 테두리 |
+   |---|---|---|
+   | 평소 | `--color_text_muted` | 없음 |
+   | 호버·키보드 포커스 | `--color_text` | 1px `--color_text_muted` |
+   | **선택됨** | **`--color_point`** | **2px `--color_point`** |
+
+   · **테두리는 `box-shadow`다(`border`·`outline` 아님).** border를 쓰면
+     `box-sizing: border-box`라 사진이 그만큼 안으로 줄어 여섯 칸이 들썩이고,
+     outline은 굵기가 0 → 2px로 튀어서 전환이 안 걸린다. box-shadow는 레이아웃을
+     전혀 건드리지 않으면서 `--duration_fast`로 부드럽게 이어진다.
+     (`.materials_swatch_img`의 `overflow: hidden`은 **자기 그림자를 자르지 않는다** —
+     넘침 잘라내기는 자손에게만 걸린다.)
+   · 테두리가 사진 **바깥**에 그려지므로 원단 위에 아무것도 덧칠하지 않는다.
+     여섯 장 모두 원본 그대로라는 위 결정이 그대로 유지된다.
+   · 여백은 넉넉하다 — 그리드 gap이 20px(1849 이하 3열에서 10px)이고 테두리는
+     한쪽 2px이라 옆 칸과 최소 6px 떨어진다. 위쪽 번호와도 8px 남는다.
+   · **호버 규칙에 `:not(.is_active)`가 꼭 필요하다.** 없으면 호버 쪽 특정도가
+     더 높아서(0,3,0 대 0,2,0) **고른 원단에 마우스를 올리는 순간 선택 표시가
+     호버 표시로 내려앉는다.** 소스 순서로는 해결되지 않는다.
+   · 색만으로 전달하지 않는다는 규칙: 선택에는 **테두리라는 형태 신호**가 함께
+     붙고(호버는 굵기·색이 다르다), 이름 목록의 화살표와 `aria-pressed`가 받친다. */
+.materials_swatch_button {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.materials_swatch_index {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  transition: color var(--duration_fast) ease;
+}
+
+.materials_swatch:not(.is_active) .materials_swatch_button:hover .materials_swatch_index,
+.materials_swatch:not(.is_active) .materials_swatch_button:focus-visible .materials_swatch_index {
+  color: var(--color_text);
+}
+
+/* 고른 원단. 번호와 사진 테두리가 같은 색이라 둘이 한 신호로 읽힌다. */
+.materials_swatch.is_active .materials_swatch_index {
+  color: var(--color_point);
+}
+
+.materials_swatch_img {
+  display: block;
+  aspect-ratio: 180 / 200;
+  overflow: hidden;
+  transition:
+    box-shadow var(--duration_fast) ease,
+    transform var(--duration_fast) ease;
+}
+
+.materials_swatch:not(.is_active) .materials_swatch_button:hover .materials_swatch_img,
+.materials_swatch:not(.is_active) .materials_swatch_button:focus-visible .materials_swatch_img {
+  box-shadow: 0 0 0 1px var(--color_text_muted);
+}
+
+/* ★ 2026-08-11 후속(사용자 요청): 테두리를 2px → 3px로 올리고 **살짝 커지게**
+   했다. 확대는 `transform`이라 레이아웃을 밀지 않는다 — 여섯 칸의 자리는
+   그대로이고 고른 칸만 제자리에서 커진다.
+
+   ★★ `transform-origin: top`이 꼭 필요하다 — 기본값(center)으로 두면 번호에
+   닿는다. 사진 바로 위에 `[n]`이 **10px 간격**으로 붙어 있는데, 가운데를
+   기준으로 커지면 위로도 절반이 밀고 올라간다. 테두리도 transform과 함께
+   확대되므로(3 × 1.03 ≈ 3.09) 위로 나가는 거리는
+
+       사진높이 × (확대 − 1) ÷ 2 + 테두리 × 확대
+
+   이고, **사진이 클수록 같은 배율이 더 많이 밀고 나간다.** 가장 큰 1920
+   (사진 273 레이아웃 px)에서 7.2px이라 번호까지 **2.1px(화면 기준)**밖에
+   남지 않았다 — 실측하고 고친 값이다.
+
+   윗변을 고정하면 위로 나가는 것은 테두리 3.09px뿐이라 어느 폭에서도 6.9px이
+   남고, 커지는 몫은 전부 아래(줄 사이 51px · 아래 섹션까지 77px)로 간다.
+   덤으로 한 줄에 놓인 여섯 칸의 **윗변이 그대로 맞는다.**
+
+   ★ 배율은 폭마다 다르다 — 위 `--materials_zoom` 표를 보라. 여기서 숫자를
+   직접 바꾸지 말고 그 변수를 고쳐야 한다. */
+.materials_swatch.is_active .materials_swatch_img {
+  box-shadow: 0 0 0 3px var(--color_point);
+  transform: scale(var(--materials_zoom));
+  transform-origin: center top;
+}
+
+.materials_swatch_img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.materials_detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.materials_list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font_body);
+  font-size: var(--fs_body_20);
+  line-height: var(--lh_body_20);
+}
+
+.materials_list_item {
+  color: var(--color_text_muted);
+}
+
+.materials_list_item.is_active {
+  color: var(--color_text);
+}
+
+/* 레퍼런스의 `li { display:flex; gap:16px; align-items:center }` +
+   `li span { min-width: 24px }` — 번호 칸을 고정해 이름 시작점을 맞춘다. */
+.materials_list_button {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  transition: color var(--duration_fast) ease;
+}
+
+/* ★ 2026-08-11: 이름 행에는 **호버 규칙이 아예 없었다.** 마우스를 올려도 아무
+   반응이 없으니 누를 수 있는 줄인지 알 수 없었고, 그래서 색이 진해진 행이
+   "지금 고른 것"인지 "지금 가리키고 있는 것"인지도 구분되지 않았다.
+
+   이제 세 단계다: muted(평소) → secondary(호버) → text + 화살표(선택).
+   가운데 단계를 새 색으로 만들지 않고 이미 있는 `--color_text_secondary`를
+   쓴다 — 이 섹션의 본문(`.materials_intro` · `.materials_caption`)과 같은 색이다.
+
+   위 스와치와 마찬가지로 `:not(.is_active)`가 필요하다. 없으면 고른 행에
+   마우스를 올렸을 때 글자가 오히려 **흐려진다**(호버 특정도가 더 높다). */
+.materials_list_item:not(.is_active) .materials_list_button:hover,
+.materials_list_item:not(.is_active) .materials_list_button:focus-visible {
+  color: var(--color_text_secondary);
+}
+
+.materials_list_index {
+  min-width: 24px;
+}
+
+/* 고른 행의 번호는 스와치의 번호와 같은 색이다. 두 컨트롤이 같은 원단을
+   가리키고 있다는 것이 눈으로 이어진다(이름과 화살표는 검정 그대로 —
+   화살표가 색을 바꿀 수 없는 img라 이름을 초록으로 만들면 서로 어긋난다). */
+.materials_list_item.is_active .materials_list_index {
+  color: var(--color_point);
+}
+
+/* 화살표는 활성 행에만 보인다(레퍼런스는 아이콘 두 벌을 갈아 끼우는데,
+   저장소에 있는 화살표가 한 종류라 나타났다 사라지는 쪽으로 옮겼다).
+   색을 바꿀 수 없는 img라 파일 색(#0a0a0a)이 활성 글자색과 같은 것을
+   전제로 쓴다 — `--color_text`와 같은 값이다. */
+.materials_list_arrow {
+  width: 18px;
+  height: 18px;
+  opacity: 0;
+  transform: translate3d(-6px, 0, 0);
+  transition:
+    opacity var(--duration_fast) ease,
+    transform var(--duration_fast) ease;
+}
+
+.materials_list_item.is_active .materials_list_arrow {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.materials_caption {
+  max-width: 500px;
+  color: var(--color_text_secondary);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  line-height: 1.63;
+}
+
+/* 설명 6개가 마크업에 그대로 있고 활성인 것만 보인다.
+   JS가 없어도 [1] Silk 하나가 보이므로 지금과 같은 화면이 된다.
+   높이는 JS가 가장 큰 것으로 미리 잡아 둔다 — 안 그러면 원단을 옮길 때마다
+   줄 수가 달라져 섹션이 들썩인다. */
+.materials_caption_item {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.materials_caption_item.is_active {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .materials_swatches {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .materials_body {
+    flex-direction: row;
+    gap: 80px;
+  }
+
+  /* ★ 큰 사진을 **오른쪽 글 열 높이에 맞춰 늘인다**(2026-08-10, 사용자 요청).
+
+     예전에는 `align-self: flex-start`로 늘어나지 못하게 막고 시안 비율
+     (466 / 678)을 지켰다. 이유는 **"사진 원본이 180 × 200뿐이라 더 늘리면
+     그만큼 더 잘리고 흐려진다"**였다. 그 전제가 사라졌다 — 원단 사진을
+     원본 JPG(3024 × 4032 ~ 4016 × 6016)로 교체해서, 이제 얼마를 늘려도
+     원본 화소가 남는다. `object-fit: cover`라 넘치는 만큼만 잘린다.
+
+     ★ `aspect-ratio`를 꺼야 stretch가 산다. 폭이 정해진 상자에 비율이
+     남아 있으면 그 비율이 높이를 정해 버려서 `align-self: stretch`가
+     아무 일도 하지 않는다.
+
+     ★ 폭은 시안 단위로 둔다. 고정 466px로 두면 75% 화면(1850~1990)에서만
+     사진이 350px로 줄어 글 열과 322px 어긋난다(실측). */
+  .materials_texture {
+    flex: 0 0 calc(466 * var(--bespoke_unit));
+    /* ★ 위 기본 규칙의 `max-width: 466px`도 같이 풀어야 한다.
+       안 풀면 flex-basis가 621px이어도 466px에서 잘려 폭이 안 커진다. */
+    max-width: calc(466 * var(--bespoke_unit));
+    align-self: stretch;
+    aspect-ratio: auto;
+  }
+
+  .materials_content {
+    flex: 1 1 auto;
+  }
+
+  /* 여섯 장이 **한 줄**에 들어가면서 아래 줄이 사라진다 — 밑으로 커질 자리가
+     `.materials_content`의 gap(40 / 1840+에서 77)만큼 열린다. 그래서 고른
+     스와치를 더 크게 키울 수 있다(위 `--materials_zoom` 주석의 표 참고). */
+  .materials_swatches {
+    grid-template-columns: repeat(6, 1fr);
+    --materials_zoom: 1.07;
+  }
+
+  .materials_detail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 40px 100px;
+  }
+
+  .materials_list {
+    flex: 0 0 auto;
+  }
+
+  /* 설명이 360px보다 좁아지면 아래 줄로 내려간다.
+     1280px 화면에서 오른쪽 열이 606px뿐이라 목록(375) + gap(100)을 빼면
+     설명이 **131px**까지 눌렸다(실측). 45단어짜리 설명이 그 폭에서는
+     읽히지 않는다. 레퍼런스도 좁은 폭에서는 이름 목록과 설명을 세로로
+     쌓는다(`grid-template-columns: 1fr`). 고정 브레이크포인트 대신
+     flex-basis로 두어 어느 폭에서든 알아서 내려간다.
+     1840+ 블록에서는 오른쪽 열이 1180px이라 절대 내려가지 않는다. */
+  .materials_caption {
+    flex: 1 1 360px;
+    padding-top: 2px;
+  }
+}
+
+/* =========================================================
+   reservation
+   ========================================================= */
+
+.reservation {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+  max-width: 1700px;
+  aspect-ratio: 1700 / 650;
+  margin: 0 auto;
+}
+
+/* ★ `opacity: 0.6`을 걷어냈다 — "배경이 흐릿하다"의 정체가 이 한 줄이었다.
+   대신 글 뒤에만 크림 그라디언트를 깔아 대비를 지킨다(바로 아래 `::before`). */
+.reservation_bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* ★★ 글 뒤 크림 스크림 — 영상을 전체 불투명도로 되돌리면서 필요해진 것이다.
+
+   영상의 글 자리 밝기를 프레임별로 재 보면 **66 ~ 192**로 크게 흔들린다
+   (바느질하는 손이 지나가면서 그늘이 진다). 예전에는 `opacity: 0.6`이 크림
+   배경과 섞이며 이 흔들림을 눌러 줬는데, 그 한 줄을 걷어내면 어두운 프레임에서
+   검은 글씨(`#0a0a0a`) 대비가 **2.0:1**까지 떨어진다 — 사실상 안 읽힌다.
+
+   그래서 왼쪽 글 기둥에만 크림을 깔고 오른쪽은 영상을 그대로 보여 준다.
+   원본 footage가 이미 크림색 원단이라 덧댄 느낌 없이 이어진다.
+   최악(가장 어두운 프레임 × 글 오른쪽 끝)에서도 본문 대비 **5.9:1**로 AA를 넘는다.
+
+   ★ `.reservation`이 flex인데 이 가짜 요소가 flex item이 되지 않는 것은
+   `position: absolute`이기 때문이다. `static`으로 바꾸면 글을 옆으로 밀어낸다. */
+.reservation::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to right,
+    rgba(255, 253, 249, 0.88) 0%,
+    rgba(255, 253, 249, 0.78) 32%,
+    rgba(255, 253, 249, 0) 62%
+  );
+}
+
+/* ★★ 1840 미만에서는 크림을 밴드 끝까지 끌고 간다.
+
+   위 그라디언트는 **파일 끝 1840 블록의 레이아웃과 한 쌍**이다. 그 블록이
+   `padding-left: 215px`을 주고 밴드를 1700으로 묶어서, 글이 폭의 12.6%~33.2%에만
+   놓인다 — 62%에서 끝나는 fade로 충분히 덮인다(실측 대비 제목 13.3 / 본문 5.2).
+
+   그 블록이 걸리지 않는 폭에서는 padding이 사라져 **글이 왼쪽 끝에 붙고 훨씬
+   오른쪽까지 뻗는다** — 1265px 밴드에서 42.7%, 375px에서는 **94.7%**다.
+   그대로 두면 fade 밖 글자가 영상 위에 그냥 얹힌다.
+   실측(가장 어두운 프레임): 1280px에서 본문 **2.76:1**, 375px에서 **1.29:1**.
+
+   ★ 그래서 경계가 1279가 아니라 **1839**다. 레이아웃이 갈리는 지점과 정확히
+   맞물려야 한다 — 1279로 두면 1280~1839 구간만 조용히 빠져나간다(실제로 겪었다).
+   ★ 1840 이상 그라디언트는 건드리지 않는다. 그대로가 승인된 화면이다. */
+@media (max-width: 1839px) {
+  .reservation::before {
+    background-image: linear-gradient(
+      to right,
+      rgba(255, 253, 249, 0.86) 0%,
+      rgba(255, 253, 249, 0.76) 45%,
+      rgba(255, 253, 249, 0.66) 100%
+    );
+  }
+}
+
+.reservation_body {
+  position: relative;
+  z-index: 2; /* 스크림(1)보다 위 */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 480px;
+}
+
+.reservation_eyebrow {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+.reservation_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_32);
+  font-weight: 500;
+  line-height: var(--lh_display_32);
+  letter-spacing: var(--ls_tight_sm);
+}
+
+.reservation_desc {
+  color: var(--color_text_secondary);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+/* 예약 버튼 — **항상 보인다.**
+
+   ★ 한 번 hover에서만 나타나게 만들었다가 사용자 결정으로 되돌렸다
+   ("원래 호버가 되도록 명령했는데 지금 모습이 좋으니 이대로 유지"). 그래서 이
+   블록은 영상 교체 이전과 완전히 같은 상태다 — 다시 숨기지 마세요.
+   되살릴 일이 생기면 `opacity` 하나로 감추되, `display: none`이나
+   `visibility: hidden`은 쓰면 안 된다(각각 글 덩어리가 튀고, 키보드 초점이
+   닿지 않아 이 밴드의 유일한 CTA에 도달할 수 없게 된다). */
+.reservation_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 20px 32px;
+  background-color: var(--color_point);
+  color: var(--color_text_inverse);
+  font-family: var(--font_ui);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  transition: opacity var(--duration_fast) var(--easing_base);
+}
+
+.reservation_button:hover,
+.reservation_button:focus-visible {
+  opacity: 0.85;
+}
+
+
+/* =========================================================
+   before you begin
+   ========================================================= */
+
+.begin {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.begin_head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 771px;
+}
+
+.begin_eyebrow {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+.begin_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_32);
+  font-weight: 500;
+  line-height: var(--lh_display_32);
+  letter-spacing: var(--ls_tight_sm);
+}
+
+.begin_desc {
+  color: var(--color_text_secondary);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+}
+
+.begin_cards {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.begin_card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px;
+  overflow: hidden;
+  border: 1px solid var(--color_border_default);
+}
+
+@media (min-width: 1280px) {
+  .begin_card {
+    aspect-ratio: 500 / 600;
+    padding: 40px;
+  }
+}
+
+/* ---------------------------------------------------------
+   begin 카드 hover — 기본은 선명한 사진만, hover에서 흐려지며 글이 뜬다
+
+   ★ 예전 `opacity: 0.3`을 걷어냈다. 그 값이 사진을 처음부터 흐리게 만든
+   원인 중 **하나**였다. 나머지 하나는 CSS가 아니라 에셋이다 —
+   `material/timeline/contact.png`는 알파가 전 픽셀 76(29.8%)으로 구워져
+   있어서, 0.3을 곱하면 실제로는 **9%**로 그려지고 있었다.
+   알파를 걷어낸 `.jpg`로 교체해서 두 원인을 모두 없앴다(index.html 주석 참고).
+
+   흐림은 `filter: blur()`, 글 가독성은 `::after` 크림색 스크림이 맡는다.
+   ★ blur는 가장자리를 반투명하게 만들어 카드 테두리 안쪽에 옅은 띠를
+   남긴다. hover에서 사진을 1.06배로 살짝 키워 그 가장자리를 카드 밖으로
+   밀어낸다(레이아웃은 `overflow: hidden`이라 그대로다).
+   --------------------------------------------------------- */
+
+.begin_card_bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 기본 = 원본 그대로. 흐림도 반투명도 없다. */
+  opacity: 1;
+  pointer-events: none;
+  transform: scale(1);
+  transition:
+    transform var(--duration_base) var(--easing_base),
+    filter var(--duration_base) var(--easing_base);
+}
+
+/* hover에서만 깔리는 크림색 스크림. 사진 위 · 글 아래다.
+   `::after`가 자식들보다 뒤에 그려지므로 같은 z-index 0에서도 사진을 덮는다. */
+.begin_card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--color_bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration_base) var(--easing_base);
+}
+
+/* `.begin_card_pin`을 반드시 빼야 한다 — 이 규칙(0,2,0)이 핀의
+   `position: absolute`(0,1,0)를 이겨서 핀이 흐름 안으로 들어와 버린다. */
+.begin_card > *:not(.begin_card_bg):not(.begin_card_pin) {
+  position: relative;
+  z-index: 1;
+}
+
+/* 글 묶음 — 기본은 보이지 않지만 자리는 그대로 차지한다(레이아웃 불변).
+   `display: none`이나 `visibility: hidden`이 아니라 opacity라서
+   카드 높이가 hover 전후로 달라지지 않는다. */
+.begin_card_content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* 카드 높이를 채워야 아래 `.begin_card_desc { margin-top: auto }`(1280 이상)가
+     링크를 카드 바닥으로 밀어낸다. */
+  flex: 1 1 auto;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity var(--duration_base) var(--easing_base),
+    transform var(--duration_base) var(--easing_base);
+}
+
+/* ---------------------------------------------------------
+   + 핀 — shop_detail의 `.look_pin`을 그대로 가져왔다
+
+   재사용한 값: 36px 원(`border: 0` / `border-radius: 50%`),
+   크림 배경 `#fffdf9`, 글자 18px, `transform: scale(1.15)` +
+   딥그린 배경 + 흰 글씨로 바뀌는 활성 상태,
+   `transition: transform .2s, background-color .2s, color .2s`.
+   딥그린은 shop_detail의 `--detail_green`과 값이 같은 이 페이지의
+   `--color_point`(#1f433f)를 쓴다.
+
+   ★ 닫힘/열림 위치를 `top`·`right` 한 쌍으로만 바꾼다.
+   닫힘은 `calc(50% - 크기/2)`(= 사진 정중앙), 열림은 모서리다.
+   같은 속성끼리 오가므로 전환이 끊기지 않는다. transform은
+   레퍼런스대로 scale 전용으로 남겨 둔다.
+
+   ★ 글이 보이는 상태에서는 핀이 모서리로 비켜야 한다. 가운데에 그대로
+   두면 `.begin_card_desc` 위에 겹친다(1280 미만에서 특히).
+   --------------------------------------------------------- */
+
+.begin_card_pin {
+  --begin_pin_size: 36px;
+  --begin_pin_inset: 16px;
+
+  position: absolute;
+  z-index: 2;
+  top: calc(50% - var(--begin_pin_size) / 2);
+  right: calc(50% - var(--begin_pin_size) / 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--begin_pin_size);
+  height: var(--begin_pin_size);
+  border: 0;
+  border-radius: 50%;
+  background: var(--color_bg);
+  color: var(--color_text);
+  font-family: var(--font_ui);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    top var(--duration_base) var(--easing_base),
+    right var(--duration_base) var(--easing_base),
+    transform var(--duration_fast) var(--easing_base),
+    background-color var(--duration_fast) var(--easing_base),
+    color var(--duration_fast) var(--easing_base);
+}
+
+.begin_card_pin_glyph {
+  display: block;
+  line-height: 1;
+}
+
+/* 터치 기기에서는 손가락에 맞게 키운다(디자인은 그대로, 크기만). */
+@media (hover: none) {
+  .begin_card_pin {
+    --begin_pin_size: 44px;
+  }
+}
+
+/* --- 열림 상태 — 오직 `.is_open` 하나가 만든다 ----------------------------
+   `.is_open`은 **핀 클릭으로만** 붙는다(js/bespoke.js). 그래서 마우스가
+   카드 위를 지나가는 것만으로는 아무 일도 일어나지 않고, 열어 둔 뒤
+   마우스가 나가도 그대로 남는다.
+
+   ★ 카드 `:hover`로 blur·글·스크림을 켜지 않는다.
+   ★ `:has(.begin_card_content:focus-within)`도 쓰지 않는다.
+     핀을 누르는 순간 포커스가 카드 안으로 들어와 조건이 계속 참이 되면
+     **다시 눌러도 닫히지 않는다.** 닫힘 상태의 키보드 접근은 CSS가 아니라
+     JS가 처리한다 — 글 안쪽 링크의 `tabindex`를 −1로 내려서 **보이지 않는
+     요소가 포커스를 받지 않게** 한다(shop_detail의 `.look_product`와 같은 방식).
+   ------------------------------------------------------------------------ */
+
+.begin_card.is_open .begin_card_bg {
+  filter: blur(6px);
+  transform: scale(1.06);
+}
+
+.begin_card.is_open::after {
+  opacity: 0.55;
+}
+
+.begin_card.is_open .begin_card_content {
+  opacity: 1;
+  transform: none;
+}
+
+.begin_card.is_open .begin_card_pin {
+  top: var(--begin_pin_inset);
+  right: var(--begin_pin_inset);
+  background: var(--color_point);
+  color: var(--color_text_inverse);
+  transform: scale(1.15);
+}
+
+/* --- 핀 자체의 피드백 -----------------------------------------------------
+   hover가 하는 일은 **여기까지다.** 콘텐츠 상태는 건드리지 않는다.
+   열림(딥그린 + 1.15)과 구분되도록 hover는 옅은 톤 + 작은 확대만 준다.
+   `--color_surface_subtle`은 이미 있는 토큰이다. */
+
+.begin_card_pin:focus-visible {
+  transform: scale(1.15);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .begin_card_pin:hover {
+    background: var(--color_surface_subtle);
+    transform: scale(1.08);
+  }
+
+  /* 열려 있을 때는 딥그린과 1.15를 유지한다 — hover가 되돌리지 않도록. */
+  .begin_card.is_open .begin_card_pin:hover {
+    background: var(--color_point);
+    transform: scale(1.15);
+  }
+}
+
+.begin_card_num {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+}
+
+.begin_card_title {
+  color: var(--color_text);
+  font-family: var(--font_display);
+  font-size: var(--fs_display_24);
+  line-height: 1.25;
+}
+
+.begin_card_label {
+  margin-top: -8px;
+  color: var(--color_text_secondary);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+}
+
+.begin_card_desc {
+  margin-top: 24px;
+  color: var(--color_text_secondary);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  line-height: 1.63;
+}
+
+.begin_card_link {
+  align-self: flex-start;
+  margin-top: 24px;
+  color: var(--color_point);
+  font-family: var(--font_ui);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+}
+
+@media (min-width: 1280px) {
+  .begin_card_desc {
+    margin-top: auto;
+  }
+
+  .begin_card_link {
+    margin-top: 24px;
+  }
+}
+
+.begin_card_link:hover,
+.begin_card_link:focus-visible {
+  text-decoration: underline;
+}
+
+@media (min-width: 1280px) {
+  .begin_cards {
+    flex-direction: row;
+  }
+
+  .begin_card {
+    flex: 1 1 0;
+  }
+}
+
+/* =========================================================
+   philosophy → atelier : 하나로 이어지는 스토리 구간
+
+   두 섹션이 각각 화면을 꽉 채우고, 스크롤 진행도에 묶여 서로 넘겨받는다.
+   레퍼런스는 tarubali.com이다 — 사진이 뷰포트 안에서 크게 보이고,
+   스크롤에 따라 다음 콘텐츠로 자연스럽게 넘어가는 구조만 가져왔다.
+
+   ※ 2026-08-10: 원래 이 사이에 wordmark("TCHAI") 무대가 한 박자로 있었으나
+   사용자 피드백("잘 보이지 않고 푸터처럼 느껴진다")으로 **섹션째 제거**했다.
+   philosophy의 퇴장 구간이 atelier의 등장 구간과 직접 겹쳐서 흐름은 그대로다
+   (philosophy 퇴장 끝 `bottom 20%` > atelier 등장 시작 `top 40%`).
+
+   ★ 두 구간 모두 **JS가 붙이는 class로만** 켜진다.
+   philosophy는 `.is_motion_ready`, atelier는 `.is_story_ready`다.
+   class가 없으면(JS 없음 · GSAP 없음 ·
+   모션 감소 설정 · 1280px 미만) **지금까지의 시안 레이아웃 그대로** 보인다.
+
+   ★ atelier 규칙에 `.main .atelier.is_story_ready`(0,3,0)를 쓰는 이유:
+   파일 끝의 1840 발표용 블록이 `.main .atelier`(0,2,0)로 시안 좌표를 쥐고
+   있다. 특정도를 한 단계 올려 두면 **소스 순서와 무관하게** 이 규칙이 이기고,
+   그 블록을 건드리지 않아도 된다(그 블록은 "주석부터 파일 끝까지 삭제하면
+   되돌아간다"는 계약이 있다).
+   ========================================================= */
+
+/* --- 1) philosophy — 화면을 꽉 채운다 ------------------------------------
+   기존 min-height(480 / 720 / 1000)는 시안에서 나온 값이라 버리지 않고
+   `max()`로 감싼다. 화면이 그보다 크면 100svh, 작으면 시안값이 바닥이 된다.
+   선택자에 `.main`이 필요하다 — 아래 1840 블록의 `.philosophy`(0,1,0)보다
+   세야 한다. */
+.main .philosophy {
+  min-height: max(480px, 100svh);
+}
+
+@media (min-width: 1280px) {
+  .main .philosophy {
+    min-height: max(720px, 100svh);
+  }
+}
+
+@media (min-width: 1840px) {
+  .main .philosophy {
+    min-height: max(1000px, 100svh);
+  }
+}
+
+/* ※ 여기 있던 `.philosophy_body { will-change: transform, opacity }`를 지웠습니다.
+   글 상자를 통째로 흐리며 빼내던 **퇴장 트윈이 사라져서**(사용자 요청 — 다음
+   섹션으로 넘어갈 때 글이 그대로 남아 있어야 함) 이 힌트가 가리킬 대상이 없습니다.
+   남겨 두면 아무 일도 안 하는 합성 레이어만 하나 더 잡습니다. */
+
+/* =========================================================
+   2) atelier — 왼쪽 글 / 가운데 사진 스토리 무대
+
+   시안은 사진 왼쪽 · 글 오른쪽 2단이다. 사용자 요청(레퍼런스 tarubali.com)에
+   따라 **데스크톱에서만** 사진이 왼쪽에서 들어와 화면 가운데로 이동하고,
+   그다음 왼쪽에 글이 떠오르는 구성으로 바꾼다.
+
+   ★ 1280px 미만과 모션 감소 설정에서는 이 블록이 통째로 적용되지 않는다.
+   그때는 시안 그대로 사진 위 · 글 아래로 쌓인다(기존 동작 그대로).
+   ========================================================= */
+
+/* `.atelier_stage`는 세 덩이(머리말 · 사진 · 본문)를 담는 무대다.
+   기본값은 세로 스택이다 — 모바일과, 스토리가 꺼진 상태(모션 감소 · JS 없음)에서
+   머리말 → 사진 → 본문 순으로 읽힌다.
+
+   ※ 아래 `@media (min-width: 1280px)`의 `.atelier{flex-direction:row}` /
+   `.atelier_image{flex:0 0 42%}`는 이 무대가 생기면서 **동작하지 않는다**
+   (`.atelier`의 자식이 무대 하나뿐이고, 사진은 그 안으로 들어갔다).
+   지우지 않고 둔 것은 이번 변경 범위를 좁게 유지하기 위해서다. */
+.atelier_stage {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.atelier_head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 스토리가 꺼진 데스크톱(모션 감소 · JS 없음)에서 사진이 에셋 원본(554px)보다
+   커지지 않게 막는다. 무대가 생기면서 아래 `flex: 0 0 42%`가 동작하지 않게 되어
+   1280px에서 사진이 1152px까지 늘어났다(원본을 2배로 늘리는 것이라 뭉갠다). */
+@media (min-width: 1280px) {
+  .atelier:not(.is_story_ready) .atelier_image {
+    max-width: 554px;
+  }
+}
+
+/* 예약 버튼 — `.reservation_button`과 같은 값이다. 그 class를 그대로 쓰지 않는 건
+   이 자리에서 위쪽 여백이 다르고, hover 방식도 달라야 하기 때문이다.
+
+   ★ hover를 opacity로 만들면 안 된다(`.reservation_button`은 그렇게 한다).
+   이 버튼의 opacity는 스크롤 타임라인이 쥐고 있어서, CSS transition이
+   같은 속성에 걸리면 매 스크롤 단계마다 전환이 끼어들어 값이 어긋난다.
+   실제로 이 버그를 겪었다 — 등장이 끝난 뒤에도 버튼만 opacity 0으로 남았다.
+   그래서 hover는 배경색으로 처리하고 opacity는 GSAP에게 온전히 넘긴다. */
+.atelier_button {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 20px 32px;
+  background-color: var(--color_point);
+  color: var(--color_text_inverse);
+  font-family: var(--font_ui);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  transition: background-color var(--duration_fast) var(--easing_base);
+}
+
+.atelier_button:hover,
+.atelier_button:focus-visible {
+  background-color: #1b3936; /* color-mix를 모르는 브라우저용 */
+  background-color: color-mix(in srgb, var(--color_point) 86%, #000000);
+}
+
+.atelier_place {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+}
+
+/* 새로 추가한 글. 위 desc의 어휘를 그대로 쓴다. */
+.atelier_meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin-top: 8px;
+  list-style: none;
+}
+
+.atelier_meta_item {
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* --- 스토리 무대가 켜진 상태 (js/bespoke.js가 붙인다) --------------------- */
+
+.main .atelier.is_story_ready {
+  display: block; /* 기존 flex column 해제 — 무대 하나만 남는다 */
+  max-width: none;
+  padding: 0;
+  height: var(--atelier_scroll, 260svh);
+}
+
+.atelier.is_story_ready .atelier_stage {
+  position: sticky;
+  top: 0;
+  display: grid;
+  /* 왼쪽 = 제목 / 가운데 = 사진 / 오른쪽 = 설명.
+     양옆 열이 `1fr`로 같으므로 사진은 **화면 정중앙**에 선다.
+     레퍼런스(tarubali.com "Power Of 108")와 같은 구성이다. */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: clamp(32px, 4vw, 80px);
+  height: 100vh;
+  height: 100svh;
+  padding-inline: var(--layout_gutter);
+  /* 등장 이동분이 페이지에 가로 스크롤을 만들지 않게 가둔다. */
+  overflow: hidden;
+  background-color: var(--color_bg);
+}
+
+.atelier.is_story_ready .atelier_head {
+  grid-column: 1;
+  gap: 20px;
+}
+
+.atelier.is_story_ready .atelier_image {
+  grid-column: 2;
+  width: auto;
+  /* 1920 × 1080에서 60svh가 정확히 648px — 에셋 원본 크기(554 × 648)라
+     확대 없이 1:1로 그려진다. **이 값을 올리면 원본을 늘리는 것이라 뭉개진다.** */
+  height: clamp(300px, 60svh, 648px);
+  aspect-ratio: 554 / 648;
+  overflow: visible; /* object-fit: contain이라 잘려 나갈 것이 없다 */
+  will-change: transform, opacity;
+}
+
+.atelier.is_story_ready .atelier_image img {
+  object-fit: contain;
+}
+
+.atelier.is_story_ready .atelier_body {
+  grid-column: 3;
+  gap: 20px;
+  /* 폭을 열에 맡긴다. 내용 폭으로 두면 좁은 데스크톱에서 사진과 겹친다. */
+  width: 100%;
+  max-width: 460px;
+}
+
+/* 세 열이 다 들어가려면 사진이 양보해야 한다. 1280~1599에서는 사진 높이를
+   낮춰(=폭을 줄여) 양옆 글 열의 폭을 확보한다. */
+@media (max-width: 1599px) {
+  .atelier.is_story_ready .atelier_image {
+    height: clamp(300px, 52svh, 560px);
+  }
+}
+
+.atelier.is_story_ready .atelier_head,
+.atelier.is_story_ready .atelier_body > * {
+  will-change: transform, opacity;
+}
+
+/* =========================================================
+   [모바일 압축] 360px에서 한 손에 들어오게 (2026-08-10)
+
+   사용자 요청: "모바일에서 스크롤이 너무 길고 이미지도 길다.
+   고르는 부분은 뒤로 갔다가 다시 올라와서 봐야 한다."
+
+   360 × 800에서 실측한 문제와 처리:
+
+   | 구간 | 전 | 원인 | 처리 |
+   |---|---|---|---|
+   | wordmark | 1600 | 데스크톱 스토리 무대에 폭 조건 없음 | **섹션째 제거(2026-08-10)** |
+   | materials | 2007 | 스와치 6장이 2열(633) · 큰 사진 466 | 3열 + 4:3 |
+   | begin | 1356 | 카드 3장이 세로로 337씩 | 사진·여백 축소 |
+   | atelier | 1184 | 사진 374(554:648 세로 비율) | 4:3 |
+
+   ★ **세로로 긴 시안 비율을 모바일에서만 가로로 눕힙니다.** 화면이 좁을수록
+   `width: 100%`인 사진은 원본 비율대로 키가 커집니다 — 554:648 사진이
+   320px 폭에서 374px이 되는 식입니다. 사진 한 장이 화면의 절반을 먹으면
+   그 아래 글을 보려고 또 넘겨야 합니다. 4:3으로 눕히면 240px입니다.
+   `object-fit: cover`라 잘리는 만큼 가운데가 남습니다.
+
+   전부 `max-width` 안에 있어 **768px 이상은 한 픽셀도 바뀌지 않습니다.**
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+  /* ※ 여기에 히어로 관련 규칙은 없습니다. 이 폭대는 화면 비율이 1.333 아래라
+     위쪽 `@media (max-aspect-ratio: 1332/1000)` 블록이 이미 영상을 16:9로
+     되돌리고, js도 sticky 전환을 끕니다.
+
+     --- atelier 사진 --------------------------------------------------- */
+  .atelier_image {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* --- materials: 큰 사진 + 스와치 줄 ---------------------------------- */
+  .materials_texture {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* 6장을 2열로 두면 3줄 633px입니다. 3열이면 2줄로 줄면서도
+     한 칸이 96px이라 원단 질감이 그대로 보입니다.
+
+     ★★ 2026-08-11: gap을 **10 → 16px**로 올렸습니다. 고른 스와치의 초록 테두리가
+     **아래 줄 번호를 파고들고 있었습니다**(767px에서 −0.94px, 실측).
+
+     이 폭대는 360에서 767까지 한 블록인데 **끝에서 사진이 3배 가까이 커집니다** —
+     360에서 100 × 111인 것이 767에서 236 × 262입니다. 확대분은 사진 크기에
+     비례하므로 좁은 쪽만 재면(360 · 375에서는 3.4px 남았습니다) 이 문제가
+     드러나지 않습니다. **이 블록을 확인할 때는 767px을 꼭 같이 보세요.**
+
+     ★ `gap`이라 가로도 함께 넓어집니다. 그만큼 칸이 좁아지지만(767에서 236 → 232)
+     테두리가 옆 칸을 침범하던 것도 같이 해결됩니다(3.4 → 9px). */
+  .materials_swatches {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  /* --- begin 카드 ------------------------------------------------------ */
+  .begin_card {
+    gap: 12px;
+    padding: 20px;
+  }
+
+  /* --- 섹션 위아래 여백 ------------------------------------------------
+     시안의 60px은 1920 기준입니다. 좁은 화면에서는 구간 사이가 뜨는 만큼
+     한 화면에 담기는 내용이 줄어듭니다. */
+  .main .materials,
+  .main .begin,
+  .main .process {
+    padding-block: 40px;
+  }
+}
+
+/* =========================================================
+   [시안 정렬 · 데스크톱 전용] Figma 1745:12160 (1920 × 10438.68)
+
+   위쪽 규칙은 그대로 두고, **1840px 이상에서만** 시안 좌표로 덮어쓴다.
+   모바일·태블릿·일반 노트북(1280~1839px) 레이아웃은 이 블록 밖이라 그대로다.
+
+   왜 1280이 아니라 1840인가:
+   이 블록의 값은 1920 캔버스 기준 절대 px이고, 1700 컨테이너가 온전히 들어가려면
+   1700 + gutter 64×2 = 1828px이 필요하다. 여유 12px을 더해 1840으로 잡았다.
+   1280px에 걸었을 때 실제로 두 가지가 깨졌다 —
+   (1) begin 카드 3장(500×3 + 76×2 = 1652)이 콘텐츠 폭 1152를 넘어 가로 스크롤 194px,
+   (2) process 목록이 727 → 404px까지 줄어 단계 설명이 여러 줄로 무너짐.
+   1920 화면에서는 스크롤바를 뺀 실제 폭이 1905px이라 이 블록이 걸린다.
+
+   근거: 저장소 에셋이 전부 시안 원본 크기다 —
+   atelier.png 554×648 / consultation.png 853×960 / silk.png 180×200 /
+   material.png 500×600 / reservation_section.png 1700×650 / philosophy.png 1920×1000.
+   기존 CSS가 이것을 비율(%)로 늘리거나 줄이고 있었다.
+
+   되돌리기: 이 주석부터 파일 끝까지 삭제.
+   ========================================================= */
+
+@media (min-width: 1840px) {
+
+  /* --- 1700px 컨테이너 — 세 섹션만 -------------------------------------
+     시안의 오른쪽 끝은 ~1810으로 일정한데 왼쪽 끝은 90~160으로 제각각이다.
+     콘텐츠 폭이 1600을 넘는 섹션만 1700으로 넓힌다(process 1680 / fabric 1719 /
+     begin 카드 1652). hero·philosophy·atelier·quote는 시안 좌표가 160 근처라
+     공통 1600 컨테이너가 그대로 맞다. reservation은 아래에서 1700 밴드로 따로 잡는다. */
+  .main .process,
+  .main .materials,
+  .main .begin {
+    max-width: calc(calc(1700 * var(--bespoke_unit)) + var(--layout_gutter) * 2);
+  }
+
+  /* 아래 고정폭은 전부 `flex: 0 1 <시안값>`이다(`0 0`이 아니다).
+     1840px 게이트가 이미 폭을 보장하므로 평소에는 줄어들지 않지만,
+     브라우저 확대나 좁은 창에서 경계를 넘나들 때 넘치지 않게 두는 안전장치다. */
+
+  /* --- hero ---------------------------------------------------------------
+     ※ 2026-08-10: 시안의 세로 리듬(181 + 텍스트 429 + 179 + 영상 760 + 250)은
+     **더 이상 쓰지 않는다.** 히어로가 화면을 채우는 무대로 바뀌면서 영상 높이가
+     시안 760px이 아니라 화면 높이가 됐고, 글은 아이보리 판 안으로 들어갔다.
+     섹션 padding은 위쪽 `.main .bespoke_hero { padding: 0 }`이 그대로 살아 있어야
+     영상이 화면 끝까지 닿는다 — 여기서 다시 padding을 주면 안 된다.
+     글 사이 간격(시안 30px)만 유지한다. */
+  .bespoke_hero_body {
+    gap: calc(30 * var(--bespoke_unit));
+  }
+
+  /* --- philosophy: 1000 --------------------------------------------------
+     제목은 시안 스크린샷 실측이다(이 프레임은 글이 이미지에 구워져 있어
+     타입 스펙을 읽을 수 없다). "Only your measurements,"가 시안에서 808px인데
+     48px로는 603px, 64px로 804px이라 64px으로 판단했다.
+     max-width 840은 그 줄이 접히지 않게 하는 값이다. */
+  .philosophy {
+    min-height: calc(1000 * var(--bespoke_unit));
+  }
+
+  .philosophy_title {
+    font-size: var(--fs_display_64);
+    line-height: 1.13;
+  }
+
+  .philosophy_body {
+    gap: calc(35 * var(--bespoke_unit));
+    max-width: calc(840 * var(--bespoke_unit));
+  }
+
+  /* --- atelier: 1000 -----------------------------------------------------
+     176 + 이미지 648 + 176 = 1000 */
+  .main .atelier {
+    gap: calc(200 * var(--bespoke_unit));
+    padding-top: calc(176 * var(--bespoke_unit));
+    padding-bottom: calc(176 * var(--bespoke_unit));
+  }
+
+  .atelier_image {
+    flex: 0 1 calc(554 * var(--bespoke_unit));
+  }
+
+  .atelier_body {
+    gap: calc(30 * var(--bespoke_unit));
+    max-width: calc(509 * var(--bespoke_unit));
+  }
+
+  /* --- quote: 588 유지 ----------------------------------------------------
+     시안 텍스트 노드가 95px인데 현재 70px이라 인용문↔출처 간격만 넓힌다. */
+  .quote_cite {
+    margin-top: calc(41 * var(--bespoke_unit));
+  }
+
+  /* --- process ------------------------------------------------------------
+     **이 섹션은 더 이상 시안 2단(목록 727 | 사진 873) 배치가 아니다.**
+     j-cat의 Project Story처럼 큰 사진 한 장 + 아래 번호 목록으로 바꿨다
+     (사용자 결정). 위아래 여백만 시안값을 지킨다. */
+  .main .process {
+    padding-top: calc(272 * var(--bespoke_unit));
+    padding-bottom: calc(272 * var(--bespoke_unit));
+  }
+
+  /* ★ 780 x 900이 이 사진들의 상한이다.
+     에셋이 785 x 928(consultation만 853 x 960)이라 780px이 원본에 딱 붙는
+     크기다. **여기서 더 올리면 원본을 늘리는 것이라 오히려 뭉개진다** —
+     더 크게 보이려면 파일을 다시 내보내야 한다(1560 x 1800 이상 권장).
+     900 / 780 = 1.154로 원본 비율(928/785 = 1.182)과 거의 같아 크롭도 거의 없다.
+     왼쪽 열은 1700 - 780 - gap 100 = 820px을 쓴다. */
+  .process {
+    --process_media_width: calc(780 * var(--bespoke_unit));
+    --process_media_height: calc(900 * var(--bespoke_unit));
+    --process_row_padding: calc(22 * var(--bespoke_unit));
+    --process_pad_inline: calc(28 * var(--bespoke_unit));
+    --process_num_width: calc(64 * var(--bespoke_unit));
+    --process_head_gap: calc(48 * var(--bespoke_unit));
+  }
+
+  .process_layout {
+    gap: calc(100 * var(--bespoke_unit));
+  }
+
+  .process_aside {
+    gap: calc(64 * var(--bespoke_unit));
+  }
+
+  /* --- materials(fabric_section): 1408 -----------------------------------
+     294 + 제목 45 + 133 + 본문 678 + 258 = 1408
+     466 + 54 + 1180 = 1700 → 스와치 6칸이 정확히 180×200이 된다.
+     `.materials_body`의 gap만 시안(73)과 다르다 — 시안 그대로면 1719px라
+     1700을 19px 넘겨서 이 한 곳에서 줄였다.
+     캡션 padding-top 127은 시안이 목록보다 캡션을 그만큼 아래에 둔 값이다. */
+  .main .materials {
+    gap: calc(133 * var(--bespoke_unit));
+    padding-top: calc(294 * var(--bespoke_unit));
+    padding-bottom: calc(258 * var(--bespoke_unit));
+  }
+
+  .materials_body {
+    gap: calc(54 * var(--bespoke_unit));
+  }
+
+  .materials_content {
+    gap: calc(77 * var(--bespoke_unit));
+  }
+
+  .materials_list {
+    gap: calc(20 * var(--bespoke_unit));
+  }
+
+  .materials_detail {
+    gap: calc(224 * var(--bespoke_unit));
+  }
+
+  .materials_caption {
+    padding-top: calc(127 * var(--bespoke_unit));
+  }
+
+  /* --- reservation: 1700 × 650 -------------------------------------------
+     시안에서 위아래 섹션과 딱 붙어 있다(fabric 끝 7397 = reservation 시작).
+     그래서 세로 padding이 0이고, 위아래 간격은 이웃 섹션의 padding이 만든다.
+     215px은 밴드 왼쪽 끝에서 글까지의 거리(스크린샷 1:1 실측). */
+  .main .reservation {
+    max-width: calc(1700 * var(--bespoke_unit));
+    padding: 0 0 0 calc(215 * var(--bespoke_unit));
+  }
+
+  .reservation_body {
+    gap: calc(8 * var(--bespoke_unit));
+  }
+
+  .reservation_button {
+    align-self: flex-start;
+    min-width: calc(340 * var(--bespoke_unit));
+    margin-top: calc(40 * var(--bespoke_unit));
+    padding: calc(26 * var(--bespoke_unit)) calc(32 * var(--bespoke_unit));
+  }
+
+  /* --- begin: 1360 -------------------------------------------------------
+     254 + 머리말 89 + 160 + 카드 600 + 255 = 1358
+     카드 줄 3×500 + 2×76 = 1652를 1700 안에서 가운데 정렬한다.
+     ※ 2026-08-10: 이 `opacity: 1`은 이제 위쪽 기본 규칙과 같은 값이라 하는 일이
+     없다. 카드 사진은 hover에서만 흐려지고, 에셋도 알파를 걷어낸 `.jpg`로
+     교체했다(위 "begin 카드 hover" 블록 참고). 지우지 않고 둔 것은 이 블록의
+     "주석부터 파일 끝까지 삭제하면 되돌아간다"는 계약을 지키기 위해서다. */
+  .main .begin {
+    gap: calc(160 * var(--bespoke_unit));
+    padding-top: calc(254 * var(--bespoke_unit));
+    padding-bottom: calc(255 * var(--bespoke_unit));
+  }
+
+  .begin_head {
+    gap: calc(20 * var(--bespoke_unit));
+  }
+
+  .begin_cards {
+    gap: calc(76 * var(--bespoke_unit));
+    justify-content: center;
+  }
+
+  .begin_card {
+    flex: 0 1 calc(500 * var(--bespoke_unit));
+    padding: calc(48 * var(--bespoke_unit));
+  }
+
+  .begin_card_bg {
+    opacity: 1;
+  }
+}
+
+/* =========================================================
+   ★★ 75% 스케일 — 뷰포트 단위 보정 (2026-08-10)
+
+   **이 블록은 반드시 파일 맨 끝, 1840 블록 뒤에 있어야 합니다.**
+   여기 선택자들은 위쪽 규칙과 특정도가 같아서(`.philosophy` 등)
+   소스 순서로만 이깁니다. 파일 앞으로 옮기면 조용히 무효가 됩니다.
+
+   ★ 뷰포트 단위는 zoom을 따라가지 않습니다.
+   실측: zoom 0.75에서 `height: 100svh`인 상자가 화면 1080px 중
+   **810px(75%)**만 덮었습니다. `svh`/`vh`/`vw`는 물리 뷰포트 크기를
+   그대로 CSS px로 주고 거기에 zoom이 곱해집니다.
+
+   그래서 화면을 채워야 하는 것들이 4분의 3만 채웁니다 —
+   sticky 무대 둘(히어로 · atelier)이 아래 4분의 1을 비우고,
+   philosophy도 같습니다. 캔버스 배수를 곱해 되돌립니다.
+   (wordmark 무대도 여기 있었으나 섹션째 제거되면서 같이 빠졌습니다.)
+
+   되돌리기: 이 주석부터 파일 끝까지 삭제.
+   ========================================================= */
+
+@media (min-width: 1850px) and (max-width: 1990px) {
+
+  /* 히어로 — 영상이 화면을 꽉 채워야 합니다. 보정하지 않으면 아래 4분의 1
+     (화면 270px)에 다음 섹션이 비칩니다.
+     ★ run·lift도 svh라 같은 보정이 필요합니다(아래 `.page_bespoke`). */
+  .bespoke_hero_video {
+    height: calc(100svh * var(--bespoke_canvas));
+  }
+
+  .bespoke_hero.is_hero_ready .bespoke_hero_stage {
+    height: calc(100svh * var(--bespoke_canvas) + var(--bespoke_hero_run));
+  }
+
+  /* ★ 위 `.page_bespoke`의 run을 고치면 **여기도 같이 고쳐야 합니다.**
+     이 블록이 뒤에 있어 1920 구간에서는 이 값이 이깁니다 —
+     한쪽만 바꾸면 발표 화면에서만 예전 속도로 돌아갑니다(실제로 겪었습니다:
+     120svh로 올렸는데 1920에서 run이 864px 그대로였습니다). */
+  .page_bespoke {
+    --bespoke_hero_run: calc(150svh * var(--bespoke_canvas));
+    --bespoke_hero_lift: calc(100svh * var(--bespoke_canvas));
+  }
+
+  /* process 고정 구간 — 히어로·atelier와 같은 보정입니다.
+     보정하지 않으면 붙는 상자가 화면의 **75%(810px)만** 덮어서, 내용이 위로
+     쏠리고 아래 270px에 다음 섹션이 비칩니다. */
+  .main .process.is_scroll_ready {
+    --process_step_run: calc(32svh * var(--bespoke_canvas));
+
+    height: calc(100svh * var(--bespoke_canvas) + var(--process_step_run) * 5);
+  }
+
+  .main .process.is_scroll_ready .process_layout {
+    min-height: calc(100svh * var(--bespoke_canvas));
+  }
+
+  /* `.main`이 필요합니다 — 위 규칙이 `.main .philosophy`(0,2,0)입니다. */
+  .main .philosophy {
+    min-height: max(calc(1000 * var(--bespoke_unit)), calc(100svh * var(--bespoke_canvas)));
+  }
+
+  .main .atelier.is_story_ready {
+    height: calc(260svh * var(--bespoke_canvas));
+  }
+
+  .atelier.is_story_ready .atelier_stage {
+    height: calc(100svh * var(--bespoke_canvas));
+  }
+
+  /* 에셋 원본이 554 × 648이라 상한을 넘기면 늘어나 뭉개집니다. */
+  .atelier.is_story_ready .atelier_image {
+    height: clamp(calc(300 * var(--bespoke_unit)),
+                  calc(60svh * var(--bespoke_canvas)),
+                  calc(648 * var(--bespoke_unit)));
+  }
+
+  /* quote는 1840 블록이 손대지 않아 시안 588px이 그대로 남아 있었습니다. */
+  .quote {
+    min-height: calc(588 * var(--bespoke_unit));
+    padding-block: calc(100 * var(--bespoke_unit));
+  }
+}

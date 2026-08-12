@@ -1,0 +1,893 @@
+@charset "utf-8";
+
+/* =========================================================
+   header — hero 위에 겹쳐지는 투명 헤더
+   ========================================================= */
+
+.header {
+  --header_text_color: var(--color_text_on_dark_menu);
+  --header_icon_filter: none;
+  --header_panel_background: rgba(10, 10, 10, 0.92);
+  --header_dropdown_border: rgba(255, 255, 255, 0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  width: 100%;
+  min-height: var(--header_height);
+  padding: 16px var(--layout_gutter);
+  transition: transform var(--duration_base) var(--easing_base),
+              background-color var(--duration_base) var(--easing_base),
+              backdrop-filter var(--duration_base) var(--easing_base),
+              box-shadow var(--duration_base) var(--easing_base);
+  will-change: transform;
+}
+
+.header.is_hidden {
+  transform: translateY(-100%);
+}
+
+.header.is_white.is_scrolled {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.header.is_black.is_scrolled {
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 30px rgba(10, 10, 10, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.header_logo {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+/* 크기는 common/css/tokens.css의 --header_logo_width에서 바꿉니다
+   (브레이크포인트별 값이 그곳에 모여 있습니다) */
+.header_logo_img {
+  width: var(--header_logo_width);
+  height: auto;
+  transition: filter var(--duration_fast) var(--easing_base);
+}
+
+/* 시안에 없는 모바일 전용 메뉴 버튼 */
+.header_toggle {
+  position: relative;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.header_toggle_bar,
+.header_toggle_bar::before,
+.header_toggle_bar::after {
+  position: absolute;
+  left: 4px;
+  width: 24px;
+  height: 1px;
+  background-color: var(--color_text_on_dark);
+  transition: transform var(--duration_fast) var(--easing_base),
+              opacity var(--duration_fast) var(--easing_base);
+}
+
+.header_toggle_bar {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.header_toggle_bar::before,
+.header_toggle_bar::after {
+  content: "";
+  left: 0;
+}
+
+.header_toggle_bar::before {
+  top: -8px;
+}
+
+.header_toggle_bar::after {
+  top: 8px;
+}
+
+/* 열리면 가운데 선을 지우고 위아래 두 선만 X로 교차시킵니다.
+
+   `.header` 를 앞에 붙여 특정도를 (0,4,0)으로 올렸습니다. 이게 없으면
+   아래쪽 `.header.is_black .header_toggle_bar`(0,3,0)와 특정도가 같은데
+   그 규칙이 파일 뒤에 있어서 이겨버립니다. 그러면 가운데 선이 다시
+   칠해져 X 한가운데에 가로줄이 남습니다.
+
+   가운데 선에 opacity나 transform을 쓰면 안 됩니다. X를 이루는 두 선이
+   이 요소의 ::before / ::after라서 같이 사라집니다. */
+.header .header_toggle[aria-expanded="true"] .header_toggle_bar {
+  background-color: transparent;
+}
+
+.header_toggle[aria-expanded="true"] .header_toggle_bar::before {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.header_toggle[aria-expanded="true"] .header_toggle_bar::after {
+  top: 0;
+  transform: rotate(-45deg);
+}
+
+.header_inner {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px var(--layout_gutter) 32px;
+  background-color: var(--header_panel_background);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-16px);
+  transition:
+    opacity var(--duration_base) var(--easing_base),
+    transform var(--duration_base) var(--easing_base),
+    visibility 0s linear var(--duration_base);
+}
+
+.header_inner.is_open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.header_menu {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* COLLECTION 하위메뉴(TCHAI KIM YOUNG JIN / TCHAI KIM)는 제거했습니다.
+   collection 페이지 안에서 탭바로 나누기로 했습니다. (2026-08-09)
+   되살리려면: git log -- common/css/layout.css common/components/header.html */
+
+.header_menu_link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--header_text_color);
+  font-family: var(--font_ui);
+  font-size: 20px;
+  transition: color var(--duration_fast) var(--easing_base);
+}
+
+/* Header variants: white is used over imagery, black on light backgrounds. */
+.header.is_black {
+  --header_text_color: var(--color_text);
+  --header_icon_filter: brightness(0);
+  --header_panel_background: var(--color_bg);
+  --header_dropdown_border: var(--color_line);
+  background-color: transparent;
+}
+
+.header.is_black .header_toggle_bar,
+.header.is_black .header_toggle_bar::before,
+.header.is_black .header_toggle_bar::after {
+  background-color: var(--color_text);
+}
+
+.header.is_black .header_menu_link:hover,
+.header.is_black .header_menu_link:focus-visible {
+  color: var(--color_point);
+}
+
+.header_menu_link:hover,
+.header_menu_link:focus-visible {
+  color: var(--color_text_on_dark);
+}
+
+.header_right {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.header_currency {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.header_currency_trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 0;
+  color: var(--header_text_color);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.header_currency_icon {
+  width: 13px;
+  height: 8px;
+  filter: var(--header_icon_filter);
+  transition: filter var(--duration_fast) var(--easing_base),
+              transform var(--duration_fast) var(--easing_base);
+}
+
+.header_currency.is_open .header_currency_icon {
+  transform: rotate(180deg);
+}
+
+.header_currency_menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 1;
+  display: grid;
+  min-width: 100px;
+  padding: 8px;
+  border: 1px solid var(--header_dropdown_border);
+  border-radius: 4px;
+  background-color: var(--header_panel_background);
+  box-shadow: 0 12px 30px rgba(10, 10, 10, 0.14);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px);
+  transition: opacity var(--duration_fast) var(--easing_base),
+              transform var(--duration_fast) var(--easing_base),
+              visibility 0s linear var(--duration_fast);
+}
+
+.header_currency.is_open .header_currency_menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition-delay: 0s;
+}
+
+.header_currency_option {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 3px;
+  color: var(--header_text_color);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  font-weight: 500;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: color var(--duration_fast) var(--easing_base),
+              background-color var(--duration_fast) var(--easing_base),
+              opacity var(--duration_base) var(--easing_base),
+              transform var(--duration_base) var(--easing_base);
+}
+
+.header_currency_option:hover,
+.header_currency_option:focus-visible,
+.header_currency_option[aria-checked="true"] {
+  background-color: rgba(127, 127, 127, 0.14);
+}
+
+.header_currency.is_open .header_currency_option {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 현재 실제 선택이 가능한 USD와 구분합니다.
+   disabled 속성도 함께 사용하므로 마우스와 키보드 모두 선택되지 않습니다. */
+.header_currency.is_open .header_currency_option:disabled {
+  background-color: transparent;
+  color: var(--header_text_color);
+  opacity: 0.34;
+  cursor: not-allowed;
+}
+
+.header_currency_option:disabled:hover,
+.header_currency_option:disabled:focus-visible {
+  background-color: transparent;
+}
+
+.header_currency.is_open .header_currency_option:nth-child(1) { transition-delay: 0.04s; }
+.header_currency.is_open .header_currency_option:nth-child(2) { transition-delay: 0.08s; }
+.header_currency.is_open .header_currency_option:nth-child(3) { transition-delay: 0.12s; }
+.header_currency.is_open .header_currency_option:nth-child(4) { transition-delay: 0.16s; }
+.header_currency.is_open .header_currency_option:nth-child(5) { transition-delay: 0.2s; }
+
+.header_cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  color: var(--header_text_color);
+}
+
+/* 장바구니 페이지가 없는 현재 단계에서는 클릭을 막아 두지 않고,
+   공통 빈 상태 패널을 열어 다음 행동을 안내합니다. */
+html.has_cart_drawer {
+  overflow: hidden;
+}
+
+.cart_drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 20px;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--color_text);
+}
+
+.cart_drawer[open] {
+  display: grid;
+  place-items: center;
+}
+
+.cart_drawer::backdrop {
+  background-color: rgba(10, 10, 10, 0.42);
+  animation: cart_drawer_backdrop_in var(--duration_base) var(--easing_base) both;
+}
+
+.cart_drawer_panel {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 440px);
+  height: min(420px, calc(100dvh - 40px));
+  padding: 0 clamp(24px, 4vw, 36px) clamp(24px, 4vh, 32px);
+  border: 1px solid rgba(10, 10, 10, 0.22);
+  border-radius: 0;
+  background-color: var(--color_bg);
+  box-shadow: 0 24px 60px rgba(10, 10, 10, 0.2);
+  animation: cart_drawer_panel_in var(--duration_base) var(--easing_base) both;
+}
+
+.cart_drawer_header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--header_height);
+  border-bottom: 1px solid rgba(10, 10, 10, 0.2);
+}
+
+.cart_drawer_title {
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.cart_drawer_close {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.cart_drawer_close span::before,
+.cart_drawer_close span::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 1px;
+  background-color: currentColor;
+  content: "";
+}
+
+.cart_drawer_close span::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.cart_drawer_close span::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.cart_drawer_body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.cart_drawer_status {
+  margin-bottom: 24px;
+  color: var(--color_text_muted);
+  font-family: var(--font_ui);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+}
+
+.cart_drawer_heading {
+  font-family: var(--font_display);
+  font-size: var(--fs_display_32);
+  font-weight: 600;
+  line-height: var(--lh_display_32);
+  letter-spacing: var(--ls_tight_sm);
+}
+
+.cart_drawer_description {
+  max-width: 320px;
+  margin-top: 14px;
+  color: var(--color_text_secondary);
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_14);
+  line-height: 1.7;
+}
+
+.cart_drawer_action {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  border: 1px solid var(--color_point);
+  border-radius: 0;
+  background-color: var(--color_point);
+  color: var(--color_text_inverse);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  transition: background-color var(--duration_fast) var(--easing_base),
+              border-color var(--duration_fast) var(--easing_base);
+}
+
+.cart_drawer_action:hover,
+.cart_drawer_action:focus-visible {
+  border-color: #16332f;
+  background-color: #16332f;
+}
+
+@keyframes cart_drawer_backdrop_in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cart_drawer_panel_in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.header_cart_count {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--color_point);
+  color: var(--color_text_on_dark);
+  font-family: var(--font_ui);
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.header_cart_count[hidden] {
+  display: none;
+}
+
+.header_cart_icon {
+  width: 21px;
+  height: 18px;
+  filter: var(--header_icon_filter);
+  transition: filter var(--duration_fast) var(--easing_base);
+}
+
+/* 모바일 메뉴 스태거 — 패널이 열린 뒤 항목이 위에서부터 차례로 내려옵니다. */
+@media (max-width: 1279px) {
+  body.has_open_menu {
+    overflow: hidden;
+  }
+
+  /* 모바일·태블릿 메뉴는 페이지 배경과 분리된 하나의 불투명 브랜드 패널로 사용합니다. */
+  .header.has_open_menu {
+    --header_text_color: var(--color_text);
+    --header_icon_filter: brightness(0);
+    --header_panel_background: var(--color_bg);
+    --header_dropdown_border: var(--color_line);
+    background-color: rgba(255, 253, 249, 0.98);
+    box-shadow: 0 8px 30px rgba(10, 10, 10, 0.08);
+    backdrop-filter: blur(18px);
+  }
+
+  .header.has_open_menu .header_logo_img {
+    filter: brightness(0);
+  }
+
+  .header.has_open_menu .header_toggle_bar,
+  .header.has_open_menu .header_toggle_bar::before,
+  .header.has_open_menu .header_toggle_bar::after {
+    background-color: var(--color_text);
+  }
+
+  .header.has_open_menu .header_menu_link:hover,
+  .header.has_open_menu .header_menu_link:focus-visible {
+    color: var(--color_point);
+  }
+
+  .header_inner {
+    min-height: calc(100dvh - var(--header_height));
+    max-height: calc(100dvh - var(--header_height));
+    padding: clamp(32px, 6vh, 64px) var(--layout_gutter) 32px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 1px solid var(--color_line);
+    scrollbar-width: none;
+  }
+
+  .header_inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header_menu {
+    gap: clamp(22px, 3vh, 36px);
+  }
+
+  .header_menu_link {
+    font-size: clamp(24px, 4vw, 34px);
+    line-height: 1.2;
+  }
+
+  .header_right {
+    justify-content: space-between;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--color_line);
+  }
+
+  .header_currency_menu {
+    right: auto;
+    left: 0;
+  }
+
+  .header_menu_item,
+  .header_currency,
+  .header_cart {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition:
+      opacity var(--duration_base) var(--easing_base),
+      transform var(--duration_base) var(--easing_base);
+  }
+
+  .header_inner.is_open .header_menu_item,
+  .header_inner.is_open .header_currency,
+  .header_inner.is_open .header_cart {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .header_inner.is_open .header_menu_item:nth-child(1) {
+    transition-delay: 0.06s;
+  }
+
+  .header_inner.is_open .header_menu_item:nth-child(2) {
+    transition-delay: 0.12s;
+  }
+
+  .header_inner.is_open .header_menu_item:nth-child(3) {
+    transition-delay: 0.18s;
+  }
+
+  .header_inner.is_open .header_menu_item:nth-child(4) {
+    transition-delay: 0.24s;
+  }
+
+  .header_inner.is_open .header_currency {
+    transition-delay: 0.3s;
+  }
+
+  .header_inner.is_open .header_cart {
+    transition-delay: 0.36s;
+  }
+}
+
+@media (min-width: 1280px) {
+  /* 데스크톱 로고 크기는 tokens.css의 --header_logo_width가 정합니다.
+     여기 있던 `width: 225px`는 그 토큰을 덮어써서 지웠습니다 —
+     크기를 바꾸려고 이 파일을 고치지 마세요. */
+
+  .header_toggle {
+    display: none;
+  }
+
+  .header_inner {
+    position: static;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 151px;
+    padding: 0;
+    background: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition: none;
+  }
+
+  .header.is_black .header_inner {
+    background: none;
+  }
+
+  .header_menu {
+    flex-direction: row;
+    gap: 50px;
+  }
+
+  .header_right {
+    gap: 55px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart_drawer::backdrop,
+  .cart_drawer_panel,
+  .header_currency_menu,
+  .header_currency_option,
+  .header_currency_icon,
+  .header_inner.is_open .header_menu_item,
+  .header_inner.is_open .header_currency,
+  .header_inner.is_open .header_cart {
+    transition-delay: 0s;
+    transition-duration: 0s;
+  }
+}
+
+/* =========================================================
+   footer
+   ========================================================= */
+
+.footer {
+  display: flex;
+  justify-content: center;
+  background-color: var(--color_bg);
+}
+
+.footer_inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  /* 시안 1920px: 좌우 여백 160px + 콘텐츠 1600px */
+  max-width: calc(var(--layout_inner) + var(--layout_gutter) * 2);
+  padding: 40px var(--layout_gutter);
+}
+
+.footer_top {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+}
+
+.footer_menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer_menu_link,
+.footer_social_link,
+.footer_policy_link {
+  font-family: var(--font_ui);
+  font-weight: 500;
+  color: var(--color_text);
+  transition: opacity var(--duration_fast) var(--easing_base);
+}
+
+.footer_menu_link {
+  display: inline-block;
+  font-size: var(--fs_ui_16);
+}
+
+/* ★ social·policy는 a에만 겁니다. 목적지가 아직 없는 항목(약관 4개, Blog)은
+   span이라, 그냥 두면 눌리지도 않는 글자가 마우스를 올릴 때마다 흐려져
+   링크처럼 보입니다. 나중에 a로 되돌리면 이 효과도 함께 되살아납니다. */
+.footer_menu_link:hover,
+a.footer_social_link:hover,
+a.footer_policy_link:hover {
+  opacity: 0.6;
+}
+
+.footer_newsletter_row {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+}
+
+.footer_newsletter {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  width: 100%;
+  max-width: 388px;
+}
+
+.footer_newsletter_label {
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_15);
+  font-weight: 500;
+}
+
+.footer_email_field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--color_text);
+}
+
+.footer_email_input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_16);
+  font-weight: 500;
+}
+
+.footer_email_input::placeholder {
+  color: var(--color_text);
+  opacity: 1;
+}
+
+.footer_email_input:focus-visible {
+  outline-offset: 2px;
+}
+
+.footer_email_submit {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+}
+
+.footer_email_submit img {
+  width: 26px;
+  height: 26px;
+}
+
+.footer_email_message {
+  min-height: 18px;
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  line-height: 18px;
+}
+
+.footer_email_message.has_error {
+  color: var(--color_error);
+}
+
+.footer_social {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.footer_social_link {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--fs_ui_16);
+}
+
+.footer_social_link img,
+.footer_policy_link img {
+  width: 18px;
+  height: 18px;
+}
+
+.footer_wordmark {
+  width: 100%;
+  height: auto;
+  margin: 40px 0;
+}
+
+.footer_bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.footer_policy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 30px;
+}
+
+.footer_policy_link {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--fs_ui_15);
+}
+
+.footer_policy_text {
+  display: block;
+}
+
+.footer_copyright {
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+}
+
+@media (min-width: 768px) {
+  .footer_newsletter_row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer_social {
+    align-items: flex-end;
+    width: 92px;
+  }
+
+  .footer_bottom {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+@media (min-width: 1280px) {
+  .footer_inner {
+    gap: 80px;
+  }
+
+  .footer_top {
+    gap: 68px;
+  }
+
+  .footer_wordmark {
+    width: calc(100% + 18px);
+    margin: 0 0 0 -9px;
+  }
+
+  .footer_policy_link {
+    gap: 70px;
+  }
+}

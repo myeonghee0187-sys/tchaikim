@@ -1,0 +1,22 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bespoke",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "C:\\Users\\EZEN\\AppData\\Local\\Temp\\claude\\C------outback\\9cae65fc-b51e-4e4a-8d91-420101af42e0\\scratchpad\\serve.ps1",
+        "-Port",
+        "5605",
+        "-Root",
+        "C:\\김시현\\tchaikimm\\pages\\bespoke"
+      ],
+      "port": 5605,
+      "autoPort": false
+    }
+  ]
+}

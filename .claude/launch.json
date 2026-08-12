@@ -1,0 +1,139 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "tchaikimm",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5611"
+      ],
+      "port": 5611,
+      "url": "http://localhost:5611",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_win",
+      "runtimeExecutable": "py",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "5611"
+      ],
+      "port": 5611,
+      "url": "http://localhost:5611",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-tchaikimm/9c9e4a4f-ed78-4b81-9aee-eb98dd7504bc/scratchpad/serve.js",
+        "5613"
+      ],
+      "port": 5613,
+      "url": "http://localhost:5613",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_mac",
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": [
+        "/private/tmp/claude-501/-Users-yun-eunseon-Desktop-kbrand-tchaikimm/b615209c-6f0f-4895-8c92-257330c63445/scratchpad/serve.js",
+        "5615"
+      ],
+      "port": 5615,
+      "url": "http://localhost:5615",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_3",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-tchaikimm/1b77bf43-407e-499d-bd40-5f3937dd8060/scratchpad/serve.js",
+        "5617"
+      ],
+      "port": 5617,
+      "url": "http://localhost:5617",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_4",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-tchaikimm/5edc53c4-8c92-43c5-bc20-83a22827e9b7/scratchpad/serve.js",
+        "5619"
+      ],
+      "port": 5619,
+      "url": "http://localhost:5619",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_5",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-----kbrand-tchaikimm/cc553e56-6255-498b-b72d-fdff9d8e69df/scratchpad/serve.js",
+        "5670"
+      ],
+      "port": 5670,
+      "url": "http://localhost:5670",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_6",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-tchaikimm/a1f3aa1d-9134-49f4-ace2-e1048e325d49/scratchpad/serve.js",
+        "5621"
+      ],
+      "port": 5621,
+      "url": "http://localhost:5621",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_7",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-----kbrand-tchaikimm/f3a63058-35ef-476a-b1c7-10dce0c8bc09/scratchpad/serve.js",
+        "5680"
+      ],
+      "port": 5680,
+      "url": "http://localhost:5680",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_8",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-----kbrand-tchaikimm/b0e7af94-3a28-4906-990a-7aae9989895b/scratchpad/serve.js",
+        "5690"
+      ],
+      "port": 5690,
+      "url": "http://localhost:5690",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_9",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-----kbrand-tchaikimm/20a5491c-5c0d-4f09-b5cb-e932b460222d/scratchpad/serve.js",
+        "5692"
+      ],
+      "port": 5692,
+      "url": "http://localhost:5692",
+      "autoPort": false
+    },
+    {
+      "name": "tchaikimm_node_2",
+      "runtimeExecutable": "C:/Program Files/nodejs/node.exe",
+      "runtimeArgs": [
+        "C:/Users/EZEN/AppData/Local/Temp/claude/C--Users-EZEN-Desktop-tchaikimm/6c0f0524-761c-4bed-8720-6fe251a676cc/scratchpad/serve.js",
+        "5614"
+      ],
+      "port": 5614,
+      "url": "http://localhost:5614",
+      "autoPort": false
+    }
+  ]
+}

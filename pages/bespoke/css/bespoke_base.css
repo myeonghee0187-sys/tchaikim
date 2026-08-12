@@ -1,0 +1,894 @@
+@charset "utf-8";
+
+/* ============================================================
+   Bespoke 페이지 기본 틀
+
+   Bespoke 계열 3개 페이지가 함께 쓰는 레이어입니다.
+     index.html            — Bespoke 메인
+     reservation.html      — 예약 폼
+     reservation_done.html — 예약 완료
+
+   불러오는 순서
+     common/css/tokens.css → reset.css → common.css → layout.css
+     → css/bespoke_base.css   (이 파일)
+     → css/<page>.css         (페이지 전용)
+
+   규칙
+   - 이 파일에는 두 페이지 이상이 쓰는 것만 넣습니다.
+     한 페이지에서만 쓰면 페이지 CSS로 보냅니다.
+   - 폭 값은 .common_container(최대 1600px)를 기준으로 합니다.
+     Figma 캔버스 1920의 콘텐츠 폭이 정확히 1600이라 그대로 맞습니다.
+   - 모바일부터 작성하고 768px / 1280px에서 넓힙니다.
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   1. 타이포 스케일
+
+   Figma 텍스트 스타일을 그대로 옮긴 값입니다.
+   letter-spacing은 Figma의 px 값을 em으로 환산했습니다
+   (예: 64px에 -2px → -0.03125em). 글자 크기가 줄어드는
+   모바일에서도 자간 비율이 유지됩니다.
+   ------------------------------------------------------------ */
+:root {
+  /* ★ 시안 캔버스 단위. 기본은 1px이라 지금까지와 똑같고, 파일 끝의
+     75% 블록에서만 커집니다. 시안 px를 그대로 쓰고 싶은 곳에서
+     `calc(1400 * var(--bespoke_unit))`처럼 씁니다. */
+  --bespoke_unit: 1px;
+}
+
+.page_bespoke {
+  /* Display / Hero LG — Trirong SemiBold 64 / 1.13 / -2px */
+  --bespoke_fs_hero: clamp(32px, 3.4vw + 20px, 64px);
+  /* Display / Section MD — Trirong SemiBold 48 / 1.29 / -1px */
+  --bespoke_fs_section: clamp(26px, 2.2vw + 18px, 48px);
+  /* Display / Card — Trirong Regular 24 / 1.25 */
+  --bespoke_fs_card: clamp(20px, 0.6vw + 17px, 24px);
+
+  /* 섹션 위아래 여백 */
+  --bespoke_section_gap: 80px;
+  /* 섹션 머리말과 본문 사이 */
+  --bespoke_head_gap: 40px;
+}
+
+@media (min-width: 768px) {
+  .page_bespoke {
+    --bespoke_section_gap: 120px;
+    --bespoke_head_gap: 60px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .page_bespoke {
+    --bespoke_section_gap: 160px;
+    --bespoke_head_gap: 80px;
+  }
+}
+
+/* ------------------------------------------------------------
+   2. 섹션과 머리말
+
+   두 새 페이지의 모든 구간이 같은 형태입니다.
+     eyebrow(작은 라벨) → title(Trirong) → desc(본문)
+   ------------------------------------------------------------ */
+.bespoke_section {
+  padding-block: var(--bespoke_section_gap);
+}
+
+.bespoke_section_head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: var(--bespoke_head_gap);
+}
+
+@media (min-width: 768px) {
+  .bespoke_section_head {
+    gap: 30px;
+  }
+}
+
+/* Body / MD — Montserrat Regular 16 / 1.63 */
+.bespoke_eyebrow {
+  color: var(--color_text_muted);
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  font-weight: 400;
+  line-height: 1.63;
+}
+
+/* Display / Section MD */
+.bespoke_section_title {
+  font-family: var(--font_display);
+  font-size: var(--bespoke_fs_section);
+  font-weight: 600;
+  line-height: 1.29;
+  letter-spacing: -0.02083em;
+}
+
+/* Display / Hero LG */
+.bespoke_hero_heading {
+  font-family: var(--font_display);
+  font-size: var(--bespoke_fs_hero);
+  font-weight: 600;
+  line-height: 1.13;
+  letter-spacing: -0.03125em;
+}
+
+.bespoke_section_desc {
+  max-width: 60ch;
+  color: var(--color_text_secondary);
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  font-weight: 400;
+  line-height: 1.63;
+}
+
+/* Commerce / Label — Montserrat Medium 16 / 1.38 / +8px 자간 */
+.bespoke_label {
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  font-weight: 500;
+  line-height: 1.38;
+  letter-spacing: 0.08em;
+}
+
+.bespoke_rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background-color: var(--color_border);
+}
+
+/* ------------------------------------------------------------
+   3. 선택 카드 (.bespoke_choice)
+
+   실루엣 3장과 원단 6장이 같은 컴포넌트입니다.
+   고르면 배경이 크림(#f5efe4) → 딥그린(#1f433f)으로 바뀌고
+   글자가 밝은 색으로 반전됩니다. (Figma 주석: "선택하면 배경색이 바뀌게")
+
+   색만으로 구분하지 않도록 aria-pressed와 테두리도 함께 바꿉니다.
+   ------------------------------------------------------------ */
+/* ★ 모바일도 **2열**입니다(2026-08-10, 사용자 요청).
+
+   1열이던 동안 360에서 원단 6장이 2,149px, 실루엣 3장이 1,303px이라
+   고르는 데만 손가락으로 네 번 넘겨야 했고, 뒤 항목을 보고 앞으로
+   돌아오려면 다시 올라와야 했습니다. 2열로 두면 원단은 3줄,
+   실루엣은 2줄로 줄어 한눈에 비교됩니다.
+
+   좁아진 만큼 카드 안쪽 여백과 간격도 같이 줄입니다 — 그러지 않으면
+   글 자리가 102px밖에 남지 않아 설명이 서너 줄로 접힙니다. */
+.bespoke_choice_grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 480px) {
+  .bespoke_choice_grid {
+    gap: 20px;
+  }
+}
+
+/* ★ 2열에서는 같은 줄의 카드 높이가 서로 다릅니다 — 설명 줄 수가 원단마다
+   다르기 때문입니다(360 실측 195 / 217 / 242 / 264). 1열일 때는 보이지 않던
+   문제이고, 그대로 두면 밑변이 들쭉날쭉합니다.
+   `<li>`가 격자 칸이라 기본으로 늘어나므로, 카드가 그 칸을 꽉 채우게 합니다. */
+.bespoke_choice_grid > li {
+  display: flex;
+}
+
+.bespoke_choice_grid > li > .bespoke_choice {
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .bespoke_choice_grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .bespoke_choice_grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+  }
+}
+
+/* 실루엣은 3장뿐이라 2열에서 마지막 한 장이 왼쪽에 홀로 남습니다.
+   가운데로 옮겨 균형을 맞춥니다. 1280 이상에서는 3열이라 해당 없습니다.
+   (예전에는 768 이상에만 걸려 있었는데, 모바일도 2열이 되면서 같이 필요해졌습니다.) */
+@media (max-width: 1279px) {
+  .bespoke_choice_grid.is_three_up > :last-child {
+    grid-column: 1 / -1;
+    max-width: calc(50% - 6px);
+    justify-self: center;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 1279px) {
+  .bespoke_choice_grid.is_three_up > :last-child {
+    max-width: calc(50% - 15px);
+  }
+}
+
+/* 카드는 <label>이고 안에 라디오가 들어 있습니다.
+   버튼 + aria-pressed로 직접 만드는 대신 라디오를 쓰면
+   화살표 키 이동, 그룹 읽기, 폼 전송이 브라우저 기본으로 동작합니다.
+   라디오는 a11y_hidden으로 가리되 초점은 받을 수 있게 남겨둡니다. */
+.bespoke_choice {
+  position: relative; /* 체크 배지의 기준 상자입니다. */
+  display: block;
+  width: 100%;
+  padding: 0 0 14px;
+  border: 1px solid var(--color_border);
+  background-color: var(--color_surface_subtle);
+  color: var(--color_text);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration_base) var(--easing_base),
+              border-color var(--duration_base) var(--easing_base),
+              color var(--duration_base) var(--easing_base),
+              opacity var(--duration_base) var(--easing_base),
+              transform var(--duration_fast) var(--easing_base);
+}
+
+@media (min-width: 480px) {
+  .bespoke_choice {
+    padding-bottom: 24px;
+  }
+}
+
+/* 좁은 카드에서는 배지도 같이 줄입니다 — 154px 카드에서 28px 배지는
+   사진의 5분의 1을 덮습니다. */
+@media (max-width: 479px) {
+  .bespoke_choice::before {
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .bespoke_choice::after {
+    top: 15px;
+    right: 14px;
+    width: 9px;
+    height: 5px;
+  }
+}
+
+/* 라디오가 초점을 받으면 카드 전체에 초점 표시가 보이게 합니다.
+   가려진 입력에 초점 테두리가 그려지면 화면에서 보이지 않습니다. */
+.bespoke_choice:has(.bespoke_choice_input:focus-visible) {
+  outline: 2px solid var(--color_point);
+  outline-offset: 3px;
+}
+
+.bespoke_choice_media {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+}
+
+.bespoke_choice_media img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.bespoke_choice_body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* 2열이라 카드 폭이 360에서 154px입니다. 24px씩 물리면 글 자리가
+     106px밖에 남지 않아 설명이 서너 줄로 접힙니다. */
+  padding-inline: 14px;
+  margin-top: 12px;
+}
+
+@media (min-width: 480px) {
+  .bespoke_choice_body {
+    gap: 10px;
+    padding-inline: 24px;
+    margin-top: 20px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .bespoke_choice_body {
+    padding-inline: 42px;
+  }
+}
+
+.bespoke_choice_name {
+  font-family: var(--font_display);
+  font-size: var(--bespoke_fs_card);
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.bespoke_choice_desc {
+  color: var(--color_text_secondary);
+  font-size: var(--fs_ui_14);
+  line-height: 1.57;
+  transition: color var(--duration_base) var(--easing_base);
+}
+
+/* 선택 상태 — 라디오가 켜졌을 때. .is_selected는 JS로 다룰 때를 위해 함께 둡니다. */
+.bespoke_choice:has(.bespoke_choice_input:checked),
+.bespoke_choice.is_selected {
+  border-color: var(--color_point);
+  background-color: var(--color_point);
+  color: var(--color_text_inverse);
+}
+
+.bespoke_choice:has(.bespoke_choice_input:checked) .bespoke_choice_desc,
+.bespoke_choice.is_selected .bespoke_choice_desc {
+  color: var(--color_text_on_dark_sub);
+}
+
+/* ------------------------------------------------------------
+   선택 표시 — 오른쪽 위 체크 배지 (2026-08-10)
+
+   ★ 예전에는 이름 옆에 `— selected` **글자**를 끼워 넣었습니다
+   (`.bespoke_choice_mark`, 평소 `width: 0`). 그게 레이아웃을 무너뜨렸습니다 —
+   긴 이름에 글자가 붙으면 **이름이 두 줄로 넘어가 카드가 +30px 자랍니다.**
+   짧은 이름(Durumagi)은 한 줄에 들어가서 카드마다 결과가 달랐고, 선택을
+   옮길 때마다 `.common_container` 높이가 **743 ↔ 773으로 튀었습니다**
+   (1280 실측). 게다가 글자가 늘 DOM에 있어 **읽기 도구가 모든 카드에서
+   "selected"를 읽었습니다.**
+
+   그래서 글자를 없애고 배지를 **가짜 요소로 절대 배치**합니다.
+   글 흐름 밖이라 이름·설명·카드 크기에 전혀 영향이 없습니다.
+   **여기에 글자를 다시 끼워 넣으면 안 됩니다.**
+
+   선택 상태는 이제 라디오의 `:checked`(읽기 도구가 기본으로 알림) +
+   배경색 + 테두리 + 체크 **모양**으로 전해집니다 — 색만으로 구분하지
+   않는다는 규칙을 그대로 지킵니다.
+   ------------------------------------------------------------ */
+.bespoke_choice::before,
+.bespoke_choice::after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+  pointer-events: none; /* 배지가 라벨 클릭을 가로채지 않게 합니다. */
+  transition: opacity var(--duration_fast) var(--easing_base),
+              transform var(--duration_fast) var(--easing_base);
+}
+
+/* 배지 바탕. 선택된 카드가 딥그린이라 밝은 원이 그 위에서 읽힙니다. */
+.bespoke_choice::before {
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--color_text_inverse);
+  transform: scale(0.7);
+}
+
+/* 체크 자체 — 두 변만 남긴 상자를 45도 돌려 그립니다.
+   가로(11)가 세로(6)보다 길어야 체크의 긴 획이 오른쪽 위로 뻗습니다. */
+.bespoke_choice::after {
+  top: 25px;
+  right: 24px;
+  width: 11px;
+  height: 6px;
+  border-left: 2px solid var(--color_point);
+  border-bottom: 2px solid var(--color_point);
+  transform: rotate(-45deg) scale(0.7);
+}
+
+.bespoke_choice:has(.bespoke_choice_input:checked)::before,
+.bespoke_choice.is_selected::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.bespoke_choice:has(.bespoke_choice_input:checked)::after,
+.bespoke_choice.is_selected::after {
+  opacity: 1;
+  transform: rotate(-45deg) scale(1);
+}
+
+/* ------------------------------------------------------------
+   고르는 느낌 — 누를 때 살짝 눌리고, 선택되면 한 번 가라앉습니다.
+
+   ★ **`transform`과 `opacity`만 씁니다.** 둘 다 레이아웃을 다시 계산하지
+   않으므로 카드가 커져도 **옆 카드가 밀리지 않습니다.** 가장 큰 배율
+   1.012는 350px 카드에서 4px이라 격자 간격(40px) 안에서 끝납니다.
+
+   길이는 전부 토큰이라 `prefers-reduced-motion: reduce`에서
+   `--duration_*`이 0.01ms가 되어 저절로 꺼집니다.
+   ------------------------------------------------------------ */
+.bespoke_choice:active {
+  transform: scale(0.985);
+}
+
+.bespoke_choice:has(.bespoke_choice_input:checked),
+.bespoke_choice.is_selected {
+  animation: bespoke_choice_settle var(--duration_base) var(--easing_base);
+}
+
+@keyframes bespoke_choice_settle {
+  0% {
+    transform: scale(0.985);
+  }
+
+  55% {
+    transform: scale(1.012);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ------------------------------------------------------------
+   고르지 않은 카드는 아주 살짝 물러납니다.
+
+   ★ 비활성처럼 보이면 안 됩니다 — 0.82는 눈에 띄게 어두워지지 않으면서
+   고른 카드가 앞에 있다는 것만 알리는 정도입니다. `opacity`뿐이라
+   **클릭은 그대로 됩니다**(`pointer-events`를 건드리지 않습니다).
+   마우스를 올리면 원래 선명도로 돌아와 누를 수 있다는 것을 알립니다.
+   ------------------------------------------------------------ */
+.bespoke_choice_grid:has(.bespoke_choice_input:checked)
+  .bespoke_choice:not(:has(.bespoke_choice_input:checked)) {
+  opacity: 0.82;
+}
+
+/* 터치에서 hover가 눌린 채 남는 것을 막으려고 조건을 겁니다
+   (begin 카드와 같은 방식). 특정도가 위 규칙(0,6,0)보다 높아야 이깁니다. */
+@media (hover: hover) and (pointer: fine) {
+  .bespoke_choice_grid:has(.bespoke_choice_input:checked)
+    .bespoke_choice:not(:has(.bespoke_choice_input:checked)):hover {
+    opacity: 1;
+  }
+}
+
+.bespoke_choice:hover {
+  border-color: var(--color_point);
+}
+
+/* ------------------------------------------------------------
+   4. 버튼 (.bespoke_button)
+
+   Figma의 BUTTON/Primary 컴포넌트입니다. 데스크톱 260 × 70.
+   is_primary  — 딥그린 채움
+   is_secondary — 흰 배경 + 연한 테두리
+   ------------------------------------------------------------ */
+.bespoke_button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 56px;
+  padding: 10px 24px;
+  border: 1px solid transparent;
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  font-weight: 500;
+  line-height: 1.38;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--duration_base) var(--easing_base),
+              border-color var(--duration_base) var(--easing_base),
+              color var(--duration_base) var(--easing_base);
+}
+
+@media (min-width: 768px) {
+  .bespoke_button {
+    min-width: 260px;
+    min-height: 70px;
+  }
+}
+
+.bespoke_button.is_primary {
+  background-color: var(--color_point);
+  color: var(--color_text_inverse);
+}
+
+.bespoke_button.is_primary:hover,
+.bespoke_button.is_primary:focus-visible {
+  background-color: var(--color_text);
+}
+
+.bespoke_button.is_secondary {
+  border-color: var(--color_border);
+  background-color: var(--color_surface);
+  color: var(--color_text);
+}
+
+.bespoke_button.is_secondary:hover,
+.bespoke_button.is_secondary:focus-visible {
+  border-color: var(--color_point);
+  background-color: var(--color_surface_subtle);
+}
+
+.bespoke_button:disabled {
+  border-color: var(--color_border_disabled);
+  background-color: var(--color_surface_muted);
+  color: var(--color_text_subtle);
+  cursor: not-allowed;
+}
+
+.bespoke_button_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .bespoke_button_row {
+    gap: 30px;
+  }
+}
+
+/* ------------------------------------------------------------
+   5. 크로스링크 (.bespoke_crosslink)
+
+   Commerce / Action — Montserrat SemiBold 11 / 1.55 / +22px 자간.
+   밑줄이 딥그린인 작은 링크입니다. 완료 페이지의 지도 링크와
+   "Back to Bespoke"가 같은 형태입니다.
+   ------------------------------------------------------------ */
+.bespoke_crosslink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color_point);
+  color: var(--color_point);
+  font-family: var(--font_body);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0.22em;
+  text-decoration: none;
+  transition: opacity var(--duration_fast) var(--easing_base);
+}
+
+.bespoke_crosslink:hover,
+.bespoke_crosslink:focus-visible {
+  opacity: 0.7;
+}
+
+.bespoke_crosslink img {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+/* ------------------------------------------------------------
+   6. 폼 컨트롤
+
+   Figma는 밑줄만 있는 입력칸입니다(테두리 아래쪽 1px, #888880).
+   ------------------------------------------------------------ */
+.bespoke_field {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bespoke_field_label {
+  color: var(--color_text);
+  font-size: var(--fs_ui_14);
+  font-weight: 500;
+  line-height: 1.57;
+}
+
+.bespoke_field_input,
+.bespoke_field_select,
+.bespoke_field_textarea {
+  width: 100%;
+  padding: 0 0 6px 4px;
+  border: 0;
+  border-bottom: 1px solid var(--color_text_muted);
+  background-color: transparent;
+  color: var(--color_text);
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  line-height: 1.63;
+  transition: border-color var(--duration_fast) var(--easing_base);
+}
+
+.bespoke_field_textarea {
+  min-height: 64px;
+  padding-bottom: 4px;
+  resize: vertical;
+}
+
+.bespoke_field_input::placeholder,
+.bespoke_field_textarea::placeholder {
+  color: var(--color_text_subtle);
+}
+
+.bespoke_field_input:focus,
+.bespoke_field_select:focus,
+.bespoke_field_textarea:focus {
+  border-bottom-color: var(--color_point);
+}
+
+/* 화살표를 직접 그리지 않고 Figma에서 내보낸 caret 아이콘을 씁니다. */
+.bespoke_field_select {
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("../assets/icons/caret_down.svg");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+  background-size: 18px 18px;
+  cursor: pointer;
+}
+
+.bespoke_field.has_error .bespoke_field_input,
+.bespoke_field.has_error .bespoke_field_select,
+.bespoke_field.has_error .bespoke_field_textarea {
+  border-bottom-color: var(--color_error);
+}
+
+.bespoke_field_error {
+  color: var(--color_error);
+  font-size: var(--fs_ui_14);
+  line-height: 1.57;
+}
+
+/* 오류 문구는 자리를 늘 차지해 글자가 뜰 때 아래가 밀리지 않게 합니다. */
+.bespoke_field_error:empty::before {
+  content: "";
+  display: inline-block;
+}
+
+/* 폼 2열 그리드 */
+.bespoke_form_grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 768px) {
+  .bespoke_form_grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 70px;
+    row-gap: 40px;
+  }
+}
+
+/* ------------------------------------------------------------
+   7. 체크박스 (.bespoke_check)
+
+   18px 사각형. 기본 체크박스를 숨기지 않고 크기만 맞춥니다.
+   숨기면 키보드 초점과 읽기 도구 지원을 직접 다시 만들어야 합니다.
+   ------------------------------------------------------------ */
+.bespoke_check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bespoke_check_input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 4px 0 0;
+  accent-color: var(--color_point);
+  cursor: pointer;
+}
+
+.bespoke_check_label {
+  color: var(--color_text_secondary);
+  font-size: var(--fs_ui_14);
+  line-height: 1.57;
+  cursor: pointer;
+}
+
+.bespoke_check_list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ------------------------------------------------------------
+   8. 정보 그리드 (.bespoke_info_grid)
+
+   완료 페이지의 주소 / 영업시간 / 연락처 / 다음 안내 4칸입니다.
+   메인의 안내 카드와도 같은 리듬을 씁니다.
+   ------------------------------------------------------------ */
+.bespoke_info_grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .bespoke_info_grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 50px;
+    row-gap: 52px;
+  }
+}
+
+.bespoke_info_item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bespoke_info_body {
+  color: var(--color_text_secondary);
+  font-size: var(--fs_ui_16);
+  line-height: 1.63;
+}
+
+/* ------------------------------------------------------------
+   9. 진행 단계 내비 (.bespoke_steps)
+
+   예약 폼 상단에 붙는 4칸 띠입니다.
+   현재 구간에 들어오면 그 칸이 진하게 바뀝니다.
+   ------------------------------------------------------------ */
+.bespoke_steps {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--color_border);
+  border-left: 1px solid var(--color_border);
+}
+
+@media (min-width: 768px) {
+  .bespoke_steps {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.bespoke_steps_item {
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+  padding: 10px 16px;
+  border-right: 1px solid var(--color_border);
+  border-bottom: 1px solid var(--color_border);
+  color: var(--color_text_subtle);
+  font-size: var(--fs_ui_14);
+  line-height: 1.57;
+  transition: color var(--duration_base) var(--easing_base),
+              background-color var(--duration_base) var(--easing_base);
+}
+
+@media (min-width: 768px) {
+  .bespoke_steps_item {
+    font-size: var(--fs_ui_16);
+  }
+}
+
+.bespoke_steps_item.is_active {
+  background-color: var(--color_surface_subtle);
+  color: var(--color_text);
+  font-weight: 500;
+}
+
+/* ------------------------------------------------------------
+   10. 도움 문구
+   ------------------------------------------------------------ */
+.bespoke_note {
+  color: var(--color_text_muted);
+  font-size: var(--fs_ui_14);
+  line-height: 1.57;
+}
+
+.bespoke_status {
+  color: var(--color_error);
+  font-size: var(--fs_ui_14);
+  line-height: 1.57;
+}
+
+.bespoke_status:empty {
+  display: none;
+}
+
+/* ------------------------------------------------------------
+   ★ 75% 화면 스케일에 맞춘 레이아웃 밀도 (2026-08-10)
+
+   **이 블록은 반드시 파일 맨 끝에 있어야 합니다.** 아래 값들은 위쪽
+   `.page_bespoke` 기본 정의와 특정도가 같아서 소스 순서로만 이깁니다.
+   앞으로 옮기면 조용히 무효가 됩니다(실제로 겪었습니다).
+
+   `common/css/common.css`가 1850~1990px 구간에서 `html { zoom: 0.75 }`를
+   겁니다(커밋 `0765b4b`). **그 축소는 그대로 둡니다** — 사이트 전체가
+   같은 환경으로 보이게 하려는 결정입니다.
+
+   ★ 문제는 축소 자체가 아니라 **폭·여백 값이 1920 캔버스에 고정**된 것입니다.
+   zoom 0.75가 걸리면 레이아웃이 쓸 수 있는 폭은 1905가 아니라
+   **1905 ÷ 0.75 = 2540 CSS px**가 됩니다. 그런데
+     · `--layout_inner`가 1600px → 화면의 **63%**만 쓰고 좌우 470px씩 비움
+     · 타이포 clamp 상한이 64/48/24px → 화면에는 48/36/18px로 보임
+   그래서 "여백이 넓고 콘텐츠가 작다"가 됩니다.
+
+   그래서 **전체를 다시 확대하는 대신(그건 zoom을 끄는 것과 같습니다)
+   캔버스가 넓어진 만큼 레버 값만 키웁니다.** 배율은 `--site_view_scale`에서
+   직접 끌어오므로, 공통 파일에서 0.75를 다른 값으로 바꾸면 여기도 따라갑니다.
+
+   ★ **푸터는 제외해야 합니다.** 공통 파일이 `.common_footer_slot`에
+   `zoom: calc(1 / --site_view_scale)`로 역보정을 걸어 두어 푸터만 원래
+   크기입니다. 거기까지 폭을 키우면 2133px이 1905 화면을 넘겨 **가로
+   스크롤이 생깁니다.** 그래서 푸터 안에서는 원래 값으로 되돌립니다.
+   ------------------------------------------------------------ */
+
+@media (min-width: 1850px) and (max-width: 1990px) {
+  :root {
+    /* 0.75 → 1.3333. 캔버스가 넓어진 배수입니다. */
+    --bespoke_canvas: calc(1 / var(--site_view_scale));
+
+    --layout_inner: calc(1600px * var(--bespoke_canvas));
+    --layout_gutter: calc(64px * var(--bespoke_canvas));
+
+    /* 시안 캔버스 단위 — 아래 타이포가 이 단위로 곱해집니다. */
+    --bespoke_unit: calc(1px * var(--bespoke_canvas));
+
+    /* 타이포도 같은 이유로 화면에서는 0.75배로 보입니다. clamp의 vw 항과
+       상한을 함께 키워 시안 크기(64/48/32/24/20/16/15/14px)가 그대로
+       나오게 합니다. */
+    --fs_display_64: clamp(36px, calc(4.5vw * var(--bespoke_canvas)), calc(64 * var(--bespoke_unit)));
+    --fs_display_48: clamp(28px, calc(3.5vw * var(--bespoke_canvas)), calc(48 * var(--bespoke_unit)));
+    --fs_display_32: clamp(24px, calc(2.4vw * var(--bespoke_canvas)), calc(32 * var(--bespoke_unit)));
+    --fs_body_24: clamp(18px, calc(1.6vw * var(--bespoke_canvas)), calc(24 * var(--bespoke_unit)));
+    --fs_body_20: clamp(16px, calc(1.4vw * var(--bespoke_canvas)), calc(20 * var(--bespoke_unit)));
+    --fs_ui_20: calc(20 * var(--bespoke_unit));
+    --fs_ui_16: calc(16 * var(--bespoke_unit));
+    --fs_ui_15: calc(15 * var(--bespoke_unit));
+    --fs_ui_14: calc(14 * var(--bespoke_unit));
+  }
+
+  .page_bespoke {
+    --bespoke_section_gap: calc(160px * var(--bespoke_canvas));
+    --bespoke_head_gap: calc(80px * var(--bespoke_canvas));
+    --bespoke_fs_hero: calc(64px * var(--bespoke_canvas));
+    --bespoke_fs_section: calc(48px * var(--bespoke_canvas));
+    --bespoke_fs_card: calc(24px * var(--bespoke_canvas));
+  }
+
+  /* ★ 푸터는 역보정(`zoom: calc(1 / --site_view_scale)`)으로 이미 원래
+     크기입니다. 폭도 타이포도 여기서 키우면 화면을 넘치고 글자가 커집니다.
+     안에서는 전부 원래 값으로 되돌립니다. */
+  .common_footer_slot {
+    --bespoke_unit: 1px;
+    --layout_inner: 1600px;
+    --layout_gutter: 64px;
+    --fs_display_64: clamp(36px, 4.5vw, 64px);
+    --fs_display_48: clamp(28px, 3.5vw, 48px);
+    --fs_display_32: clamp(24px, 2.4vw, 32px);
+    --fs_body_24: clamp(18px, 1.6vw, 24px);
+    --fs_body_20: clamp(16px, 1.4vw, 20px);
+    --fs_ui_20: 20px;
+    --fs_ui_16: 16px;
+    --fs_ui_15: 15px;
+    --fs_ui_14: 14px;
+  }
+
+  /* 예약·완료 화면에서도 공통 헤더는 다른 페이지와 같은 토큰을 사용합니다. */
+  .common_header_slot {
+    --layout_inner: 1600px;
+    --layout_gutter: 64px;
+    --fs_ui_20: 20px;
+    --fs_ui_16: 16px;
+    --fs_ui_15: 15px;
+    --fs_ui_14: 14px;
+  }
+
+  .common_header_slot .header {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+}

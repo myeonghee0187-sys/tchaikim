@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request a reservation — Bespoke — Tchai Kim Youngjin</title>
+<meta name="description" content="Tell us about the piece you have in mind, and choose a time to meet — at our Seoul atelier, or by video call.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#fffdf9">
+<link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+<link rel="icon" href="../../favicon/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="../../favicon/favicon-32.png">
+<link rel="apple-touch-icon" href="../../favicon/apple-touch-icon.png">
+<link rel="manifest" href="../../favicon/site.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Trirong:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.css">
+
+<link rel="stylesheet" href="../../common/css/tokens.css">
+<link rel="stylesheet" href="../../common/css/reset.css">
+<link rel="stylesheet" href="../../common/css/common.css">
+<link rel="stylesheet" href="../../common/css/layout.css?v=6">
+  <link rel="stylesheet" href="../../common/css/shop_transition.css?v=3">
+<link rel="stylesheet" href="css/bespoke_base.css">
+<link rel="stylesheet" href="css/reservation.css">
+</head>
+<body class="page_bespoke" data-page="bespoke" data-header-variant="black">
+
+<div class="common_header_slot" data-component="../../common/components/header.html?v=6">
+  <span class="a11y_hidden">Loading header</span>
+</div>
+
+<main class="main" id="main_content">
+
+  <form class="reservation_form" id="reservation_form" novalidate>
+
+    <!-- hero + 진행 단계 -->
+    <section class="reservation_hero" aria-labelledby="reservation_hero_title">
+      <div class="common_container">
+        <div class="bespoke_section_head">
+          <p class="bespoke_eyebrow">Reservation</p>
+          <h1 class="bespoke_hero_heading" id="reservation_hero_title">Let&rsquo;s design your<br>first meeting.</h1>
+          <p class="bespoke_section_desc">Tell us about the piece you have in mind, and choose a time to meet &mdash; at our Seoul atelier, or by video call.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ★ 진행 단계 띠는 히어로 **밖**에 있어야 합니다.
+         sticky는 부모 상자 안에서만 붙습니다. 이 nav가 .reservation_hero의
+         마지막 자식이던 동안에는 붙을 여지가 -71px이라 전혀 붙지 않고
+         그냥 흘러갔습니다. 폼의 직계 자식이라야 폼 끝(= 전송 직전)까지 붙습니다.
+         다시 섹션 안으로 넣지 마세요. -->
+    <nav class="reservation_steps" aria-label="Reservation progress">
+      <div class="common_container">
+        <ol class="bespoke_steps" id="reservation_steps">
+          <li class="bespoke_steps_item is_active" data-step_for="step_design"><a class="reservation_steps_link" href="#step_design">01 Design &amp; Fabric</a></li>
+          <li class="bespoke_steps_item" data-step_for="step_schedule"><a class="reservation_steps_link" href="#step_schedule">02 Schedule</a></li>
+          <li class="bespoke_steps_item" data-step_for="step_details"><a class="reservation_steps_link" href="#step_details">03 Your Details</a></li>
+          <li class="bespoke_steps_item" data-step_for="step_confirm"><a class="reservation_steps_link" href="#step_confirm">04 Confirm</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <!-- 01 실루엣 -->
+    <section class="bespoke_section" id="step_design" aria-labelledby="silhouette_title">
+      <div class="common_container">
+        <fieldset class="reservation_fieldset">
+          <legend class="a11y_hidden">Choose a silhouette</legend>
+
+          <div class="bespoke_section_head">
+            <p class="bespoke_eyebrow">01 &mdash; Customization</p>
+            <h2 class="bespoke_section_title" id="silhouette_title">Choose a silhouette</h2>
+            <p class="bespoke_section_desc">A starting point for your consultation &mdash; your designer will refine the details with you.</p>
+          </div>
+
+          <ul class="bespoke_choice_grid is_three_up">
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="silhouette" value="jeogori_chima" checked>
+                <span class="bespoke_choice_media"><img src="assets/reservation/classic_two_piece.png" alt="Jeogori and chima, the classic two-piece hanbok silhouette" width="400" height="400"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Jeogori &amp; Chima</span>
+                  <span class="bespoke_choice_desc">The classic two-piece silhouette</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="silhouette" value="durumagi">
+                <span class="bespoke_choice_media"><img src="assets/reservation/overcoat.png" alt="Durumagi, a structured hanbok overcoat" width="400" height="400"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Durumagi</span>
+                  <span class="bespoke_choice_desc">A structured overcoat for layering</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="silhouette" value="modern_hanbok">
+                <span class="bespoke_choice_media"><img src="assets/reservation/modern_hanbok.png" alt="Modern hanbok with reworked lines for daily wear" width="400" height="400"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Modern Hanbok</span>
+                  <span class="bespoke_choice_desc">Reworked lines for daily wear</span>
+                </span>
+              </label>
+            </li>
+          </ul>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- 01 원단 -->
+    <section class="bespoke_section" aria-labelledby="fabric_title">
+      <div class="common_container">
+        <fieldset class="reservation_fieldset">
+          <legend class="a11y_hidden">Choose a fabric</legend>
+
+          <div class="bespoke_section_head">
+            <h2 class="bespoke_section_title" id="fabric_title">Choose a fabric</h2>
+            <p class="bespoke_section_desc">Starting from six signature fabrics &mdash; your designer will bring physical swatches to your consultation.</p>
+          </div>
+
+          <ul class="bespoke_choice_grid">
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="fabric" value="silk">
+                <span class="bespoke_choice_media"><img src="assets/main/slik.jpg" alt="Silk fabric swatch" width="400" height="300"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Silk</span>
+                  <span class="bespoke_choice_desc">Refined, elegant, timeless</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="fabric" value="cotton" checked>
+                <span class="bespoke_choice_media"><img src="assets/main/cotton.jpg" alt="Cotton fabric swatch" width="400" height="300"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Cotton</span>
+                  <span class="bespoke_choice_desc">Natural, easy care</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="fabric" value="linen">
+                <span class="bespoke_choice_media"><img src="assets/main/linen.jpg" alt="Linen fabric swatch" width="400" height="300"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Linen</span>
+                  <span class="bespoke_choice_desc">Light, organic, modern</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="fabric" value="ramie">
+                <span class="bespoke_choice_media"><img src="assets/main/mosi.jpg" alt="Ramie (mosi) fabric swatch" width="400" height="300"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Ramie</span>
+                  <span class="bespoke_choice_desc">Heritage texture</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="fabric" value="traditional_silk">
+                <span class="bespoke_choice_media"><img src="assets/main/tranditional_slik.jpg" alt="Traditional silk fabric swatch" width="400" height="300"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Traditional Silk</span>
+                  <span class="bespoke_choice_desc">Woven with historic technique</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label class="bespoke_choice">
+                <input class="bespoke_choice_input a11y_hidden" type="radio" name="fabric" value="seasonal">
+                <span class="bespoke_choice_media"><img src="assets/main/seasonal_fabric.jpg" alt="Seasonal fabric swatch" width="400" height="300"></span>
+                <span class="bespoke_choice_body">
+                  <span class="bespoke_choice_name">Seasonal Fabric</span>
+                  <span class="bespoke_choice_desc">A rotating limited selection</span>
+                </span>
+              </label>
+            </li>
+          </ul>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- 02 일정 -->
+    <section class="bespoke_section" id="step_schedule" aria-labelledby="schedule_title">
+      <div class="common_container">
+
+        <div class="bespoke_section_head">
+          <p class="bespoke_eyebrow">02 &mdash; Schedule &amp; Location</p>
+          <h2 class="bespoke_section_title" id="schedule_title">Choose a date and time</h2>
+          <p class="bespoke_section_desc">Consultations run about 60 minutes.</p>
+        </div>
+
+        <fieldset class="reservation_fieldset">
+          <legend class="a11y_hidden">How would you like to meet?</legend>
+          <div class="reservation_mode">
+            <label class="reservation_mode_option">
+              <input class="a11y_hidden" type="radio" name="meeting_mode" value="atelier" checked>
+              <span class="bespoke_button is_secondary">Visit the Atelier</span>
+            </label>
+            <label class="reservation_mode_option">
+              <input class="a11y_hidden" type="radio" name="meeting_mode" value="phone">
+              <span class="bespoke_button is_secondary">Phone Call</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="reservation_schedule">
+
+          <fieldset class="reservation_fieldset reservation_calendar">
+            <legend class="a11y_hidden">Choose a date</legend>
+
+            <div class="reservation_calendar_head">
+              <button class="reservation_calendar_nav" type="button" data-calendar_step="-1" aria-label="Previous month">
+                <img src="assets/icons/chevron_left.svg" alt="" width="24" height="24">
+              </button>
+              <p class="reservation_calendar_month" id="reservation_calendar_month">August 2026</p>
+              <button class="reservation_calendar_nav is_next" type="button" data-calendar_step="1" aria-label="Next month">
+                <img src="assets/icons/chevron_left.svg" alt="" width="24" height="24">
+              </button>
+            </div>
+
+            <table class="reservation_calendar_table">
+              <caption class="a11y_hidden">August 2026</caption>
+              <thead>
+                <tr>
+                  <th scope="col"><abbr title="Sunday">S</abbr></th>
+                  <th scope="col"><abbr title="Monday">M</abbr></th>
+                  <th scope="col"><abbr title="Tuesday">T</abbr></th>
+                  <th scope="col"><abbr title="Wednesday">W</abbr></th>
+                  <th scope="col"><abbr title="Thursday">T</abbr></th>
+                  <th scope="col"><abbr title="Friday">F</abbr></th>
+                  <th scope="col"><abbr title="Saturday">S</abbr></th>
+                </tr>
+              </thead>
+              <tbody id="reservation_calendar_body">
+                <tr>
+                  <td></td><td></td><td></td><td></td><td></td><td></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-01">1</button></td>
+                </tr>
+                <tr>
+                  <td><button class="reservation_day" type="button" value="2026-08-02">2</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-03">3</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-04">4</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-05">5</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-06">6</button></td>
+                  <td><button class="reservation_day is_selected" type="button" value="2026-08-07" aria-pressed="true">7</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-08">8</button></td>
+                </tr>
+                <tr>
+                  <td><button class="reservation_day" type="button" value="2026-08-09">9</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-10">10</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-11">11</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-12">12</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-13">13</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-14">14</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-15">15</button></td>
+                </tr>
+                <tr>
+                  <td><button class="reservation_day" type="button" value="2026-08-16">16</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-17">17</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-18">18</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-19">19</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-20">20</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-21">21</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-22">22</button></td>
+                </tr>
+                <tr>
+                  <td><button class="reservation_day" type="button" value="2026-08-23">23</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-24">24</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-25">25</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-26">26</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-27">27</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-28">28</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-29">29</button></td>
+                </tr>
+                <tr>
+                  <td><button class="reservation_day" type="button" value="2026-08-30">30</button></td>
+                  <td><button class="reservation_day" type="button" value="2026-08-31">31</button></td>
+                  <td></td><td></td><td></td><td></td><td></td>
+                </tr>
+              </tbody>
+            </table>
+            <input type="hidden" name="meeting_date" id="reservation_date_value" value="2026-08-07">
+          </fieldset>
+
+          <fieldset class="reservation_fieldset reservation_timetable">
+            <legend class="a11y_hidden">Choose a time</legend>
+            <ul class="reservation_time_list">
+              <li>
+                <label class="reservation_time">
+                  <input class="a11y_hidden" type="radio" name="meeting_time" value="11:00">
+                  <span class="reservation_time_face">11:00 AM</span>
+                </label>
+              </li>
+              <li>
+                <label class="reservation_time">
+                  <input class="a11y_hidden" type="radio" name="meeting_time" value="13:00" checked>
+                  <span class="reservation_time_face">1:00 PM</span>
+                </label>
+              </li>
+              <li>
+                <label class="reservation_time">
+                  <input class="a11y_hidden" type="radio" name="meeting_time" value="14:00">
+                  <span class="reservation_time_face">2:00 PM</span>
+                </label>
+              </li>
+              <li>
+                <label class="reservation_time">
+                  <input class="a11y_hidden" type="radio" name="meeting_time" value="15:00">
+                  <span class="reservation_time_face">3:00 PM</span>
+                </label>
+              </li>
+              <li>
+                <label class="reservation_time">
+                  <input class="a11y_hidden" type="radio" name="meeting_time" value="16:00">
+                  <span class="reservation_time_face">4:00 PM</span>
+                </label>
+              </li>
+            </ul>
+            <p class="bespoke_status" id="schedule_status" role="status"></p>
+          </fieldset>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 개인 정보 -->
+    <section class="bespoke_section" id="step_details" aria-labelledby="details_title">
+      <div class="common_container">
+
+        <div class="bespoke_section_head">
+          <p class="bespoke_eyebrow">03 &mdash; Personal Details</p>
+          <h2 class="bespoke_section_title" id="details_title">A little about you</h2>
+          <p class="bespoke_section_desc">So your designer can prepare ahead of your visit.</p>
+        </div>
+
+        <div class="bespoke_form_grid">
+          <p class="bespoke_field">
+            <label class="bespoke_field_label" for="field_name">Full name</label>
+            <input class="bespoke_field_input" id="field_name" name="full_name" type="text" placeholder="your name" autocomplete="name" value="Mei Ling Lee">
+          </p>
+          <p class="bespoke_field">
+            <label class="bespoke_field_label" for="field_phone">Contact number</label>
+            <input class="bespoke_field_input" id="field_phone" name="phone" type="tel" placeholder="+1 000 000 0000" autocomplete="tel" value="010-1234-5678">
+          </p>
+          <p class="bespoke_field">
+            <label class="bespoke_field_label" for="field_email">Email address</label>
+            <input class="bespoke_field_input" id="field_email" name="email" type="email" placeholder="your@email.com" autocomplete="email" value="example@example.com">
+          </p>
+          <p class="bespoke_field">
+            <label class="bespoke_field_label" for="field_occasion">Occasion</label>
+            <select class="bespoke_field_select" id="field_occasion" name="occasion">
+              <option value="everyday" selected>Everyday wear</option>
+              <option value="wedding">Wedding</option>
+              <option value="ceremony">Ceremony / Doljanchi</option>
+              <option value="gift">Gift</option>
+              <option value="other">Other</option>
+            </select>
+          </p>
+        </div>
+
+        <p class="bespoke_field reservation_notes">
+          <label class="bespoke_field_label" for="field_notes">Special requests or notes</label>
+          <textarea class="bespoke_field_textarea" id="field_notes" name="notes" rows="3" placeholder="Let us know anything about the silhouette, occasion, or details you'd like your designer to consider.">I would like a slightly longer chima than the standard length, and a collar finished by hand.</textarea>
+        </p>
+      </div>
+    </section>
+
+    <!-- 04 약관 -->
+    <section class="bespoke_section" id="step_confirm" aria-labelledby="confirm_title">
+      <div class="common_container">
+
+        <div class="bespoke_section_head">
+          <p class="bespoke_eyebrow">04 &mdash; Terms &amp; Notice</p>
+          <h2 class="bespoke_section_title" id="confirm_title">Before you send this</h2>
+          <p class="bespoke_section_desc">Reservations are confirmed by email within 2 business days. Fabric and pricing details are finalized during your consultation.</p>
+        </div>
+
+        <!-- 모두 동의하기 — 아래 개별 항목의 부모입니다.
+             `name`을 주지 않습니다: 전송할 값이 아니라 조작용 컨트롤이라
+             폼 데이터에 들어가면 안 됩니다.
+             동기화는 js/reservation.js의 initSubmit()이 맡습니다. -->
+        <div class="bespoke_check reservation_check_all">
+          <input class="bespoke_check_input" id="agree_all" type="checkbox" checked>
+          <label class="bespoke_check_label" for="agree_all">Agree to all</label>
+        </div>
+
+        <ul class="bespoke_check_list">
+          <li class="bespoke_check">
+            <input class="bespoke_check_input" id="agree_privacy" name="agree_privacy" type="checkbox" required checked>
+            <label class="bespoke_check_label" for="agree_privacy">I agree to the collection and use of my personal information for the purpose of this consultation.</label>
+          </li>
+          <li class="bespoke_check">
+            <input class="bespoke_check_input" id="agree_production" name="agree_production" type="checkbox" required checked>
+            <label class="bespoke_check_label" for="agree_production">I understand that average production time is 3&ndash;5 weeks, and production begins upon confirmation of payment.</label>
+          </li>
+        </ul>
+
+        <hr class="bespoke_rule reservation_confirm_rule">
+
+        <div class="reservation_submit">
+          <button class="bespoke_button is_primary" type="submit">Request a reservation</button>
+          <!-- 두 동의가 모두 켜진 상태로 시작하므로 비워 둡니다
+               (`.bespoke_status:empty`가 숨깁니다). 동의를 풀면
+               refreshAgreeStatus()가 안내 문구를 다시 채웁니다. -->
+          <p class="bespoke_status" id="reservation_status" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+  </form>
+
+</main>
+
+<div class="common_footer_slot" data-component="../../common/components/footer.html">
+  <span class="a11y_hidden">Loading footer</span>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="../../common/js/common.js?v=10"></script>
+  <script src="../../common/js/shop_transition.js?v=5"></script>
+<script src="js/reservation.js"></script>
+</body>
+</html>

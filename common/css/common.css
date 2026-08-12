@@ -1,0 +1,328 @@
+@charset "utf-8";
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--color_bg);
+  color: var(--color_text);
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  line-height: 1.5;
+}
+
+.a11y_hidden {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  white-space: nowrap;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color_point);
+  outline-offset: 3px;
+}
+
+.main {
+  display: block;
+}
+
+/* Shared text-link button used across page sections. */
+.main_button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 2px 9px;
+  color: var(--color_point);
+  font-family: var(--font_body);
+  font-size: var(--fs_ui_16);
+  font-weight: 500;
+  line-height: 1.63;
+  text-decoration: none;
+  transition: color var(--duration_fast) var(--easing_base),
+              transform var(--duration_fast) var(--easing_base);
+}
+
+.main_button::before,
+.main_button::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  content: "";
+}
+
+.main_button::before {
+  background-color: var(--color_point);
+  opacity: 0.22;
+}
+
+.main_button::after {
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--duration_base) var(--easing_base);
+}
+
+.main_button:has(.main_button_arrow_left)::after {
+  transform-origin: right center;
+}
+
+.main_button:hover,
+.main_button:focus-visible {
+  color: #16332f;
+  transform: translateY(-2px);
+}
+
+.main_button:hover::after,
+.main_button:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.main_button:active {
+  transform: translateY(0);
+}
+
+/* 핑크 변형. 기본 그린 버튼과 **구조는 완전히 같고 색만 바꿉니다** —
+   밑줄이 차오르는 방식, 화살표 이동, 떠오르는 정도를 건드리지 않습니다.
+
+   ★ ::after(차오르는 밑줄)에는 규칙이 없습니다. 그 선은 `currentColor`라
+     위의 color 두 줄만 바꾸면 기본·호버 모두 저절로 따라옵니다.
+   ★ 이 modifier를 쓰는 곳은 지금 pages/main뿐입니다. 그래도 규칙을 여기 두는 것은
+     .main_button 본체가 여기 있기 때문입니다 — 한 컴포넌트를 두 파일에 쪼개면
+     나중에 한쪽만 고치게 됩니다. */
+.main_button.is_pink {
+  color: var(--color_point_pink);
+}
+
+.main_button.is_pink::before {
+  background-color: var(--color_point_pink);
+}
+
+.main_button.is_pink:hover,
+.main_button.is_pink:focus-visible {
+  color: var(--color_point_pink_deep);
+}
+
+/* ★ 포커스 링도 함께 바꿉니다. 이 파일 위쪽의 전역 규칙이
+   `:focus-visible { outline: 2px solid var(--color_point) }`이라, 두지 않으면
+   핑크 버튼에 **초록 링**이 뜹니다. 밝은 쪽(#966658, 크림 대비 4.76)이 아니라
+   짙은 쪽을 쓰는 것은 포커스 표시가 3:1 이상이어야 하기 때문입니다 — 5.90입니다. */
+.main_button.is_pink:focus-visible,
+.brand_stack_action[data-brand="youngjin"]:focus-visible {
+  outline-color: var(--color_point_pink_deep);
+}
+
+.main_button_arrow {
+  display: inline-block;
+  font-size: 1.15em;
+  line-height: 1;
+  transition: transform var(--duration_fast) var(--easing_base);
+}
+
+.main_button:hover .main_button_arrow_left,
+.main_button:focus-visible .main_button_arrow_left {
+  transform: translateX(-6px) scale(1.06);
+}
+
+.main_button:hover .main_button_arrow_right,
+.main_button:focus-visible .main_button_arrow_right {
+  transform: translateX(6px) scale(1.06);
+}
+
+/* Figma 1920px canvas baseline.
+   Full-bleed backgrounds stay on the section; place only section content here. */
+.common_container {
+  width: 100%;
+  max-width: calc(var(--layout_inner) + var(--layout_gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--layout_gutter);
+}
+
+.common_header_slot {
+  width: 100%;
+}
+
+body[data-header-variant="white"] .common_header_slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 50;
+}
+
+body[data-header-variant="black"] .common_header_slot {
+  min-height: var(--header_height);
+}
+
+/* =========================================================
+   공통 스크롤 안내 — 모든 페이지에서 common.js가 한 번만 생성합니다.
+   페이지별 연출이 직접 제어할 때는 data-scroll-hint-mode="custom"을 사용합니다.
+   ========================================================= */
+.common_scroll_hint {
+  position: fixed;
+  top: calc(var(--header_height) + clamp(20px, 3svh, 36px));
+  left: var(--layout_gutter);
+  z-index: 42;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  width: max-content;
+  color: var(--color_text_inverse);
+  opacity: 0;
+  pointer-events: none;
+  transition: color var(--duration_fast) var(--easing_base),
+              opacity var(--duration_base) var(--easing_base);
+}
+
+.common_scroll_hint.is_visible {
+  opacity: 1;
+}
+
+.common_scroll_hint.is_on_light {
+  color: var(--color_text);
+}
+
+.common_scroll_hint.is_on_light .common_scroll_hint_line {
+  background-color: rgba(10, 10, 10, 0.22);
+}
+
+.common_scroll_hint_label {
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.common_scroll_hint_line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 56px;
+  overflow: hidden;
+  background-color: rgba(255, 253, 249, 0.3);
+  transition: background-color var(--duration_fast) var(--easing_base);
+}
+
+.common_scroll_hint_line::after {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 45%;
+  background-color: currentColor;
+  content: "";
+  opacity: 1;
+  animation: common_scroll_hint_travel 2.4s var(--easing_base) infinite;
+}
+
+@keyframes common_scroll_hint_travel {
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(222%);
+  }
+}
+
+/* 세로 화면에서는 다음 콘텐츠가 이미 함께 보여 별도 안내가 필요하지 않습니다. */
+@media (max-aspect-ratio: 1332 / 1000) {
+  .common_scroll_hint {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .common_scroll_hint {
+    transition: none;
+  }
+
+  .common_scroll_hint_line::after {
+    animation: none;
+  }
+}
+
+.top_button {
+  --top_button_right: 12px;
+  position: fixed;
+  /* TOP 버튼 위치 조절: 화면 크기별 --top_button_right와 아래 bottom을 수정합니다. */
+  right: var(--top_button_right);
+  bottom: 24px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--color_line);
+  border-radius: 50%;
+  background-color: var(--color_bg);
+  color: var(--color_text);
+  font-family: var(--font_ui);
+  font-size: var(--fs_ui_14);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity var(--duration_fast) var(--easing_base),
+              transform var(--duration_fast) var(--easing_base),
+              background-color var(--duration_fast) var(--easing_base),
+              color var(--duration_fast) var(--easing_base);
+}
+
+.top_button.is_visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.top_button:hover,
+.top_button:focus-visible {
+  background-color: var(--color_point);
+  color: var(--color_text_on_dark);
+}
+
+@media (min-width: 768px) {
+  .top_button {
+    --top_button_right: 20px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .top_button {
+    --top_button_right: 32px;
+  }
+}
+
+/* 1920px 발표 화면에서는 Shop과 동일하게 전체 콘텐츠를 2560px 화면 비율로 축소합니다.
+   조절: --site_view_scale만 바꾸면 됩니다. 푸터는 다른 페이지와 통일된 원래 크기를 유지합니다. */
+@media (min-width: 1850px) and (max-width: 1990px) {
+  :root {
+    --site_view_scale: 0.75;
+  }
+
+  html {
+    zoom: var(--site_view_scale);
+  }
+
+  .common_footer_slot {
+    zoom: calc(1 / var(--site_view_scale));
+  }
+
+  /* 공통 zoom 안에서도 TOP 버튼은 원래 48px 크기와 화면 기준 위치를 유지합니다. */
+  .top_button {
+    zoom: calc(1 / var(--site_view_scale));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

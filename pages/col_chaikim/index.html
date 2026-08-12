@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tchai Kim — Collection</title>
+  <meta name="description"
+    content="Tchai Kim collection archive — everyday hanbok by year and the pieces worn on stage, on screen, and in editorials.">
+  <link rel="canonical" href="https://gysld261-png.github.io/tchaikimm/pages/col_chaikim/">
+  <meta name="theme-color" content="#fffdf9">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Tchai Kim">
+  <meta property="og:title" content="Tchai Kim — Collection">
+  <meta property="og:description" content="Tchai Kim collection archive — everyday hanbok by year and the pieces worn on stage, on screen, and in editorials.">
+  <meta property="og:url" content="https://gysld261-png.github.io/tchaikimm/pages/col_chaikim/">
+  <meta property="og:image" content="https://gysld261-png.github.io/tchaikimm/common/assets/og/og-default.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Tchai Kim — Where tradition finds freedom">
+  <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+  <link rel="icon" href="../../favicon/favicon.ico" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../favicon/favicon-32.png">
+  <link rel="apple-touch-icon" href="../../favicon/apple-touch-icon.png">
+  <link rel="manifest" href="../../favicon/site.webmanifest">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600&family=Trirong:ital,wght@0,400;0,600&display=swap">
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.css">
+
+  <link rel="stylesheet" href="../../common/css/tokens.css">
+  <link rel="stylesheet" href="../../common/css/reset.css">
+  <link rel="stylesheet" href="../../common/css/common.css">
+  <link rel="stylesheet" href="../../common/css/layout.css?v=6">
+  <link rel="stylesheet" href="../../common/css/shop_transition.css?v=3">
+  <link rel="stylesheet" href="css/col_chaikim.css">
+</head>
+
+<body data-page="collection" data-header-variant="black">
+
+  <div class="common_header_slot" data-component="../../common/components/header.html?v=6">
+    <span class="a11y_hidden">Loading header</span>
+  </div>
+
+  <main class="main" id="main_content">
+
+    <!-- hero — Figma "Fashion_show_video" (1710:3972).
+       시안의 채우기는 정지 이미지였지만 실제 영상으로 교체했습니다.
+       자매 페이지(col_chaikimyoungjin)와 같은 구성입니다.
+
+       재생하는 파일은 `chaikimhero_web.mp4`(H.264)입니다.
+       원본 `chaikimhero.mp4`는 HEVC(H.265) Main 10이라 Firefox나 OS 디코더가 없는
+       환경에서 재생되지 않습니다. 원본은 마스터로 asset에 그대로 두었습니다. -->
+    <section class="collection_hero" aria-labelledby="collection_hero_title">
+      <video class="collection_hero_video" id="collection_hero_video" autoplay muted loop playsinline
+        preload="metadata" poster="asset/hero.png"
+        aria-label="Tchai Kim runway film">
+        <source src="asset/chaikimhero_web.mp4" type="video/mp4">
+      </video>
+      <h1 class="collection_hero_title" id="collection_hero_title">TChai Kim</h1>
+
+      <!-- 브랜드 전환 탭 — 히어로 안 absolute overlay입니다.
+         히어로 높이·영상·가운데 제목 위치를 건드리지 않고, 문서 높이도 늘리지 않습니다.
+
+         ★ 두 브랜드는 각각 완성된 자매 페이지입니다(pages/col_chaikim ·
+         pages/col_chaikimyoungjin). 그래서 탭은 버튼이 아니라 페이지 이동(a)이고,
+         히어로 영상 · 가운데 제목 · 아래 Collection 콘텐츠가 통째로 바뀝니다.
+         `js/col_chaikim.js`의 initBrandTabs()가 이동 직전에 히어로를
+         페이드아웃하고, 도착한 페이지가 히어로를 페이드인해 crossfade처럼 이어집니다.
+
+         밑줄은 두 가지입니다 — JS가 없으면 활성 탭의 ::after(고정),
+         JS가 붙으면 .brand_tab_indicator(미끄러짐). css의 is_slide_ready가 가릅니다.
+
+         ★ 자매 페이지와 순서가 같아야 합니다
+         (2026-08-11 사용자 요청으로 TCHAI KIM YOUNG JIN → TCHAI KIM으로 바꿨습니다).
+         순서가 다르면 이동한 뒤 밑줄이 반대쪽에서 튀어나온 것처럼 보입니다. -->
+      <nav class="brand_tabs" aria-label="Collection brand">
+        <ul class="brand_tab_list">
+          <li class="brand_tab_item">
+            <a class="brand_tab_link" href="../col_chaikimyoungjin/index.html">TCHAI KIM YOUNG JIN</a>
+          </li>
+          <li class="brand_tab_item is_active">
+            <a class="brand_tab_link" href="index.html" aria-current="page">TCHAI KIM</a>
+          </li>
+        </ul>
+        <span class="brand_tab_indicator" aria-hidden="true"></span>
+      </nav>
+    </section>
+
+    <!-- showcase — Figma "arc"(1710:3976) + "Rounded Background"(1710:3978) 위에
+       떠 있는 사진들과 문장. 좌표는 1920 캔버스 기준 절대배치입니다. -->
+    <section class="showcase" aria-labelledby="showcase_quote">
+      <div class="showcase_bg" aria-hidden="true">
+        <img class="showcase_arc" src="assets/icons/arc.svg" alt="">
+        <div class="showcase_gradient"></div>
+      </div>
+
+      <div class="collection_frame showcase_frame">
+        <figure class="showcase_photo showcase_photo_tilt showcase_photo_a">
+          <img src="asset/showcase_a.png" alt="A model in a green floral jeogori seated among summer greenery">
+        </figure>
+
+        <figure class="showcase_photo showcase_photo_tilt showcase_photo_b">
+          <img src="asset/showcase_b.png"
+            alt="A pink jacquard hanbok with a chartreuse skirt and a wide green hat">
+        </figure>
+
+        <h2 class="showcase_quote" id="showcase_quote">
+          <span class="showcase_quote_line showcase_quote_line1">Reimagining</span>
+          <span class="showcase_quote_line showcase_quote_line2">Tradition for</span>
+          <span class="showcase_quote_line showcase_quote_line3">Daily Life</span>
+        </h2>
+
+        <!-- 인트로에서 좌우 두 장이 가운데로 모인 뒤 이 캐러셀이 자리를 넘겨받습니다.
+           첫 장이 시안의 가장 큰 사진이고, 나머지는 <> 버튼으로 넘깁니다. -->
+        <div class="showcase_carousel" role="group" aria-roledescription="carousel"
+          aria-label="Collection images">
+          <div class="showcase_carousel_viewport">
+            <figure class="showcase_photo showcase_slide showcase_photo_c is_current">
+              <img src="asset/showcase_c.png" alt="A model in a mint sheer coat over a dark linen dress">
+              <figcaption class="showcase_caption">Mint Sheer Coat</figcaption>
+            </figure>
+            <figure class="showcase_photo showcase_slide showcase_photo_d" aria-hidden="true">
+              <img src="asset/showcase_d.png" alt="Pastel silk lanterns gathered together">
+              <figcaption class="showcase_caption">Silk Lanterns</figcaption>
+            </figure>
+            <figure class="showcase_photo showcase_slide showcase_photo_e" aria-hidden="true">
+              <img src="asset/showcase_e.png" alt="A model in a cream jacket and dotted full skirt">
+              <figcaption class="showcase_caption">Cream Jacket</figcaption>
+            </figure>
+            <figure class="showcase_photo showcase_slide showcase_photo_f" aria-hidden="true">
+              <img src="asset/showcase_f.png"
+                alt="A model in an embroidered grey dress holding a vase of dried flowers">
+              <figcaption class="showcase_caption">Embroidered Grey</figcaption>
+            </figure>
+            <figure class="showcase_photo showcase_slide showcase_photo_g" aria-hidden="true">
+              <img src="asset/showcase_g.png" alt="An ink-washed landscape painted on hanbok silk">
+              <figcaption class="showcase_caption">Ink-Washed Silk</figcaption>
+            </figure>
+
+            <button class="showcase_carousel_button showcase_carousel_prev" type="button"
+              aria-label="Previous image">
+              <img class="showcase_carousel_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+            </button>
+
+            <button class="showcase_carousel_button showcase_carousel_next" type="button"
+              aria-label="Next image">
+              <img class="showcase_carousel_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- archive — Figma "card"(1710:3979). 왼쪽 연도 내비는 레이어 이름 그대로
+       스크롤 중 따라오는 sticky 컬럼입니다. -->
+    <section class="archive" id="archive" aria-labelledby="archive_title">
+      <div class="collection_frame archive_frame">
+        <div class="archive_sticky">
+          <div class="archive_txt_area">
+            <div class="archive_txt">
+              <h2 class="archive_title" id="archive_title">Tchai Kim</h2>
+
+              <!-- 사진 세트가 있는 2019 / 2020 / 2021은 오른쪽 갤러리를 바꾸는 동작이라
+                 button입니다. 나머지 연도는 연결할 데이터가 없어 정적 링크입니다. -->
+              <div class="archive_years" role="group" aria-label="Collection years">
+                <ul class="archive_year_list">
+                  <li class="archive_year_item is_active">
+                    <button class="archive_year_link archive_year_button" type="button" data-year="2021"
+                      aria-current="true">2021</button>
+                  </li>
+                  <li class="archive_year_item">
+                    <button class="archive_year_link archive_year_button" type="button" data-year="2020">2020</button>
+                  </li>
+                  <li class="archive_year_item">
+                    <button class="archive_year_link archive_year_button" type="button" data-year="2019">2019</button>
+                  </li>
+                  <li class="archive_year_item"><button class="archive_year_link" type="button" disabled>2018</button></li>
+                  <li class="archive_year_item"><button class="archive_year_link" type="button" disabled>2017</button></li>
+                  <li class="archive_year_item"><button class="archive_year_link" type="button" disabled>2015</button></li>
+                  <li class="archive_year_item"><button class="archive_year_link" type="button" disabled>2013</button></li>
+                </ul>
+              </div>
+            </div>
+
+            <a class="banner_crosslink_link archive_more" href="../shop/index.html" data-shop-transition>
+              <span class="banner_crosslink_text">Shop Now</span>
+              <img class="banner_crosslink_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+            </a>
+          </div>
+        </div>
+
+        <!-- 처음 보이는 세트는 시안의 활성 연도인 2019입니다.
+           `col_chaikim.js`의 ARCHIVE_PHOTOS["2019"]와 같은 순서·같은 파일이어야 합니다.
+           width / height 속성은 로딩 전에 원본 비율만큼 자리를 잡아 두기 위한 것입니다
+           (표시 크기는 CSS가 정합니다). -->
+        <!-- 좁은 화면에서는 다섯 장이 세로로 겹친 덱이 됩니다(css의 .archive_deck).
+           위로 밀어 넘기고, 위쪽 연도 탭을 누르면 사진 세트가 바뀝니다.
+           데스크톱에서는 이 래퍼가 position: static이라 아래 figure들이
+           예전처럼 .archive_frame 기준 시안 좌표에 그대로 놓입니다. -->
+        <div class="archive_deck">
+          <figure class="archive_photo archive_photo_1">
+              <img src="asset/archive_2019_1.png" width="958" height="1190" loading="lazy" decoding="async"
+                alt="2019 collection — a white robe with a black conical hat, sleeves spread wide">
+            </figure>
+          <figure class="archive_photo archive_photo_2">
+              <img src="asset/archive_2019_2.png" width="1302" height="1744" loading="lazy" decoding="async"
+                alt="2019 collection — an orange quilted jeogori over a blue skirt, flowers pinned in the hair">
+            </figure>
+          <figure class="archive_photo archive_photo_3">
+              <img src="asset/archive_2019_3.png" width="1250" height="1594" loading="lazy" decoding="async"
+                alt="2019 collection — a floral sheer dress seated on a stone path in tall grass">
+            </figure>
+          <figure class="archive_photo archive_photo_4">
+              <img src="asset/archive_2019_4.png" width="780" height="1044" loading="lazy" decoding="async"
+                alt="2019 collection — a dark brown wool coat over an ivory shirt and trousers">
+            </figure>
+          <figure class="archive_photo archive_photo_5">
+              <img src="asset/archive_2019_5.png" width="1250" height="1476" loading="lazy" decoding="async"
+                alt="2019 collection — a floral organza dress in front of a pink lattice screen">
+            </figure>
+
+          <p class="archive_deck_counter" aria-live="polite">
+            <span class="archive_deck_index">1</span>
+            <span class="archive_deck_total">/ 5</span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- as worn — Figma "colaboration"(1710:4009).
+       카드 네 장의 폭 합계가 캔버스보다 넓어 스스로 흐르는 띠로 구현했습니다. -->
+    <section class="asworn" id="as-worn" aria-labelledby="asworn_title">
+      <div class="asworn_head">
+        <h2 class="asworn_title" id="asworn_title">As worn</h2>
+        <!-- 태그는 카드로 이동하는 동작이라 button입니다.
+             연결할 카드가 있는 앞의 넷만 누를 수 있고, #Fashion Show는 disabled입니다. -->
+        <ul class="asworn_tags">
+          <li><button class="asworn_tag" type="button" data-asworn-target="0">#Sim cheong ga</button></li>
+          <li><button class="asworn_tag" type="button" data-asworn-target="1">#Mr. sunshine</button></li>
+          <li><button class="asworn_tag" type="button" data-asworn-target="2">#Vogue korea</button></li>
+          <li><button class="asworn_tag" type="button" data-asworn-target="3">#Vogue portugal</button></li>
+          <li><button class="asworn_tag" type="button" disabled>#Fashion Show</button></li>
+        </ul>
+      </div>
+
+      <div class="asworn_track">
+        <ul class="asworn_list">
+          <li class="asworn_item asworn_item_1">
+            <figure class="asworn_figure">
+              <img src="asset/asworn_sim_cheong_ga.png"
+                alt="Poster for the Korean traditional opera Sim Cheong Ga with two performers in Tchai Kim hanbok">
+            </figure>
+            <div class="asworn_body">
+              <h3 class="asworn_name">SIM CHEONG GA</h3>
+              <div class="asworn_desc">
+                <p class="asworn_text">Designed for the Korean Traditional Opera 'Sim Cheong Ga', this piece harmonizes
+                  traditional ritualistic elements with modern stage aesthetics, creating a powerful narrative through
+                  delicate fabric lines.</p>
+                <a class="banner_crosslink_link" href="#">
+                  <span class="banner_crosslink_text">More collection</span>
+                  <img class="banner_crosslink_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="asworn_item asworn_item_2">
+            <figure class="asworn_figure">
+              <img src="asset/asworn_mr_sunshine.png"
+                alt="A character from the drama Mr. Sunshine in a pastel Tchai Kim hanbok">
+            </figure>
+            <div class="asworn_body">
+              <h3 class="asworn_name">MR. SUNSHINE</h3>
+              <div class="asworn_desc">
+                <p class="asworn_text">Crafted for the iconic character in 'Mr. Sunshine', this Hanbok captures noble
+                  elegance through soft pastel hues and subtle floral patterns, embodying resilient grace.</p>
+                <a class="banner_crosslink_link" href="#">
+                  <span class="banner_crosslink_text">More collection</span>
+                  <img class="banner_crosslink_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="asworn_item asworn_item_3">
+            <figure class="asworn_figure">
+              <img src="asset/asworn_vogue_korea.png"
+                alt="A Vogue Korea editorial look holding a flower-filled tray overhead in a garden">
+            </figure>
+            <div class="asworn_body">
+              <h3 class="asworn_name">VOGUE KOREA 2016</h3>
+              <div class="asworn_desc">
+                <p class="asworn_text">Featured in Vogue Korea, this design combines bold silhouette experimentation
+                  with traditional patterns, presenting a revolutionary interpretation of modern Korean couture.</p>
+                <a class="banner_crosslink_link" href="#">
+                  <span class="banner_crosslink_text">More collection</span>
+                  <img class="banner_crosslink_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+                </a>
+              </div>
+            </div>
+          </li>
+
+          <li class="asworn_item asworn_item_4">
+            <figure class="asworn_figure">
+              <img src="asset/asworn_vogue_portugal.png"
+                alt="A Vogue Portugal editorial look in a white coat and wide brimmed hat">
+            </figure>
+            <div class="asworn_body">
+              <h3 class="asworn_name">VOGUE PORTUGAL 2019</h3>
+              <div class="asworn_desc">
+                <p class="asworn_text">An iconic editorial for Vogue Portugal that creates a striking intersection of
+                  East and West. This piece breaks traditional Hanbok boundaries, presenting a sophisticated
+                  contemporary narrative designed to resonate with an international fashion audience.</p>
+                <a class="banner_crosslink_link" href="#">
+                  <span class="banner_crosslink_text">More collection</span>
+                  <img class="banner_crosslink_icon" src="assets/icons/arrow_right.svg" alt="" aria-hidden="true">
+                </a>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="common_footer_slot" data-component="../../common/components/footer.html">
+    <span class="a11y_hidden">Loading footer</span>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="../../common/js/common.js?v=10"></script>
+  <script src="../../common/js/shop_transition.js?v=5"></script>
+  <script src="js/col_chaikim.js"></script>
+</body>
+
+</html>
