@@ -88,25 +88,30 @@
   var REVEAL_CLOSED_HEIGHT = 484;
   var REVEAL_STAGE_HEIGHT = 1080;
 
-  /* ★ 화면을 붙잡아 두는(pin) 길이 — heritage/scroll 섹션과 같은 방식입니다.
-     페이지를 열었을 때는 처음 상태(닫힌 문)가 고정된 채 그대로 보이고,
-     사용자가 이 길이만큼 스크롤해야 문이 다 열리고 글·무드 단어까지
-     등장합니다. 늘리면 스크롤을 더 많이 해야 끝까지 진행됩니다.
+  /* ★★★★ 2026-08-23 세 번째로 다시 설계 — 스크롤 위치에 비례해 진행되는
+     scrub 방식을 완전히 버렸습니다. 사용자가 참고로 지목한
+     https://yh.skdefine.com/ 의 #section7(jQuery, jquery.fullPage.js)을
+     직접 열어 실제 동작·JS·CSS를 확인한 결과, 그 사이트는 스크롤
+     "위치"가 아니라 **휠 이벤트 1회**를 스텝 하나로 씁니다 —
+     - 섹션에 들어오면 자동으로 문이 열리고 텍스트가 뜹니다(사용자
+       입력 없이, 정해진 시간 동안).
+     - 그 상태에서 사용자가 휠을 한 번 더 내리면 그제서야 슬라이드가
+       재생되고, 그동안은 스크롤을 아예 막습니다
+       ($.fn.fullpage.setAllowScrolling(false)).
+     - 슬라이드가 끝난 뒤에야 다음 휠이 실제로 다음 섹션으로 넘어갑니다.
 
-     ★ 이 값은 전체 타임라인 길이가 8.9(단위)일 때를 기준으로 잡혀
-     있습니다("mood_right가 text/room과 겹치지 않도록" 글 슬라이드
-     1.6 + 카드 등장 1.6을 순서대로 이어 붙였던 시절의 합, 200% → 244%로
-     올린 계산이 이 8.9 기준입니다). 2026-08-22에 .mood_inner를 한
-     판으로 미는 방식으로 바꾸면서 그 1.6 + 1.6을 REVEAL_TEXT_SLIDE_
-     DURATION 하나로 합쳤는데, 처음엔 1.6으로만 둬서 전체 길이가
-     7.3로 줄어버렸습니다 — MOOD_PIN_LENGTH(244%)는 그대로인데 재생할
-     내용만 짧아지니 슬라이드가 끝나고도 스크롤이 한참 남아 다음
-     섹션이 미처 안정되기도 전에 pin이 풀렸습니다("세 번째 이너가
-     보이기도 전에 다음 섹션이 뜬다"). REVEAL_TEXT_SLIDE_DURATION을
-     3.2(=1.6+1.6)로 되돌려 전체 길이를 다시 8.9로 맞췄으므로, 이 값도
-     그대로 244%가 맞습니다. **둘은 항상 한 쌍입니다** — 타임라인 총
-     길이를 바꾸면 이 값도 같은 비율로 다시 계산해야 합니다. */
-  var MOOD_PIN_LENGTH = "+=244%";
+     즉 "재생 길이"가 스크롤 거리(px)가 아니라 **각 단계가 고정된
+     실제 초(설정한 duration 그대로) 동안 재생되고, 그 사이엔 스크롤이
+     잠깁니다.** 이게 사용자가 말한 "첫 번째 스크롤에 두 번째 이너가
+     보이고, 두 번째 스크롤에 세 번째 이너가 보인다"의 정체였습니다 —
+     스크롤한 "양"이 아니라 스크롤 "회"였습니다.
+
+     그래서 지금은 scrub도, "몇 % 스크롤해야 끝난다"는 계산도 없습니다.
+     MOOD_PIN_LENGTH는 pin이 최소한으로 붙어 있을 자리만 확보하면
+     됩니다 — 실제 진행은 아래 handleWheel()이 window에 직접 건
+     wheel 리스너가 event.preventDefault()로 스크롤을 막은 채
+     타이머(REVEAL_* DURATION)로 재생합니다. */
+  var MOOD_PIN_LENGTH = "+=100%";
 
   /* ★ 이 너비 미만에서는 pin+scrub 인트로를 켜지 않습니다. 1280(다른
      섹션과 같은 기준)에서 켜면 1280~1919 구간에서 mood_left/mood_right
@@ -134,59 +139,38 @@
      다 드러나기까지 걸리는 시간(초). */
   var REVEAL_WIDTH_DURATION = 2.5;
 
-  /* ★★★ 2026-08-22 다시 설계 — Figma node 1907:8464의 "이너(mood_inner)
-     3장이 가로로 나란히 놓인 필름스트립" 구조를 그대로 스크롤 동작으로
-     옮겼습니다. 예전에는 글(.mood_copy)과 무드 단어(.mood_right)가 서로
-     다른 시점에 각자 페이드인 + 슬라이드했는데("두 번째 이너 전체가
-     보이는 것"과 "세 번째 이너가 드러나는 것"이 하나의 느낌으로 안
-     이어진다는 지적), 지금은 **둘의 공통 부모 .mood_inner 하나를
-     통째로 미는 방식**입니다 — 텍스트와 무드 단어가 물리적으로 같은
-     판에 붙어 있는 것처럼 항상 같은 속도로 함께 움직입니다.
+  /* ★★★★ 2026-08-23 — 위 MOOD_PIN_LENGTH 주석의 설계를 그대로 잇습니다.
+     이제 두 "스크롤"은 정확히 두 번의 **휠 이벤트**입니다.
 
-     스크롤 두 구간:
-     1) 문(.mood_reveal)이 높이 → 폭 순서로 다 열려 두 번째 이너
-        (전체 사진 + 오른쪽에 멈춘 텍스트)가 완전히 보이는 것까지.
-     2) .mood_inner 전체가 왼쪽으로 밀리며 — 오른쪽에 멈춰 있던 텍스트가
-        최종 왼쪽 자리로, 그때까지 화면 밖에 있던 무드 단어(.mood_right)가
-        오른쪽에서 함께 끌려 들어와 — 세 번째 이너(최종 2분할 배치)가
-        드러납니다.
+     자동 재생(휠 없이 섹션에 들어오자마자): 문(.mood_reveal)이 높이 →
+     폭 순서로 다 열리고, 그 위에서 .mood_inner가 오른쪽 자리
+     (REVEAL_PANEL_SHIFT)로 안착하며 글이 페이드인합니다 — 여기까지가
+     "두 번째 이너 전체가 보이는" 상태입니다(전체 사진 + 오른쪽 벽에
+     선 텍스트, 무드 단어는 화면 밖). 이 구간에는 스크롤이 잠겨 있고,
+     끝나면 다음 휠을 받을 준비(armed)가 됩니다.
+
+     사용자의 첫 휠(다음 섹션 방향): .mood_inner를 REVEAL_PANEL_SHIFT →
+     0으로 한 번에 밀어 텍스트는 왼쪽 최종 자리로, 무드 단어는 화면
+     밖에서 자기 자리로 **동시에** 들어옵니다(항상 768px 간격을 유지한
+     채 함께 움직이므로 서로 겹칠 수 없습니다) — "세 번째 이너가
+     보이는" 순간입니다. 이 슬라이드가 끝나야 스크롤 잠금이 풀리고,
+     그다음 휠부터는 평범하게 다음 섹션(kimyoungjin)으로 넘어갑니다.
 
      ★ 배경 사진(.mood_room)은 .mood_inner의 형제 요소라 이 이동에
-     끌려가지 않습니다 — object-fit: cover로 무대를 채운 채 항상
-     같은 자리에 고정, 그 위로 텍스트·무드 단어 판만 지나갑니다
-     (화면 폭에 따라 사진을 밀면 반대쪽에 빈 여백이 생기는 문제를
-     피하려고 예전부터 사진은 움직이지 않습니다).
+     끌려가지 않습니다 — 항상 같은 자리에 고정, 그 위로 텍스트·무드
+     단어 판만 지나갑니다.
 
-     동작 순서(구간 2 시작 시점 기준):
-     ① .mood_inner가 REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE 자리에서
-        REVEAL_PANEL_SHIFT 자리로 살짝 안착하며, 그 위 글(.mood_copy)이
-        페이드인합니다 — 이 자리가 바로 "두 번째 이너"(전체 사진 +
-        오른쪽 벽에 선 텍스트)의 최종 모습입니다. 무드 단어는 이 시점에
-        REVEAL_PANEL_SHIFT만큼 더 오른쪽(화면 밖)에 있어 보이지 않습니다.
-     ② 그 자리에서 약 1초 멈춤(HOLD) — "2분할이 나오기 전에 전체 사진과
-        오른쪽 텍스트가 잠깐 유지되면 좋겠다"는 요청 그대로입니다.
-     ③ .mood_inner를 REVEAL_PANEL_SHIFT → 0으로 한 번에 밀어, 텍스트는
-        왼쪽 최종 자리로, 무드 단어는 화면 밖에서 자기 자리로 **동시에**
-        들어옵니다 — 겹침 걱정 없이 둘이 항상 같은 상대 위치(768px
-        간격)를 유지한 채 함께 이동하므로 서로 부딪히지 않습니다.
-
-     ★ REVEAL_PANEL_SHIFT는 하드코딩하지 않고 아래 play() 안에서
-     wordPanel(.mood_right)의 실제 렌더 폭을 잽니다 — 그 폭이 정확히
-     "mood_inner를 얼마나 밀어야 무드 단어가 화면 밖으로 완전히 나가고
-     mood_left가 화면 오른쪽 벽에 붙는가"이기 때문입니다(mood_left 768 +
+     ★ REVEAL_PANEL_SHIFT는 하드코딩하지 않고 play() 안에서
+     wordPanel(.mood_right)의 실제 렌더 폭을 잽니다 — mood_left 768 +
      mood_right 1152 = 1920 = 무대 전체 폭이라, mood_right 폭만큼 밀면
-     정확히 이 관계가 성립합니다). CSS에서 mood_right 폭이 바뀌어도
-     따로 손댈 값이 없습니다. */
-  var REVEAL_TEXT_SETTLE = 50;             /* ① 페이드인 동안 안착하는 추가 거리(px) */
-  var REVEAL_TEXT_FADE_DURATION = 0.9;     /* ① 안착하며 페이드인 */
-  var REVEAL_TEXT_HOLD_DURATION = 1;       /* ② 오른쪽에서 멈춰 있는 시간(전체 사진 + 텍스트만 보임) */
-  var REVEAL_TEXT_SLIDE_DURATION = 3.2;    /* ③ .mood_inner 전체가 왼쪽으로 슬라이드 — 예전에
-                                               글 슬라이드(1.6)와 카드 등장(1.6)이 순서대로
-                                               이어져 있던 길이의 합입니다. 지금은 그 둘이
-                                               .mood_inner 하나로 합쳐져 동시에 움직이지만,
-                                               "화면이 바뀌는 순간"이 순식간에 지나가지 않도록
-                                               길이는 그대로 남겨 뒀습니다 — 위 MOOD_PIN_LENGTH
-                                               주석 참고(둘은 항상 한 쌍입니다). */
+     mood_left가 화면 오른쪽 벽에, mood_right가 화면 밖에 정확히
+     맞춰집니다. CSS에서 mood_right 폭이 바뀌어도 따로 손댈 값이
+     없습니다. */
+  var REVEAL_TEXT_SETTLE = 50;             /* 문이 열린 뒤 텍스트가 안착하는 추가 거리(px) */
+  var REVEAL_TEXT_FADE_DURATION = 0.9;     /* 텍스트가 안착하며 페이드인하는 실제 시간(초) */
+  var REVEAL_SLIDE_DURATION = 1.6;         /* 사용자의 첫 휠로 재생되는 .mood_inner 슬라이드
+                                               길이(초) — yh.skdefine.com #section7의
+                                               TRANSITION(1.6s)과 같은 크기로 맞췄습니다. */
 
   /* ---- tchaikim 가로 스크롤 --------------------------------------------- */
   var HORIZONTAL_MIN_WIDTH = 1280;
@@ -383,108 +367,245 @@
           x: REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE
         });
 
+        /* gsap.matchMedia()는 이 컨텍스트 안의 gsap.set()·타임라인·
+           ScrollTrigger는 조건이 어긋나면 스스로 되돌려 주지만, 아래
+           play() 안에서 window에 직접 건 wheel 리스너는 GSAP이 모르는
+           것이라 자동으로 안 떨어집니다(예: 창을 1280px 아래로 좁히는
+           도중이었던 경우). activeHandleWheel에 현재 리스너를 기억해
+           뒀다가, 이 함수가 맨 끝에 돌려주는 정리 함수에서 직접 뗍니다. */
+        var activeHandleWheel = null;
+
+        /* room(배경 사진)이 아직 안 왔는데 pin을 만들면 빈 칸이 드러납니다
+           — 아래 playAndRefresh 주석 참고. 그래서 이 안의 모든 상태·
+           ScrollTrigger 생성을 play() 하나로 묶어 사진 로드 이후로
+           미룰 수 있게 합니다.
+
+           step: 0=닫힘, 1=문 열림(두 번째 이너, 텍스트만), 2=슬라이드
+           완료(세 번째 이너, 카드까지). wheelArmed는 "지금 휠 한 번을
+           실제로 반영해도 되는가"입니다 — 재생 중에는 항상 false라
+           재생이 안 끝난 채로 또 휠을 굴려도 무시됩니다(참고 사이트의
+           setAllowScrolling(false)와 같은 역할). */
         function play() {
-          /* 화면을 붙잡아 둔(pin) 채로 스크롤량에 그대로 연결됩니다(scrub) —
-             heritage/scroll 섹션과 같은 방식입니다. 페이지를 열면 처음 상태
-             (닫힌 문)가 고정되어 그대로 보이고, MOOD_PIN_LENGTH만큼 스크롤해야
-             문이 다 열리고 글·무드 단어까지 등장합니다. 자동으로 재생되지
-             않습니다 — 아래 timeline.to()의 duration은 "고정 초"가 아니라
-             "타임라인 단위"이고, scrub이 스크롤 진행률을 그 단위에 매핑합니다. */
-          var timeline = gsap.timeline({
-            scrollTrigger: {
-              trigger: section,
-              start: "top top",
-              end: MOOD_PIN_LENGTH,
-              pin: true,
-              /* ★★ 2026-08-22 추가 — GSAP은 기본으로 pin된 요소에
-                 position:fixed를 직접 걸고, 그 순간의 화면 픽셀 크기
-                 (getBoundingClientRect, 이미 zoom이 적용된 값)를 그대로
-                 인라인 width/height로 다시 씁니다. 그런데 이 요소는 여전히
-                 zoom이 걸린 조상(.main·html) 안에 있어서, 방금 쓴 그
-                 값에 zoom이 **한 번 더** 곱해져 그려집니다 — 노트북 폭에서
-                 무대가 실제보다 작게(예: 1440px에서 1440→1080px) 그려져
-                 옆·아래로 다음 섹션이 비치던 원인이 이것입니다. "transform"
-                 방식은 position은 그대로 두고 scroll-following만
-                 translate로 처리해 width/height를 전혀 새로 쓰지 않으므로
-                 이 문제 자체가 생기지 않습니다. */
-              pinType: "transform",
-              scrub: 1,
-              /* ★ 페이지 맨 위의 pin이라 **가장 먼저** 재야 합니다.
-                 아래 pin들(tchaikim 1 · heritage 0)이 이 pin이 만든
-                 자리까지 반영해서 자기 위치를 잡습니다. 자세한 이유는
-                 refreshScrollTriggers() 주석에 있습니다. */
-              refreshPriority: 2
+        var step = 0;
+        var wheelArmed = false;
+
+        function lockScroll() {
+          if (window.tchaikimmLenis) {
+            window.tchaikimmLenis.stop();
+          }
+        }
+
+        /* releaseScroll은 Lenis만 되돌리는 게 아니라 handleWheel 리스너 자체를
+           뗍니다 — wheelArmed만 두면 "다시 재생 중" 신호와 "이제 진짜
+           스크롤에 맡긴다" 신호를 구분할 방법이 없어서, step===2(다음
+           섹션으로 넘어가도 되는 상태) 이후에는 아예 가로채지 않도록
+           리스너를 제거합니다. ScrollTrigger의 onLeave/onLeaveBack에서도
+           같은 함수를 불러 안전하게 정리합니다(이미 없어도 무해). */
+        function releaseScroll() {
+          window.removeEventListener("wheel", handleWheel);
+          if (window.tchaikimmLenis) {
+            window.tchaikimmLenis.start();
+          }
+        }
+
+        /* 자동 재생 — 섹션에 들어오면 사용자 입력 없이 바로 시작됩니다.
+           문이 높이 → 폭 순서로 열리고, 그 위에서 .mood_inner가 오른쪽
+           자리로 안착하며 글이 페이드인합니다. 끝나면 onDone으로
+           "이제 첫 휠을 받을 준비가 됐다"를 알립니다. */
+        function playOpen(onDone) {
+          lockScroll();
+          var tl = gsap.timeline({
+            onComplete: function () {
+              step = 1;
+              onDone();
             }
           });
 
-          /* 1. 세로가 먼저 무대 높이의 REVEAL_BAND_HEIGHT_RATIO(60%)만큼만
-                자라 "띠 모양"이 완성됩니다(레퍼런스 영상 순서 — 화면을 다
-                채우지 않고 멈춥니다). */
-          timeline.to(reveal, {
+          tl.to(reveal, {
             height: REVEAL_STAGE_HEIGHT * REVEAL_BAND_HEIGHT_RATIO,
             duration: REVEAL_HEIGHT_DURATION,
             ease: "power2.inOut"
           }, 0);
 
-          /* 2. 띠 모양이 완성된 뒤 잠깐 멈췄다가(REVEAL_WIDTH_DELAY), 가로로
-                펼쳐지며 배경처럼 넓어집니다. 남은 세로(60% → 100%)도 이때
-                함께 자라 배경 사진이 다 드러납니다. 이 시점까지 글·무드
-                단어는 여전히 투명합니다.
-
-                width는 고정 px(1920)가 아니라 "100%"입니다 — .mood_stage가
-                실제로 차지하는 폭(1920px보다 넓은 화면에서는 그만큼 더
-                넓음) 그대로 문이 열려야 사진(.mood_room, object-fit: cover)이
-                화면 전체를 채웁니다. */
-          timeline.to(reveal, {
+          tl.to(reveal, {
             width: "100%",
             height: REVEAL_STAGE_HEIGHT,
             duration: REVEAL_WIDTH_DURATION,
             ease: "power2.inOut"
           }, REVEAL_HEIGHT_DURATION + REVEAL_WIDTH_DELAY);
 
-          /* 3. 사진이 다 드러난 뒤에야 .mood_inner(글 + 무드 단어를 함께
-                담은 판)가 오른쪽 자리에서 안착 → 멈춤 → 왼쪽 최종 자리로
-                슬라이드합니다. 위 "★★★ 2026-08-22 다시 설계" 주석의 ①②③
-                그대로입니다 — "두 번째 이너 전체가 보이는 것"(①② 끝)과
-                "이너 자체가 밀리며 세 번째 이너가 드러나는 것"(③)이
-                하나의 이어진 움직임입니다. */
           var revealEnd = REVEAL_HEIGHT_DURATION + REVEAL_WIDTH_DELAY + REVEAL_WIDTH_DURATION;
 
-          /* ①. .mood_inner가 REVEAL_TEXT_SETTLE만큼 더 오른쪽에서 시작해
-                살짝 안착하며(완전히 멈춘 채로 opacity만 바뀌면 "뿅" 나타나는
-                느낌이라 아주 약간의 움직임을 같이 줍니다), 그 위 글이
-                페이드인합니다. 멈춤(②) 자리인 x: REVEAL_PANEL_SHIFT에서
-                끝납니다 — 이 자리가 "두 번째 이너"(전체 사진 + 오른쪽 벽에
-                선 텍스트)의 완성된 모습입니다. */
-          timeline.to(moodInner, {
+          tl.to(moodInner, {
             x: REVEAL_PANEL_SHIFT,
             duration: REVEAL_TEXT_FADE_DURATION,
             ease: "sine.out"
           }, revealEnd);
 
-          timeline.to(copy, {
+          tl.to(copy, {
             opacity: 1,
             duration: REVEAL_TEXT_FADE_DURATION,
             ease: "sine.out"
           }, revealEnd);
+        }
 
-          /* ②는 별도 트윈이 없습니다 — HOLD_DURATION만큼 아무것도 움직이지
-             않고 그대로 멈춰 있는 구간이라, 다음 ③이 시작하는 시점을
-             그만큼 늦추는 것으로 충분합니다. */
-          var slideStart = revealEnd + REVEAL_TEXT_FADE_DURATION + REVEAL_TEXT_HOLD_DURATION;
+        /* 위로 스크롤해 문을 도로 닫을 때(reverse). playOpen의 정확히
+           거울상입니다. */
+        function playClose(onDone) {
+          lockScroll();
+          var tl = gsap.timeline({
+            onComplete: function () {
+              step = 0;
+              onDone();
+            }
+          });
 
-          /* ③. .mood_inner 전체를 REVEAL_PANEL_SHIFT → 0으로 한 번에
-                밉니다. 글은 왼쪽 최종 자리로, 그때까지 화면 밖(오른쪽)에
-                있던 무드 단어는 자기 자리로 — 항상 같은 상대 거리(768px)를
-                유지한 채 함께 들어오므로 서로 겹칠 수가 없습니다(예전에는
-                각자 다른 시점에 움직여 겹침을 피하려고 무드 단어 시작을
-                따로 미뤄야 했습니다 — 이제 필요 없습니다). 이미 다 보이는
-                상태라 opacity는 건드리지 않습니다. */
-          timeline.to(moodInner, {
+          tl.to(moodInner, {
+            x: REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE,
+            duration: REVEAL_TEXT_FADE_DURATION,
+            ease: "sine.in"
+          }, 0);
+
+          tl.to(copy, {
+            opacity: 0,
+            duration: REVEAL_TEXT_FADE_DURATION,
+            ease: "sine.in"
+          }, 0);
+
+          tl.to(reveal, {
+            width: REVEAL_CLOSED_WIDTH,
+            height: REVEAL_STAGE_HEIGHT * REVEAL_BAND_HEIGHT_RATIO,
+            duration: REVEAL_WIDTH_DURATION,
+            ease: "power2.inOut"
+          }, REVEAL_TEXT_FADE_DURATION);
+
+          tl.to(reveal, {
+            height: REVEAL_CLOSED_HEIGHT,
+            duration: REVEAL_HEIGHT_DURATION,
+            ease: "power2.inOut"
+          }, REVEAL_TEXT_FADE_DURATION + REVEAL_WIDTH_DELAY + REVEAL_WIDTH_DURATION);
+        }
+
+        /* 사용자의 첫 휠(아래 방향) — .mood_inner 전체를 REVEAL_PANEL_SHIFT
+           → 0으로 한 번에 밀어 텍스트는 왼쪽 최종 자리로, 무드 단어는
+           화면 밖에서 자기 자리로 동시에 들어옵니다. */
+        function playSlide(onDone) {
+          lockScroll();
+          gsap.to(moodInner, {
             x: 0,
-            duration: REVEAL_TEXT_SLIDE_DURATION,
-            ease: "power1.out"
-          }, slideStart);
+            duration: REVEAL_SLIDE_DURATION,
+            ease: "power1.out",
+            onComplete: function () {
+              step = 2;
+              onDone();
+            }
+          });
+        }
+
+        /* 위로 스크롤해 슬라이드를 되돌릴 때(reverse). */
+        function playUnslide(onDone) {
+          lockScroll();
+          gsap.to(moodInner, {
+            x: REVEAL_PANEL_SHIFT,
+            duration: REVEAL_SLIDE_DURATION,
+            ease: "power1.out",
+            onComplete: function () {
+              step = 1;
+              onDone();
+            }
+          });
+        }
+
+        /* window에 직접 겁니다 — pin된 섹션이 화면 대부분을 차지하지만,
+           커서가 어디 있든 휠을 받아야 하므로 section이 아니라 window입니다.
+           passive:false로 열어야 preventDefault()가 실제로 스크롤을
+           막습니다(참고 사이트의 setAllowScrolling(false)와 같은 목적). */
+        function handleWheel(event) {
+          if (!wheelArmed) {
+            event.preventDefault();
+            return;
+          }
+
+          event.preventDefault();
+          wheelArmed = false;
+
+          if (event.deltaY > 0) {
+            /* 아래 방향 — 다음 섹션 쪽. step===1일 때만 슬라이드를
+               재생합니다. 슬라이드가 끝나면 이 섹션이 할 일은 끝났으니
+               releaseScroll()로 리스너까지 떼어 평범한 스크롤에
+               넘깁니다 — 다음 휠부터는 kimyoungjin으로 자연스럽게
+               이어집니다. */
+            if (step === 1) {
+              playSlide(releaseScroll);
+            }
+          } else if (event.deltaY < 0) {
+            /* 위 방향 — 이전 섹션 쪽. step===2(카드까지 보임)면 먼저
+               슬라이드만 되돌리고 다음 휠을 다시 받습니다. step===1
+               (문만 열린 상태)이면 문을 닫고 위쪽(section6)으로
+               스크롤을 넘깁니다. */
+            if (step === 2) {
+              playUnslide(function () {
+                wheelArmed = true;
+              });
+            } else if (step === 1) {
+              playClose(releaseScroll);
+            }
+          }
+        }
+
+        activeHandleWheel = handleWheel;
+
+        window.ScrollTrigger.create({
+          trigger: section,
+          start: "top top",
+          end: MOOD_PIN_LENGTH,
+          pin: true,
+          /* ★★ 2026-08-22 추가 — GSAP은 기본으로 pin된 요소에
+             position:fixed를 직접 걸고, 그 순간의 화면 픽셀 크기
+             (getBoundingClientRect, 이미 zoom이 적용된 값)를 그대로
+             인라인 width/height로 다시 씁니다. 그런데 이 요소는 여전히
+             zoom이 걸린 조상(.main·html) 안에 있어서, 방금 쓴 그
+             값에 zoom이 **한 번 더** 곱해져 그려집니다 — 노트북 폭에서
+             무대가 실제보다 작게(예: 1440px에서 1440→1080px) 그려져
+             옆·아래로 다음 섹션이 비치던 원인이 이것입니다. "transform"
+             방식은 position은 그대로 두고 scroll-following만
+             translate로 처리해 width/height를 전혀 새로 쓰지 않으므로
+             이 문제 자체가 생기지 않습니다. */
+          pinType: "transform",
+          /* ★ 페이지 맨 위의 pin이라 **가장 먼저** 재야 합니다.
+             아래 pin들(tchaikim 1 · heritage 0)이 이 pin이 만든
+             자리까지 반영해서 자기 위치를 잡습니다. 자세한 이유는
+             refreshScrollTriggers() 주석에 있습니다. */
+          refreshPriority: 2,
+          onEnter: function () {
+            if (step !== 0) {
+              return;
+            }
+            window.addEventListener("wheel", handleWheel, { passive: false });
+            playOpen(function () {
+              wheelArmed = true;
+            });
+          },
+          onEnterBack: function () {
+            /* kimyoungjin 쪽에서 위로 되돌아온 경우 — 이미 다 열리고
+               슬라이드까지 끝난 마지막 모습으로 시작합니다. 사용자가
+               다시 위로 스크롤하면 handleWheel이 그때부터 되돌립니다. */
+            gsap.set(reveal, { width: "100%", height: REVEAL_STAGE_HEIGHT });
+            gsap.set(copy, { opacity: 1 });
+            gsap.set(moodInner, { x: 0 });
+            step = 2;
+            wheelArmed = true;
+            window.addEventListener("wheel", handleWheel, { passive: false });
+          },
+          onLeave: releaseScroll,
+          onLeaveBack: function () {
+            releaseScroll();
+            gsap.set(reveal, { width: REVEAL_CLOSED_WIDTH, height: REVEAL_CLOSED_HEIGHT });
+            gsap.set(copy, { opacity: 0 });
+            gsap.set(moodInner, { x: REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE });
+            step = 0;
+          }
+        });
         }
 
         /* 사진이 아직 안 왔는데 문이 열리면 빈 칸이 드러납니다.
@@ -504,6 +625,15 @@
           room.addEventListener("load", playAndRefresh, { once: true });
           room.addEventListener("error", playAndRefresh, { once: true });
         }
+
+        return function () {
+          if (activeHandleWheel) {
+            window.removeEventListener("wheel", activeHandleWheel);
+          }
+          if (window.tchaikimmLenis) {
+            window.tchaikimmLenis.start();
+          }
+        };
       }
     );
   }
