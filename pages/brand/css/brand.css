@@ -1271,9 +1271,13 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
 /* 1920px 발표 화면에서는 공통 html zoom(0.75)이 Brand의 1920px 무대를
    다시 1440px로 축소합니다. Brand 콘텐츠 영역에서만 역줌해 원래 설계 폭과
    전체 화면 높이를 복원합니다. 헤더·푸터와 다른 페이지에는 적용되지 않습니다. */
-@media (min-width: 1850px) and (max-width: 1990px) {
+@media (min-width: 1280px) and (max-width: 1990px) {
+  /* ★ --vh_gain이 아니라 --canvas_gain입니다. 여기는 "Brand를 1920 시안
+     캔버스로 되돌린다"는 뜻이고, 뷰포트 단위 보정이 아닙니다.
+     1920 화면에서는 1.3333으로 예전과 같고, 노트북에서는 1이 되어
+     이미 1920 캔버스인 상태를 그대로 둡니다. */
   body[data-page="brand"] .main {
-    zoom: calc(1 / var(--site_view_scale));
+    zoom: var(--canvas_gain);
   }
 }
 
@@ -1319,7 +1323,7 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
    화면 폭 그대로(100%) 채웁니다.
    ========================================================= */
 
-@media (max-width: 1919.98px) {
+@media (max-width: 1279.98px) {
 
   .mood {
     width: 100%;

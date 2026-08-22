@@ -1714,7 +1714,7 @@
 /* 공통 1920px zoom은 common/css/common.css에서 관리합니다.
    Shop의 garment story는 ScrollTrigger pin 계산에 zoom이 중복 반영되므로 이 구간만 원래 크기로 복원합니다. */
 
-@media (min-width: 1850px) and (max-width: 1990px) {
+@media (min-width: 1280px) and (max-width: 1990px) {
   /* garment story만 축소에서 빼냅니다(1 ÷ 0.75 = 원래 크기로 복귀).
 
      이 섹션은 GSAP ScrollTrigger가 pin으로 붙잡습니다. pin이 걸리는 순간

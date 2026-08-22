@@ -29,7 +29,15 @@ body {
 
 /* 인트로는 독립된 전체 화면이므로 공통 1920px 발표용 zoom을 적용하지 않습니다.
    zoom이 0.75로 남으면 영상과 오버레이가 화면의 75%만 채우게 됩니다. */
-@media (min-width: 1850px) and (max-width: 1990px) {
+@media (min-width: 1280px) and (max-width: 1990px) {
+  :root {
+    /* ★ zoom 을 끄는 이상 배율도 1로 되돌려야 합니다. 그대로 두면
+       common.css 의 --vh_gain 역보정이 살아 있어 푸터·TOP 버튼만
+       1.3배로 커집니다. */
+    --site_view_scale: 1;
+    --canvas_gain: 1;
+  }
+
   html {
     zoom: 1;
   }

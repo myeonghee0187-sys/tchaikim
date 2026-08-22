@@ -302,9 +302,54 @@ body[data-header-variant="black"] .common_header_slot {
 
 /* 1920px 발표 화면에서는 Shop과 동일하게 전체 콘텐츠를 2560px 화면 비율로 축소합니다.
    조절: --site_view_scale만 바꾸면 됩니다. 푸터는 다른 페이지와 통일된 원래 크기를 유지합니다. */
-@media (min-width: 1850px) and (max-width: 1990px) {
+/* -----------------------------------------------------------
+   ★ 2026-08 노트북 대응
+
+   예전에는 아래 블록이 (min-width: 1850px)~(max-width: 1990px)
+   하나뿐이었습니다. 1920 모니터에서만 켜지고 노트북(1280~1849)에서는
+   zoom이 통째로 꺼져, 1920 시안 좌표가 그대로 그려지며 비율이 깨졌습니다.
+   같은 조건의 보정 블록이 9개 파일에 흩어져 있어 그것들도 같이 빠졌습니다.
+
+   구간별로 "발표 캔버스"를 다르게 잡습니다.
+     · 1850~1990 (발표용 1920 화면) → 2560 캔버스 (배율 0.75) — 기존 그대로
+     · 1280~1849 (노트북)          → 1920 캔버스 (배율 = 화면폭 ÷ 1920)
+
+   노트북에서 2560이 아니라 1920을 쓰는 이유: 2560으로 맞추면 배율이
+   0.5~0.65까지 떨어져 본문 글자가 8~10px로 읽히지 않습니다. 1920은
+   시안 원본 캔버스라 레이아웃이 시안 그대로 나오면서 글자도 살아남습니다.
+
+   ★ 1850~1990 값(0.75)은 한 글자도 바꾸지 않았습니다.
+     실제 발표 환경(1920 화면)의 결과는 이 수정 전후가 동일합니다.
+   ----------------------------------------------------------- */
+
+/* 배율만 선언합니다. 적용은 아래 공통 블록 한 곳에서 합니다.
+   조절하려면 이 숫자만 만지면 되고 다른 파일은 손댈 필요 없습니다. */
+@media (min-width: 1280px) and (max-width: 1349px) { :root { --site_view_scale: 0.667; } }
+@media (min-width: 1350px) and (max-width: 1409px) { :root { --site_view_scale: 0.708; } }
+@media (min-width: 1410px) and (max-width: 1469px) { :root { --site_view_scale: 0.75;  } }
+@media (min-width: 1470px) and (max-width: 1529px) { :root { --site_view_scale: 0.788; } }
+@media (min-width: 1530px) and (max-width: 1619px) { :root { --site_view_scale: 0.80;  } }
+@media (min-width: 1620px) and (max-width: 1659px) { :root { --site_view_scale: 0.85;  } }
+@media (min-width: 1660px) and (max-width: 1709px) { :root { --site_view_scale: 0.875; } }
+@media (min-width: 1710px) and (max-width: 1769px) { :root { --site_view_scale: 0.90;  } }
+@media (min-width: 1770px) and (max-width: 1849px) { :root { --site_view_scale: 0.933; } }
+@media (min-width: 1850px) and (max-width: 1990px) { :root { --site_view_scale: 0.75;  } }
+
+@media (min-width: 1280px) and (max-width: 1990px) {
   :root {
-    --site_view_scale: 0.75;
+    /* ★ 두 배수를 반드시 구분해서 씁니다. 1920 화면에서는 둘 다 1.3333이라
+       우연히 같지만, 노트북에서는 갈라집니다. 예전 코드가 1920에서만
+       맞았던 근본 원인이 이 둘을 하나로 쓴 것입니다.
+
+       --canvas_gain : 발표 캔버스 ÷ 시안 캔버스(1920).
+         "시안 1600px 컨테이너를 넓어진 캔버스에 맞춰 키운다" 같은
+         레이아웃·타이포 값에 씁니다.
+       --vh_gain     : 1 ÷ 배율.
+         루트 zoom은 vw/svh/dvh를 줄여주지 않으므로, 뷰포트 단위를
+         캔버스 좌표로 되돌릴 때 씁니다. ScrollTrigger가 실측해 넣는
+         인라인 px을 되돌릴 때도 이 값입니다. */
+    --canvas_gain: 1;
+    --vh_gain: calc(1 / var(--site_view_scale));
   }
 
   html {
@@ -312,12 +357,19 @@ body[data-header-variant="black"] .common_header_slot {
   }
 
   .common_footer_slot {
-    zoom: calc(1 / var(--site_view_scale));
+    zoom: var(--vh_gain);
   }
 
   /* 공통 zoom 안에서도 TOP 버튼은 원래 48px 크기와 화면 기준 위치를 유지합니다. */
   .top_button {
-    zoom: calc(1 / var(--site_view_scale));
+    zoom: var(--vh_gain);
+  }
+}
+
+/* 1920 발표 화면만 캔버스가 2560이라 gain이 갈라집니다. */
+@media (min-width: 1850px) and (max-width: 1990px) {
+  :root {
+    --canvas_gain: calc(2560 / 1920);
   }
 }
 
