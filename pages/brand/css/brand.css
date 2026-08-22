@@ -1333,10 +1333,45 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
      이번에 실측하지 않았습니다. */
   :root {
     --brand_screen_gain: calc(1 / (var(--site_view_scale) * var(--canvas_gain)));
+
+    /* ★★★ 후속 — .mood_inner(1920px 고정폭)가 노트북 폭에서 잘리던 문제.
+       위 --brand_screen_gain은 "높이"를 고치려고 .mood 전체의 조상 zoom을
+       완전히 상쇄했는데, 그 부작용으로 .mood_inner의 폭도 더 이상 조상
+       zoom을 못 받게 됐습니다. 상쇄 전에는 (의도치 않게) 조상 zoom이
+       1920px 캔버스를 실제 창 폭만큼 같이 줄여 주고 있었던 것입니다
+       — 1280px 창에서 site_view_scale ≈ 0.667이라 1920 × 0.667 ≈ 1280로
+       딱 맞았습니다. 상쇄 후에는 .mood_inner가 진짜 1920px 그대로 그려져
+       1280px 창에서 640px, 1440px 창에서 480px이 오른쪽으로 넘칩니다
+       (mood_right 안의 Modern/Elegant 카드가 그만큼 잘려 보였던 원인).
+
+       ★ object-fit: cover(가로·세로 중 큰 비율)가 아니라 "가로 비율
+       하나"만 씁니다 — 처음엔 cover로 만들었다가 실측(Playwright)으로
+       틀렸다는 걸 확인했습니다. 이 필름스트립은 배경 사진이 아니라
+       "칸 하나 폭 = 화면 폭"이어야 슬라이드가 다음 칸을 정확히 가리는
+       실제 레이아웃입니다. .mood_left(768) + .mood_right(1152) =
+       1920 = 문이 열린 .mood_reveal의 폭(1920 발표 화면 기준)이라는
+       관계가 핵심이고, js/brand.js가 REVEAL_PANEL_SHIFT를 mood_right의
+       "실제 렌더 폭"으로 재서 그만큼만 밀어 옆 칸을 정확히 가립니다.
+       세로 비율까지 반영하는 cover를 쓰면(예: 1280×800 — 세로 비율
+       0.741이 가로 비율 0.667보다 커서 세로가 기준이 됨) 두 칸의 합산
+       폭이 1920 × 0.741 = 1423px로 화면 폭(1280px)보다 커져 버려서
+       오른쪽 143px이 오히려 잘립니다(실측: elegant 카드가 65px 넘침).
+       가로 비율 하나만 쓰면 두 칸의 합산 폭이 정확히 100vw가 되어
+       넘치지도 남지도 않습니다 — 세로는 1920 발표 화면의 16:9보다
+       납작한 창(예: 1280×800)에서 화면보다 짧아질 수 있지만(720 vs
+       800), 그 빈 부분은 .mood_room 사진(별도로 100vh를 채움)이
+       그대로 비쳐 보일 뿐 잘리는 요소는 없습니다. */
+    --mood_panel_scale: calc(100vw / 1920px);
   }
 
   .mood {
-    zoom: var(--brand_screen_gain);
+    /* ★★★ zoom은 여기(.mood 자신)가 아니라 아래 .pin-spacer:has(> .mood)
+       하나에만 겁니다. 처음에는 .mood 자신에도 걸어 뒀는데, 그러면
+       "조상(.main) 0.667배 → spacer 1.5배(상쇄) → .mood 1.5배(또 상쇄)"로
+       상쇄가 두 번 겹쳐 .mood가 오히려 1.5배 커져 버립니다(실측: 1280px
+       창에서 .mood 폭이 1920px로 늘어남). spacer 쪽에서 한 번만 상쇄하면
+       .mood 이하 전체가 그 지점에서 이미 실효 zoom 1이 되므로 .mood
+       자신은 zoom이 필요 없습니다 — 아래 pin-spacer 규칙의 주석 참고. */
     /* ★★ 100%가 아니라 100vw입니다 — .mood는 GSAP이 pin을 만들며
        자동으로 끼워 넣는 pin-spacer(GSAP이 측정해 쓴, 이미 zoom으로
        한 번 틀어진 값)의 자식이 됩니다. "100%"는 그 오염된 폭을
@@ -1347,11 +1382,65 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
   }
 
   .mood_stage,
-  .mood_reveal,
-  .mood_inner,
+  .mood_reveal {
+    height: 100vh;
+  }
+
+  /* ★★★ .mood_inner 자신에는 zoom을 걸지 않습니다(원래 1920×1080
+     고정폭 그대로) — 이 요소는 GSAP이 x(translateX)로 슬라이드시키는
+     대상이라, 여기에 직접 zoom을 걸면 --brand_screen_gain 때와 똑같은
+     "요소 자신의 zoom이 자신에게 걸린 transform까지 함께 줄인다" 버그가
+     재발합니다. 실제로 확인했습니다 — zoom:0.5가 걸린 요소에
+     translateX(100px)을 주면 화면에는 50px만 이동합니다(같은 요소에
+     zoom과 transform이 같이 있으면 transform도 그 배수만큼 줄어듭니다).
+     js가 REVEAL_PANEL_SHIFT를 "실제 화면 px"로 재서 그대로 x에 넣기
+     때문에, .mood_inner 자신은 zoom 없이(실효 zoom 1 그대로) 그 값을
+     1:1로 받아야 합니다.
+
+     대신 자식인 .mood_left/.mood_right 두 개에만 겁니다. 이 둘은
+     transform을 받지 않는 "내용물"이라 zoom을 걸어도 안전하고, 폭이
+     줄어드는 만큼 그 안의 Figma 절대좌표 자식(.mood_copy, 카드 3장 등)도
+     통째로 같이 줄어듭니다(zoom은 자손 전체에 그대로 이어집니다).
+     .mood_left(768)+.mood_right(1152)의 화면상 합산 폭이 정확히
+     1920 × --mood_panel_scale = 100vw가 되어, .mood_inner를
+     REVEAL_PANEL_SHIFT(=.mood_right의 실제 화면 폭)만큼 밀면 옆 칸이
+     화면 밖으로 정확히 가려집니다 — 1920 발표 화면에서 원래 있던
+     "칸 폭 = 화면 폭" 관계가 어느 창 폭에서나 그대로 유지됩니다. */
   .mood_left,
   .mood_right {
-    height: 100vh;
+    zoom: var(--mood_panel_scale);
+  }
+
+  /* ★★★ 후속 — .mood 밑에 화면이 260px 정도 겹쳐 보이던 문제(다음
+     kimyoungjin 섹션이 mood 사진 아래쪽을 밀고 올라와 덮음).
+
+     GSAP ScrollTrigger가 pin을 걸면 .mood를 감싸는 <div class="pin-spacer">를
+     자동으로 만들어 문서 흐름에서 .mood 대신 그 자리를 차지하게 합니다
+     (스크롤해도 아래 섹션들이 밀리지 않도록 "자리 예약" 역할). 이때 그
+     spacer의 inline width/height는 GSAP이 .mood를 getBoundingClientRect로
+     "실제 화면 px"(.mood 자신은 위에서 이미 zoom을 상쇄해 뒀으니 1280×
+     810.001처럼 정확한 값)로 재서 그대로 적어 넣습니다.
+
+     문제는 spacer 자기 자신은 .mood와 달리 zoom을 상쇄받지 못한다는
+     것입니다 — spacer는 .mood가 원래 있던 자리(.main 안, 조상 zoom이
+     그대로 걸린 채)에 새로 끼워진 형제 요소라, 조상 zoom(예: 1280px
+     창에서 0.667)이 그대로 걸립니다. 그 결과 GSAP이 적어 넣은 1280×
+     810.001px이 spacer 위에서 또 한 번 0.667배로 줄어들어 실제로는
+     853×540px만 그려집니다 — .mood 자신(zoom 상쇄로 진짜 1280×800)보다
+     훨씬 작은 자리만 문서에 예약되는 것입니다. 그래서 kimyoungjin이
+     화면 y=540부터 시작하는데 .mood는 여전히 y=800까지 실제로 그려지고
+     있어 두 섹션이 260px 겹쳤습니다(1920 발표 화면은 --brand_screen_gain이
+     정확히 1이라 상쇄할 것이 없어 이 문제 자체가 없었습니다 — 그래서
+     그동안 안 보였습니다).
+
+     .mood와 완전히 같은 zoom을 spacer에도 걸어 상쇄하면, GSAP이 적어
+     넣은 값이 이번에도 1:1로 그려져 .mood의 실제 화면 크기와 정확히
+     일치합니다. spacer는 GSAP이 클래스만 붙여 자동 생성하므로(id 없음)
+     ":has(> .mood)"로 ".mood를 직계 자식으로 둔 pin-spacer"만 짚습니다 —
+     이 페이지의 다른 pin(heritage·tchaikim)은 자기 zoom 상쇄가 없어서
+     이 문제 자체가 없고, 이 선택자는 그 스페이서를 건드리지 않습니다. */
+  .pin-spacer:has(> .mood) {
+    zoom: var(--brand_screen_gain);
   }
 }
 

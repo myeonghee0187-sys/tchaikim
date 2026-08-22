@@ -107,11 +107,23 @@
      스크롤한 "양"이 아니라 스크롤 "회"였습니다.
 
      그래서 지금은 scrub도, "몇 % 스크롤해야 끝난다"는 계산도 없습니다.
-     MOOD_PIN_LENGTH는 pin이 최소한으로 붙어 있을 자리만 확보하면
-     됩니다 — 실제 진행은 아래 handleWheel()이 window에 직접 건
-     wheel 리스너가 event.preventDefault()로 스크롤을 막은 채
-     타이머(REVEAL_* DURATION)로 재생합니다. */
-  var MOOD_PIN_LENGTH = "+=100%";
+     실제 진행은 아래 handleWheel()이 window에 직접 건 wheel 리스너가
+     event.preventDefault()로 스크롤을 막은 채 타이머(REVEAL_* DURATION)로
+     재생합니다.
+
+     ★★ 이 값을 처음에 "+=100%"(뷰포트 높이만큼)로 뒀다가 실측으로
+     잘못을 잡았습니다. lockScroll()이 재생 내내 Lenis를 완전히
+     멈추기 때문에, 그동안 스크롤 "거리"는 단 1px도 소비되지 않습니다.
+     그런데 releaseScroll() 이후에는 GSAP pin이 여전히 "+=100%"만큼
+     스크롤해야 풀리므로, 슬라이드가 다 끝나 세 번째 이너가 완성된
+     뒤에도 사용자가 뷰포트 높이만큼(1920×1080에서 1080px)을 그냥
+     더 스크롤해야 다음 섹션(kimyoungjin)이 나왔습니다 — "아래 여백이
+     너무 크게 남는다"의 정체입니다(pin-spacer 실측: height 2160px 중
+     padding-bottom 1080px이 전부 이 죽은 구간이었습니다). pin이 구조상
+     0 길이로는 만들어지지 않아 최소한의 값만 남겼습니다 — 이제
+     releaseScroll() 직후 다음 휠 한 번이면 바로 kimyoungjin으로
+     넘어갑니다. */
+  var MOOD_PIN_LENGTH = "+=10";
 
   /* ★ 이 너비 미만에서는 pin+scrub 인트로를 켜지 않습니다. 1280(다른
      섹션과 같은 기준)에서 켜면 1280~1919 구간에서 mood_left/mood_right
@@ -262,12 +274,13 @@
      ScrollTrigger는 트리거를 만드는 그 순간의 문서 좌표로 start/end를
      굳힙니다. 그런데 이 페이지의 mood pin은 배경 사진(.mood_room)이
      다 온 뒤에야 만들어집니다(아래 initMoodReveal 끝부분). pin이 생기면
-     GSAP이 **문서 맨 위에 MOOD_PIN_LENGTH(244svh ≈ 2600px)짜리
+     GSAP이 **문서 맨 위에 mood 섹션 높이 + MOOD_PIN_LENGTH만큼의
      pin-spacer를 끼워 넣어** 그 아래 모든 것을 그만큼 밀어냅니다.
      이때 먼저 만들어져 있던 tchaikim·heritage pin은 옛 좌표를 그대로
-     들고 있어서, **실제보다 2600px 일찍 화면을 붙잡습니다** — 그 결과
+     들고 있어서, **실제보다 그만큼 일찍 화면을 붙잡습니다** — 그 결과
      kimyoungjin 글 위에 tchaikim 탭이, 그 위에 heritage 사진이 겹쳐
-     보입니다.
+     보입니다. (구체적인 px 값은 MOOD_PIN_LENGTH·mood 섹션 높이가
+     바뀔 때마다 달라지므로 여기 적지 않습니다 — 원인 구조만 참고하세요.)
 
      로컬에서는 사진이 디스크에서 즉시 와서 `room.complete`가 이미 true라
      mood pin이 **다른 트리거보다 먼저** 만들어집니다. 그래서 이 문제가
@@ -345,9 +358,34 @@
         REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 1080);
 
         /* .mood_inner를 얼마나 밀어야 mood_right(무드 단어)가 화면 밖으로
-           완전히 나가는지는 mood_right 자신의 실제 렌더 폭입니다 — 위
-           REVEAL_PANEL_SHIFT 주석 참고. */
-        var REVEAL_PANEL_SHIFT = wordPanel.getBoundingClientRect().width;
+           완전히 나가는지는 mood_right 자신의 실제 렌더 폭입니다.
+
+           ★★★ 2026-08-22 추가 — getBoundingClientRect().width로 재면
+           안 됩니다. 이 줄은 GSAP이 .mood를 pin-spacer로 감싸기(아래
+           ScrollTrigger.create) **전에** 실행되는데, brand.css의 zoom
+           상쇄(.pin-spacer:has(> .mood))는 그 spacer가 생긴 뒤에만
+           걸립니다. spacer가 없는 지금은 .mood_right가 조상의 zoom
+           (예: 1280px 창에서 0.667)을 상쇄받지 못한 채로 자기 zoom
+           (--mood_panel_scale, 역시 0.667)까지 또 받아 0.667 × 0.667 =
+           0.445배로 **이중 축소**된 값(1152 × 0.445 = 512px)이 잡힙니다
+           — 실측으로 확인했습니다.
+
+           그렇다고 이 측정 자체를 spacer가 생긴 뒤로 미루는 것도
+           안전하지 않습니다 — mood는 hero 바로 다음(문서 맨 위에 가까운)
+           섹션이라, ScrollTrigger.create가 만드는 pin의 시작 조건
+           ("top top")이 스크롤 0에서 이미 만족되어 onEnter가 create
+           **안에서 동기적으로** 곧바로 실행될 수 있습니다(실측으로
+           확인). 그러면 아래로 미룬 측정·초기 gsap.set이 onEnter가 이미
+           시작해 둔 문 열림 애니메이션을 도중에 덮어써 버립니다.
+
+           그래서 getBoundingClientRect 대신 **mood_right 자신의 zoom
+           값**(--mood_panel_scale, 조상 체인과 무관하게 항상 100vw ÷
+           1920px로 정확합니다)을 읽어 계산합니다. 1152는 Figma 원본
+           mood_right 폭(css의 width:1152px)입니다 — spacer가 있든
+           없든, onEnter가 언제 실행되든 항상 같은 값이 나와 이 함수를
+           어디에 둬도 안전합니다. */
+        var REVEAL_PANEL_SHIFT =
+          1152 * parseFloat(getComputedStyle(wordPanel).zoom || "1");
 
         /* 시작 상태 — 닫힌 문(30 × 484), 글(.mood_copy)은 투명,
            .mood_inner는 REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE만큼
