@@ -127,56 +127,53 @@
      다 드러나기까지 걸리는 시간(초). */
   var REVEAL_WIDTH_DURATION = 2.5;
 
-  /* ★ 4) 사진이 다 드러난 뒤, 글(.mood_copy)·무드 단어(.mood_right)가
-     나타나는 데 걸리는 시간(초). 그 전까지는 배경 사진만 보입니다.
+  /* ★★★ 2026-08-22 다시 설계 — Figma node 1907:8464의 "이너(mood_inner)
+     3장이 가로로 나란히 놓인 필름스트립" 구조를 그대로 스크롤 동작으로
+     옮겼습니다. 예전에는 글(.mood_copy)과 무드 단어(.mood_right)가 서로
+     다른 시점에 각자 페이드인 + 슬라이드했는데("두 번째 이너 전체가
+     보이는 것"과 "세 번째 이너가 드러나는 것"이 하나의 느낌으로 안
+     이어진다는 지적), 지금은 **둘의 공통 부모 .mood_inner 하나를
+     통째로 미는 방식**입니다 — 텍스트와 무드 단어가 물리적으로 같은
+     판에 붙어 있는 것처럼 항상 같은 속도로 함께 움직입니다.
 
-     글은 세 박자로 움직입니다 — ① 오른쪽(REVEAL_TEXT_SLIDE만큼)에
-     멈춰 있는 채로 페이드인 → ② 그 자리에서 약 1초 멈춤(HOLD) →
-     ③ 왼쪽 최종 자리로 슬라이드.
+     스크롤 두 구간:
+     1) 문(.mood_reveal)이 높이 → 폭 순서로 다 열려 두 번째 이너
+        (전체 사진 + 오른쪽에 멈춘 텍스트)가 완전히 보이는 것까지.
+     2) .mood_inner 전체가 왼쪽으로 밀리며 — 오른쪽에 멈춰 있던 텍스트가
+        최종 왼쪽 자리로, 그때까지 화면 밖에 있던 무드 단어(.mood_right)가
+        오른쪽에서 함께 끌려 들어와 — 세 번째 이너(최종 2분할 배치)가
+        드러납니다.
 
-     무드 단어(.mood_right = 2분할의 단색 배경 + 카드)는 ①②(글이 오른쪽에
-     멈춰 있는 동안)에는 **아직 나타나지 않습니다.** "2분할이 나오기 전에
-     전체 사진과 오른쪽 텍스트가 1초 정도 유지되면 좋겠다"는 요청으로,
-     ③(슬라이드) 시작과 같은 시점에야 무드 단어가 뜨도록 시작 지점을
-     맞췄습니다 — 그 전까지는 ①과 동시에 시작해 글이 멈춰 있는 동안에도
-     2분할이 이미 보이고 있었습니다.
+     ★ 배경 사진(.mood_room)은 .mood_inner의 형제 요소라 이 이동에
+     끌려가지 않습니다 — object-fit: cover로 무대를 채운 채 항상
+     같은 자리에 고정, 그 위로 텍스트·무드 단어 판만 지나갑니다
+     (화면 폭에 따라 사진을 밀면 반대쪽에 빈 여백이 생기는 문제를
+     피하려고 예전부터 사진은 움직이지 않습니다).
 
-     ★ "너무 확 튀어나와서 어색하다"는 지적으로 두 가지를 더 부드럽게
-     했습니다.
-     - ①이 완전히 정지 상태에서 페이드인만 하면 "뿅" 나타나는 느낌이라,
-       REVEAL_TEXT_SETTLE만큼 더 오른쪽에서 시작해 ① 동안 살짝 안착하는
-       움직임을 같이 줍니다(멈춤② 자리 = REVEAL_TEXT_SLIDE는 그대로).
-     - ③(슬라이드)의 시작 속도가 가장 빠른 power2.out 대신, 시작이
-       느긋한 power1.out으로 바꿔 "튀어나오듯" 출발하지 않게 했습니다.
+     동작 순서(구간 2 시작 시점 기준):
+     ① .mood_inner가 REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE 자리에서
+        REVEAL_PANEL_SHIFT 자리로 살짝 안착하며, 그 위 글(.mood_copy)이
+        페이드인합니다 — 이 자리가 바로 "두 번째 이너"(전체 사진 +
+        오른쪽 벽에 선 텍스트)의 최종 모습입니다. 무드 단어는 이 시점에
+        REVEAL_PANEL_SHIFT만큼 더 오른쪽(화면 밖)에 있어 보이지 않습니다.
+     ② 그 자리에서 약 1초 멈춤(HOLD) — "2분할이 나오기 전에 전체 사진과
+        오른쪽 텍스트가 잠깐 유지되면 좋겠다"는 요청 그대로입니다.
+     ③ .mood_inner를 REVEAL_PANEL_SHIFT → 0으로 한 번에 밀어, 텍스트는
+        왼쪽 최종 자리로, 무드 단어는 화면 밖에서 자기 자리로 **동시에**
+        들어옵니다 — 겹침 걱정 없이 둘이 항상 같은 상대 위치(768px
+        간격)를 유지한 채 함께 이동하므로 서로 부딪히지 않습니다.
 
-     ★ 무드 단어(.mood_right)도 "오른쪽에서 왼쪽으로 자연스럽게 나오고
-     지금의 최종 배치처럼 멈춰야 한다"는 요청으로, 아래에서 떠오르던
-     방식(y) 대신 글과 같은 방향(x, 오른쪽 → 제자리)으로 슬라이드하도록
-     바꿨습니다. 최종 자리(2분할, #585a4d 배경 + 카드 3개)는 CSS 값
-     그대로라 바뀌지 않습니다 — 등장 방향만 바뀌었습니다.
-
-     ★ 배경 사진(.mood_room)은 ③(슬라이드) 구간에서 더 이상 텍스트를
-     따라 움직이지 않습니다. object-fit: cover로 무대 폭 전체를 채우는
-     구조로 바뀌면서(1920px보다 넓은 화면까지 여백 없이 채우기 위한
-     결정 — brand.css .mood_room 주석 참고), 사진을 고정 px 거리만큼
-     밀면 화면 폭에 따라 반대쪽에 빈 여백이 생기는 문제가 생겨 사진의
-     이동은 뺐습니다. 지금은 글(.mood_copy)과 무드 단어(.mood_right)만
-     슬라이드하고, 사진은 항상 같은 자리에서 화면을 채운 채 그 위로
-     글이 지나가는 모습입니다.
-
-     ★ REVEAL_TEXT_SLIDE는 Figma mood_inner2(node 1962:6949, "문이 다 열린
-     직후" 화면) 실측으로 계산했습니다 — 창문 오른쪽 프레임 ~ 무대 오른쪽
-     끝 사이 벽면의 가운데에 타이틀이 오도록 화면 좌표 약 1224px을
-     목표로 잡고, CSS left(72px, mood_copy_title 참고)를 뺀 값입니다. */
-  var REVEAL_TEXT_SLIDE = 1152;            /* 글이 오른쪽에서 들어오는 거리(px, 멈춤② 자리) — 문이 다 열렸을 때
-                                               사진의 열린 벽면(창문 오른쪽 ~ 무대 오른쪽 끝) 가운데에 오도록
-                                               Figma mood_inner2 실측 기준으로 계산한 값 */
+     ★ REVEAL_PANEL_SHIFT는 하드코딩하지 않고 아래 play() 안에서
+     wordPanel(.mood_right)의 실제 렌더 폭을 잽니다 — 그 폭이 정확히
+     "mood_inner를 얼마나 밀어야 무드 단어가 화면 밖으로 완전히 나가고
+     mood_left가 화면 오른쪽 벽에 붙는가"이기 때문입니다(mood_left 768 +
+     mood_right 1152 = 1920 = 무대 전체 폭이라, mood_right 폭만큼 밀면
+     정확히 이 관계가 성립합니다). CSS에서 mood_right 폭이 바뀌어도
+     따로 손댈 값이 없습니다. */
   var REVEAL_TEXT_SETTLE = 50;             /* ① 페이드인 동안 안착하는 추가 거리(px) */
-  var REVEAL_WORD_SLIDE = 250;             /* 무드 단어가 오른쪽에서 들어오는 거리(px) */
   var REVEAL_TEXT_FADE_DURATION = 0.9;     /* ① 안착하며 페이드인 */
   var REVEAL_TEXT_HOLD_DURATION = 1;       /* ② 오른쪽에서 멈춰 있는 시간(전체 사진 + 텍스트만 보임) */
-  var REVEAL_TEXT_SLIDE_DURATION = 1.6;    /* ③ 왼쪽으로 슬라이드 — "천천히 들어와야해" 요청으로 0.9 → 1.6 */
-  var REVEAL_TEXT_DURATION = 1.6;          /* 무드 단어(.mood_right) 등장 길이 — ③과 같은 속도로 함께 맞춤 */
+  var REVEAL_TEXT_SLIDE_DURATION = 1.6;    /* ③ .mood_inner 전체가 왼쪽으로 슬라이드 */
 
   /* ---- tchaikim 가로 스크롤 --------------------------------------------- */
   var HORIZONTAL_MIN_WIDTH = 1280;
@@ -327,10 +324,11 @@
     var section = document.querySelector(".mood");
     var reveal = document.querySelector(".mood_reveal");
     var room = document.querySelector(".mood_room");
+    var moodInner = document.querySelector(".mood_inner");
     var copy = document.querySelector(".mood_copy");
     var wordPanel = document.querySelector(".mood_right");
 
-    if (!section || !reveal || !room || !copy || !wordPanel) {
+    if (!section || !reveal || !room || !moodInner || !copy || !wordPanel) {
       return;
     }
 
@@ -349,23 +347,27 @@
         REVEAL_STAGE_HEIGHT = window.innerHeight;
         REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 1080);
 
-        /* 시작 상태 — 닫힌 문(30 × 484). 글(.mood_copy)·무드 단어(.mood_right)
-           둘 다 투명 + 오른쪽으로(REVEAL_TEXT_SLIDE / REVEAL_WORD_SLIDE만큼).
-           배경 사진(.mood_room)은 object-fit: cover라 항상 무대를 채우고
-           있어 따로 되돌릴 상태가 없습니다. CSS 기본값(끝난 모습 = 다
-           열리고 다 보이는 상태)과 반대이므로, 재생 전에 반드시
-           되돌려야 합니다. */
+        /* .mood_inner를 얼마나 밀어야 mood_right(무드 단어)가 화면 밖으로
+           완전히 나가는지는 mood_right 자신의 실제 렌더 폭입니다 — 위
+           REVEAL_PANEL_SHIFT 주석 참고. */
+        var REVEAL_PANEL_SHIFT = wordPanel.getBoundingClientRect().width;
+
+        /* 시작 상태 — 닫힌 문(30 × 484), 글(.mood_copy)은 투명,
+           .mood_inner는 REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE만큼
+           오른쪽에 있어 mood_left도 mood_right도 아직 화면 밖입니다.
+           배경 사진(.mood_room)은 .mood_inner의 형제라 이 이동과
+           무관하게 object-fit: cover로 항상 무대를 채우고 있어 따로
+           되돌릴 상태가 없습니다. CSS 기본값(끝난 모습 = 다 열리고 다
+           보이는 상태)과 반대이므로, 재생 전에 반드시 되돌려야 합니다. */
         gsap.set(reveal, {
           width: REVEAL_CLOSED_WIDTH,
           height: REVEAL_CLOSED_HEIGHT
         });
         gsap.set(copy, {
-          opacity: 0,
-          x: REVEAL_TEXT_SLIDE + REVEAL_TEXT_SETTLE
+          opacity: 0
         });
-        gsap.set(wordPanel, {
-          opacity: 0,
-          x: REVEAL_WORD_SLIDE
+        gsap.set(moodInner, {
+          x: REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE
         });
 
         function play() {
@@ -427,50 +429,49 @@
             ease: "power2.inOut"
           }, REVEAL_HEIGHT_DURATION + REVEAL_WIDTH_DELAY);
 
-          /* 3. 사진이 다 드러난 뒤에야 글(.mood_copy)이 오른쪽에서 슬라이드해
-                들어오고, 무드 단어(.mood_right)가 아래에서 떠오릅니다 —
-                "사진이 드러난 후 텍스트가 뜬다" 순서는 그대로입니다. */
+          /* 3. 사진이 다 드러난 뒤에야 .mood_inner(글 + 무드 단어를 함께
+                담은 판)가 오른쪽 자리에서 안착 → 멈춤 → 왼쪽 최종 자리로
+                슬라이드합니다. 위 "★★★ 2026-08-22 다시 설계" 주석의 ①②③
+                그대로입니다 — "두 번째 이너 전체가 보이는 것"(①② 끝)과
+                "이너 자체가 밀리며 세 번째 이너가 드러나는 것"(③)이
+                하나의 이어진 움직임입니다. */
           var revealEnd = REVEAL_HEIGHT_DURATION + REVEAL_WIDTH_DELAY + REVEAL_WIDTH_DURATION;
 
-          /* 3-①. 페이드인하며 REVEAL_TEXT_SETTLE만큼 살짝 안착합니다 — 완전히
-                  멈춘 채로 opacity만 바뀌면 "뿅" 나타나는 느낌이라, 아주 약간의
-                  움직임을 같이 줍니다. 멈춤(②) 자리인 x: REVEAL_TEXT_SLIDE에서
-                  끝납니다. */
-          timeline.to(copy, {
-            opacity: 1,
-            x: REVEAL_TEXT_SLIDE,
+          /* ①. .mood_inner가 REVEAL_TEXT_SETTLE만큼 더 오른쪽에서 시작해
+                살짝 안착하며(완전히 멈춘 채로 opacity만 바뀌면 "뿅" 나타나는
+                느낌이라 아주 약간의 움직임을 같이 줍니다), 그 위 글이
+                페이드인합니다. 멈춤(②) 자리인 x: REVEAL_PANEL_SHIFT에서
+                끝납니다 — 이 자리가 "두 번째 이너"(전체 사진 + 오른쪽 벽에
+                선 텍스트)의 완성된 모습입니다. */
+          timeline.to(moodInner, {
+            x: REVEAL_PANEL_SHIFT,
             duration: REVEAL_TEXT_FADE_DURATION,
             ease: "sine.out"
           }, revealEnd);
 
-          /* 3-③. 페이드인(①) + 멈춤(②, HOLD_DURATION)이 끝난 뒤에야
-                  왼쪽 최종 자리로 슬라이드합니다. 이미 다 보이는 상태라
-                  opacity는 건드리지 않습니다. 무드 단어(2분할)도 바로 이
-                  시점부터 같이 등장합니다 — 그 전(①②)까지는 전체 사진과
-                  오른쪽의 글만 보입니다. */
+          timeline.to(copy, {
+            opacity: 1,
+            duration: REVEAL_TEXT_FADE_DURATION,
+            ease: "sine.out"
+          }, revealEnd);
+
+          /* ②는 별도 트윈이 없습니다 — HOLD_DURATION만큼 아무것도 움직이지
+             않고 그대로 멈춰 있는 구간이라, 다음 ③이 시작하는 시점을
+             그만큼 늦추는 것으로 충분합니다. */
           var slideStart = revealEnd + REVEAL_TEXT_FADE_DURATION + REVEAL_TEXT_HOLD_DURATION;
 
-          timeline.to(copy, {
+          /* ③. .mood_inner 전체를 REVEAL_PANEL_SHIFT → 0으로 한 번에
+                밉니다. 글은 왼쪽 최종 자리로, 그때까지 화면 밖(오른쪽)에
+                있던 무드 단어는 자기 자리로 — 항상 같은 상대 거리(768px)를
+                유지한 채 함께 들어오므로 서로 겹칠 수가 없습니다(예전에는
+                각자 다른 시점에 움직여 겹침을 피하려고 무드 단어 시작을
+                따로 미뤄야 했습니다 — 이제 필요 없습니다). 이미 다 보이는
+                상태라 opacity는 건드리지 않습니다. */
+          timeline.to(moodInner, {
             x: 0,
             duration: REVEAL_TEXT_SLIDE_DURATION,
             ease: "power1.out"
           }, slideStart);
-
-          /* ★ "왼쪽으로 이동할 때 mood_right 레이어와 겹치지 않도록" 요청으로
-             text/room과 동시에 시작하지 않고, 그 슬라이드가 완전히 끝난
-             뒤(slideStart + REVEAL_TEXT_SLIDE_DURATION)에야 시작하도록
-             미뤘습니다. text(.mood_copy)는 멈춤② 자리(화면 좌표 약 1224px)
-             에서 시작해 mood_right의 네이티브 자리(768~1920px)를 한참
-             가로질러 지나가므로, 동시에 진행하면 옅어지는 mood_right
-             배경과 아직 지나가는 중인 사진·글이 잠깐 같은 화면 영역에서
-             겹쳐 보였습니다. 이제 사진·글이 완전히 자리를 잡은 뒤에만
-             mood_right가 나타나 겹치는 구간이 없습니다. */
-          timeline.to(wordPanel, {
-            opacity: 1,
-            x: 0,
-            duration: REVEAL_TEXT_DURATION,
-            ease: "power1.out"
-          }, slideStart + REVEAL_TEXT_SLIDE_DURATION);
         }
 
         /* 사진이 아직 안 왔는데 문이 열리면 빈 칸이 드러납니다.
