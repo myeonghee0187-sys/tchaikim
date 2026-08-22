@@ -164,7 +164,8 @@ mood
   flex-shrink: 0;
   width: 1152px;
   height: 1080px;
-  background-color: #3b3c32;
+  /* Figma node 1907:8464(2026-08-22 갱신) 실측 — 예전 #3b3c32에서 변경. */
+  background-color: #585a4d;
 }
 
 .mood_word {
@@ -184,20 +185,26 @@ mood
   object-fit: cover;
 }
 
+/* 세 카드 좌표는 Figma node 1907:8464(2026-08-22 갱신, mood_con 3개
+   실측)입니다. 이 값으로 바뀌면서 실제 사진 파일(unique.jpg 260×180 ·
+   modern.jpg 200×240 · elegant.jpg 260×180)과 카드 상자 크기가 정확히
+   1:1이 되어, object-fit: cover가 더 이상 사진을 자르거나 늘리지
+   않습니다(예전 298×189 · 306×180 상자는 이 사진들보다 커서 확대
+   되고 있었습니다). */
 .mood_word_unique {
-  top: 263px;
-  left: 130px;
-  width: 298px;
+  top: 88px;
+  left: 171px;
+  width: 260px;
 }
 
 .mood_word_unique .mood_word_media {
-  width: 298px;
-  height: 189px;
+  width: 260px;
+  height: 180px;
 }
 
 .mood_word_modern {
-  top: 639px;
-  left: 458px;
+  top: 350px;
+  left: 466px;
   width: 220px;
 }
 
@@ -211,13 +218,13 @@ mood
 }
 
 .mood_word_elegant {
-  top: 390px;
-  left: 748px;
-  width: 306px;
+  top: 229px;
+  left: 788px;
+  width: 260px;
 }
 
 .mood_word_elegant .mood_word_media {
-  width: 306px;
+  width: 260px;
   height: 180px;
 }
 
@@ -1382,7 +1389,7 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
    ★ 무드 단어(mood_right)는 더 이상 사진 위에 겹치는 코너 카드가
    아니라 사진·텍스트 아래로 내려간 별도 블록입니다("아래로 내려가게
    해달라"는 요청). .mood_reveal을 세로 flex로 바꿔 mood_left(사진 위
-   텍스트) → mood_right(카드, 자기 배경 #3b3c32) 순서로 쌓습니다.
+   텍스트) → mood_right(카드, 자기 배경 #585a4d) 순서로 쌓습니다.
    사진(.mood_room)은 이 세로 배치와 별개로 위쪽 자리에만 높이가
    고정돼(아래 56.25vw 참고) mood_right 밑까지 늘어나지 않습니다.
    mood_right는 더 이상 폭에 상한(max-width)을 두지 않습니다 — "화면이
@@ -1515,8 +1522,8 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     box-sizing: border-box;
   }
 
-  /* 카드 3장(.mood_word_unique/modern/elegant)의 desktop 좌표(top:263px/
-     639px/390px, left:130px/458px/748px)는 base 규칙(.mood_word)의
+  /* 카드 3장(.mood_word_unique/modern/elegant)의 desktop 좌표(top:88px/
+     350px/229px, left:171px/466px/788px)는 base 규칙(.mood_word)의
      position: absolute를 그대로 물려받습니다. 여기서 static으로 풀어야
      .mood_right의 flex 행 위에 순서대로 놓입니다. */
   .mood_reveal .mood_word {
@@ -1534,16 +1541,17 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     width: auto;
   }
 
-  /* mood_word_media도 base 규칙에서 고정 px 크기(298×189 등)를 물려받아
+  /* mood_word_media도 base 규칙에서 고정 px 크기(260×180 등)를 물려받아
      카드 폭보다 넓어져 옆 카드와 겹쳤습니다. 카드 폭을 그대로 채우도록
-     비율만 유지합니다. */
+     비율만 유지합니다 — 비율은 실제 사진 파일(unique/elegant.jpg
+     260×180, modern.jpg 200×240)과 정확히 같은 값입니다. */
   .mood_reveal .mood_word_media {
     width: 100%;
     height: auto;
   }
 
   .mood_reveal .mood_word_unique .mood_word_media {
-    aspect-ratio: 298 / 189;
+    aspect-ratio: 260 / 180;
   }
 
   .mood_reveal .mood_word_modern .mood_word_media {
@@ -1551,7 +1559,7 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
   }
 
   .mood_reveal .mood_word_elegant .mood_word_media {
-    aspect-ratio: 306 / 180;
+    aspect-ratio: 260 / 180;
   }
 
   /* 카드 제목·설명 — 예전에는 767.98px에서 고정 11px로 튀고, 설명은
