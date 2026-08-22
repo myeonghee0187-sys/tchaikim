@@ -95,17 +95,16 @@ mood
   display: flex;
   width: 1920px;
   /* ★★★ 2026-08-22 — Figma node 1907:8464("mood")를 get_metadata로
-     직접 확인한 값은 1920 × 700이고, 그 안 mood_right(카드 3장)도
-     700입니다 — 처음엔 이 프레임 하나만 보고 mood_inner·mood_left도
-     같이 700으로 바꿨는데, 그러면 mood_left 안의 .mood_copy(제목+본문,
-     top:218/height:644, 아래 mood_copy 주석 참고 — **다른** Figma 노드
-     1962:6949/1962:6954에서 온 값)가 위·아래 218px씩 정확히 대칭이던
-     게 깨져서 "두 번째 이너" 글 위치가 전부 아래로 밀렸습니다(실측
-     확인). 즉 mood_left(글)와 mood_right(카드)는 서로 **다른 Figma
-     프레임**(각각 1080·700 기준)에서 왔습니다 — mood_inner는 글 쪽
-     기준인 1080을 그대로 유지하고, 700 보정은 mood_right 하나에만
-     겁니다(아래 .mood_right 규칙 참고). */
-  height: 1080px;
+     직접 확인한 값은 1920 × 700이고, mood_left·mood_right 전부 700
+     입니다. 처음엔 mood_right(카드)만 700으로 맞추고 mood_left(글)는
+     다른(1080 기준) Figma 노드값을 그대로 뒀는데, 사용자 리포트
+     ("1,2번 이너가 너무 넓어서 3번 이너가 작아보인다") 이후 문 자체가
+     열리는 목표 크기(js REVEAL_STAGE_HEIGHT)도 700 기준으로 다시
+     맞추면서, mood_left도 같이 700으로 되돌렸습니다 — 이제 문이 열린
+     상태(2번 이너)와 슬라이드된 상태(3번 이너)가 **똑같은 700 높이
+     상자**를 공유합니다. .mood_copy(제목·본문)의 세로 중앙 정렬도
+     700 기준(top:28px, 아래 .mood_copy 주석)으로 다시 잡았습니다. */
+  height: 700px;
   /* .mood_reveal이 1920px보다 넓어질 수 있어(위 참고), 1920px 고정폭인
      이 안쪽(글 + 무드 단어)을 가운데로 밀어 둡니다. */
   margin-inline: auto;
@@ -115,14 +114,18 @@ mood
   position: relative;
   flex-shrink: 0;
   width: 768px;
-  /* .mood_inner와 같은 이유로 1080 그대로 — .mood_copy(제목·본문)가
-     이 기준으로 위·아래 218px씩 대칭입니다. */
-  height: 1080px;
+  /* .mood_inner와 같은 이유로 700 — 위 .mood_inner 주석 참고. */
+  height: 700px;
 }
 
 .mood_copy {
   position: absolute;
-  top: 218px;
+  /* ★★★ 2026-08-22 — 218px(1080 기준 위·아래 대칭값, 1080−644=436,
+     436÷2=218)에서 28px로 바뀌었습니다. mood_left가 700 기준이 되면서
+     같은 방식으로 다시 계산한 값입니다 — 700−644=56, 56÷2=28.
+     내용(제목+본문) 자체의 높이(644px)는 그대로입니다 — 상자만
+     700에 맞춰 줄었을 뿐, 글자 크기·줄 수는 손대지 않았습니다. */
+  top: 28px;
   left: 0;
   width: 768px;
   height: 644px;
@@ -1399,51 +1402,27 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     height: 100vh;
   }
 
-  /* ★★★ 후속 — "아래쪽 여백이 너무 크게 남는다" 리포트.
-     --mood_panel_scale은 **가로** 비율만 씁니다(위 --mood_panel_scale
-     주석 참고 — 세로까지 맞추는 cover를 쓰면 카드가 넘칩니다). 그래서
-     16:9보다 납작한 창(예: 1280×800, 1440×900)에서는 .mood_right
-     (세로 700 × 0.667 ≈ 467)가 .mood_reveal의 실제 높이(100vh = 800)
-     보다 짧습니다. mood_right는 mood_inner 안에서 기본적으로 위쪽에
-     붙으므로, 남는 몫이 전부 **아래로만** 몰려 있었습니다 — 그 위에
-     Figma 기준(700)보다 훨씬 큰 1080을 잘못 쓰고 있던 것까지 겹쳐
-     카드 아래에 필요 이상의 여백이 남았습니다(위 .mood_right 주석 —
-     Figma node 1907:8464 실측으로 700이 맞다는 것을 확인했습니다).
+  /* ★★★ 후속 — "1,2번 이너가 너무 넓어서 3번 이너가 작아보인다" 리포트.
 
-     ★ mood_left(글)에는 이 보정을 걸지 않습니다 — .mood_copy(제목·본문)는
-     **다른** 1080 기준 Figma 프레임에서 왔고, 그 프레임 안에서 이미
-     위·아래 218px씩 대칭이라(.mood_copy 주석 참고) mood_left 자신은
-     손댈 필요가 없습니다. 처음에 mood_inner(부모, 두 자식을 겸함)
-     전체에 이 보정을 걸었다가, mood_left까지 함께 밀려 "두 번째
-     이너"(슬라이드 전) 글 위치가 아래로 어긋나는 걸 실측으로 확인하고
-     mood_right 하나로 좁혔습니다.
+     이전엔 문(.mood_reveal)이 열릴 때 **화면 전체 높이(100vh)**까지
+     자라서, "문이 열린 상태"(2번 이너: 사진+글)가 "슬라이드된 상태"
+     (3번 이너: 카드, mood_right 700 높이 하나만큼만 채워짐)보다 훨씬
+     커 보였습니다. 그래서 mood_right에만 계산된 margin-top을 줘서
+     카드를 문 안에서 가운데로 밀어 두는 방식으로 여백을 고쳤었는데,
+     "문 자체의 크기"는 그대로 100vh라 2번과 3번의 **덩치 차이**는
+     남아 있었습니다.
 
-     ★★★ 처음엔 .mood_reveal을 flex + align-items:center로 만들어
-     보정하려고 했는데, 실측으로 틀렸다는 걸 확인했습니다 — 이 요소들은
-     zoom이 없어서(위 주석 참고) **자기 own box는 항상 원본(height) 그대로**
-     입니다. 시각적으로 줄어든 값은 zoom 때문일 뿐, flexbox가 정렬
-     기준으로 보는 크기는 그대로라 잘못 밀려났습니다.
+     지금은 문이 열리는 목표 높이 자체를 700 기준(js REVEAL_STAGE_HEIGHT,
+     REVEAL_PANEL_SHIFT와 같은 방식으로 --mood_panel_scale을 곱함)으로
+     낮췄습니다 — 아래 js/brand.js 주석 참고. 그 결과 문이 다 열려도
+     mood_inner(700 높이, 위 .mood_inner 주석 참고)가 문 상자를 정확히
+     가득 채우게 되어 **위 margin-top 보정이 더 이상 필요 없습니다**
+     (남는 여백 자체가 0이 됩니다) — 그래서 그 규칙을 지웠습니다.
+     대신 .mood_reveal 자신이 .mood_stage(100vh) 안에서 원래부터
+     top:50%/left:50%로 가운데 정렬되므로(위 .mood_reveal 규칙),
+     700 크기의 문이 화면 가운데 떠 있는 모습이 됩니다. */
 
-     대신 .mood_right에 **계산된 margin-top**을 직접 줍니다.
-
-     ★★ 분모에 --mood_panel_scale이 한 번 더 들어갑니다 — margin도
-     width/height와 마찬가지로 그 요소 자신의 zoom을 받습니다(실측
-     확인: zoom:0.667 + margin-top:200px → 실제로는 133px만 내려갑니다).
-     원하는 **실제 화면 여백**은 (100vh − 700 × scale) ÷ 2인데, 이 값을
-     그대로 margin-top에 적으면 zoom이 한 번 더 곱해져(× scale) 목표의
-     절반도 못 내려갑니다. 그래서 미리 scale로 나눠 상쇄해 둡니다 —
-     zoom이 곱해지고 나면 정확히 목표값이 남습니다.
-
-     1920 발표 화면(16:9)에서는 --mood_panel_scale이 1이라 분자가 0이
-     되어 margin-top도 0 — 지금과 완전히 동일합니다. */
-  .mood_right {
-    margin-top: calc(
-      (100vh - 700px * var(--mood_panel_scale)) /
-      (2 * var(--mood_panel_scale))
-    );
-  }
-
-  /* ★★★ .mood_inner 자신에는 zoom을 걸지 않습니다(원래 1920×1080
+  /* ★★★ .mood_inner 자신에는 zoom을 걸지 않습니다(원래 1920×700
      고정폭 그대로) — 이 요소는 GSAP이 x(translateX)로 슬라이드시키는
      대상이라, 여기에 직접 zoom을 걸면 --brand_screen_gain 때와 똑같은
      "요소 자신의 zoom이 자신에게 걸린 transform까지 함께 줄인다" 버그가

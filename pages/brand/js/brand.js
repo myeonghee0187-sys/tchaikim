@@ -389,19 +389,33 @@
     gsap.matchMedia().add(
       "(min-width: " + MOOD_MIN_WIDTH + "px) and (prefers-reduced-motion: no-preference)",
       function () {
-        /* brand.css의 .mood가 이제 자기 자신에 zoom을 걸어 조상의 zoom을
-           상쇄해 두었으므로(★★ 2026-08-22 추가 주석 참고), 이 안의
-           .mood_reveal에는 실제 창 높이를 배수 없이 그대로 씁니다 —
-           무대(.mood_stage, height:100vh)와 정확히 같은 높이로 열립니다. */
-        REVEAL_STAGE_HEIGHT = window.innerHeight;
-        /* ★★★ 2026-08-22 후속 — 분모가 1080이 아니라 700입니다.
+        /* ★★★ 2026-08-22 재수정 — REVEAL_STAGE_HEIGHT는 더 이상
+           "화면 전체 높이(window.innerHeight)"가 아닙니다.
+
+           사용자 리포트: "1,2번 이너가 너무 넓어서 3번 이너가
+           작아보이거든. 1,2번 이너도 3번 이너에 사이즈 맞춰줘."
+
+           이전엔 문(.mood_reveal)이 100vh까지 자라서 "문이 열린
+           상태"(2번 이너)가 "슬라이드된 상태"(3번 이너, mood_right
+           700 높이 하나만 채움)보다 훨씬 커 보였습니다. 지금은 문이
+           열리는 목표 높이를 mood_right/mood_left와 **같은 기준**
+           (Figma node 1907:8464 실측값 700)으로 낮춰서, 문이 다
+           열려도 mood_inner(700)가 문 상자를 정확히 채우게
+           맞췄습니다 — 세 이너가 전부 같은 700 기준 상자를 공유합니다.
+
+           1152 * getComputedStyle(...).zoom과 완전히 같은 이유로
+           getComputedStyle을 씁니다(아래 REVEAL_PANEL_SHIFT 주석
+           참고) — .mood_right 자신의 zoom(--mood_panel_scale)은
+           조상 체인이나 생성 순서와 무관하게 항상 정확합니다. */
+        REVEAL_STAGE_HEIGHT = 700 * parseFloat(getComputedStyle(wordPanel).zoom || "1");
+        /* ★★★ 2026-08-22 — 분모가 1080이 아니라 700입니다.
            Figma node 1907:8464를 get_metadata로 직접 확인한 값입니다 —
            닫힌 문 표시(mood_start, 30 × 484)가 y:108인데, 이건 700 높이
            프레임 기준 정중앙(108 + 484/2 = 350 = 700/2)입니다. 1080
            기준으로 두면 문이 실제보다 낮은 비율(44.8%)로 작게
            시작합니다 — 정확한 비율은 484/700 ≈ 69.1%입니다.
            css/brand.css의 .mood_inner/.mood_left/.mood_right height도
-           같은 이유로 1080 → 700으로 함께 고쳤습니다. */
+           같은 이유로 700입니다. */
         REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 700);
 
         /* .mood_inner를 얼마나 밀어야 mood_right(무드 단어)가 화면 밖으로
