@@ -168,9 +168,30 @@
      보이는" 순간입니다. 이 슬라이드가 끝나야 스크롤 잠금이 풀리고,
      그다음 휠부터는 평범하게 다음 섹션(kimyoungjin)으로 넘어갑니다.
 
-     ★ 배경 사진(.mood_room)은 .mood_inner의 형제 요소라 이 이동에
-     끌려가지 않습니다 — 항상 같은 자리에 고정, 그 위로 텍스트·무드
-     단어 판만 지나갑니다.
+     ★★ 2026-08-22 추가 — 배경 사진(.mood_room)은 더 이상 완전히
+     고정이 아닙니다. .mood_inner의 형제 요소라 슬라이드에 "끌려가지는"
+     않지만, 슬라이드와 같은 타이밍으로 **오른쪽 끝을 축으로 확대**됩니다
+     (아래 MOOD_ROOM_PAN_SCALE). 사용자 리포트: "세 번째 이너로 넘어가면
+     타이틀 텍스트가 창문 쪽이 아니라 사진 오른쪽 벽지 부분에 떠야
+     하는데 계속 창문 쪽에 떠서 가독성이 안 좋다."
+
+     원인 — mood_left(텍스트 판)는 슬라이드가 끝나면 화면 **왼쪽**
+     0~768px 자리에 앉습니다. 그런데 배경 사진(assets/images/mood_inner.png,
+     1920 × 1084)의 창문은 정확히 그 자리(원본 픽셀 x 120~745)에
+     있습니다 — 그대로 두면 문장이 항상 유리창 위에 얹혀 가독성이
+     떨어집니다. 반대로 사진 오른쪽(x 745~1900)은 벽지뿐이라 텍스트를
+     얹기 좋은 자리인데, "두 번째 이너"(슬라이드 전) 상태의 텍스트가
+     이미 그 자리(화면 오른쪽)를 쓰고 있어 창문을 그쪽으로 밀 수도
+     없습니다 — 창문 폭(약 620px)이 두 텍스트 자리 사이 빈틈(약
+     540px)보다 넓어서 사진을 고정한 채로는 어느 자리로 옮겨도 최소
+     한쪽 텍스트와 겹칩니다(실측으로 확인).
+
+     그래서 사진 자체를 슬라이드와 같은 순간에 오른쪽 끝을 축으로
+     확대합니다 — 오른쪽 벽지(원래도 사진 오른쪽 끝까지 계속 이어짐)는
+     화면 오른쪽 끝에 그대로 고정된 채 그대로 남고, 왼쪽에 있던 창문만
+     화면 밖으로 밀려납니다. "두 번째 이너"(슬라이드 전) 동안에는 배율이
+     그대로 1이라 지금까지의 창문 있는 방 전체 구도가 전혀 바뀌지
+     않습니다 — 사용자가 좋다고 한 그 느낌은 그대로 유지됩니다.
 
      ★ REVEAL_PANEL_SHIFT는 하드코딩하지 않고 play() 안에서
      wordPanel(.mood_right)의 실제 렌더 폭을 잽니다 — mood_left 768 +
@@ -183,6 +204,24 @@
   var REVEAL_SLIDE_DURATION = 1.6;         /* 사용자의 첫 휠로 재생되는 .mood_inner 슬라이드
                                                길이(초) — yh.skdefine.com #section7의
                                                TRANSITION(1.6s)과 같은 크기로 맞췄습니다. */
+
+  /* ★★ .mood_room(배경 사진)을 슬라이드와 같은 순간에 얼마나 확대할지.
+     transform-origin: right center로 오른쪽 끝을 고정한 채 확대하므로,
+     이 배율만큼 왼쪽 내용(창문)이 화면 밖으로 밀려납니다.
+
+     1.7로 잡은 근거 — assets/images/mood_inner.png(1920 × 1084)에서
+     창문의 오른쪽 끝은 원본 x ≈ 745px입니다. 컨테이너 폭을 W라 하면
+     오른쪽 끝 고정 확대에서 원래 화면 x=P였던 점은
+       newP = W − (W − P) × scale
+     로 이동합니다. 창문의 오른쪽 끝이 슬라이드 후 텍스트 자리
+     (화면 x ≈ 0~684, 1920 기준)를 벗어나 화면 밖(newP ≲ 0)으로
+     나가려면 scale ≥ 1.62 정도가 필요합니다(1920 기준: 745→0의 최소
+     배율이 1920 ÷ (1920−745) ≈ 1.63). 1280×800·1440×900(둘 다 16:9보다
+     납작해 배경이 세로 기준으로 커버되는 경우)도 같은 방식으로 계산하면
+     최소 배율이 1.58 안팎이라, 세 폭 모두에 여유를 두고 1.7 하나로
+     통일했습니다. 실측(Playwright)으로 세 폭 모두 창문이 실제로 화면
+     밖으로 나가는 것을 확인했습니다. */
+  var MOOD_ROOM_PAN_SCALE = 1.7;
 
   /* ---- tchaikim 가로 스크롤 --------------------------------------------- */
   var HORIZONTAL_MIN_WIDTH = 1280;
@@ -404,6 +443,12 @@
         gsap.set(moodInner, {
           x: REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE
         });
+        /* transformOrigin은 한 번만 정하면 됩니다 — scale은
+           playSlide/playUnslide/onEnterBack/onLeaveBack에서만 바뀝니다. */
+        gsap.set(room, {
+          scale: 1,
+          transformOrigin: "right center"
+        });
 
         /* gsap.matchMedia()는 이 컨텍스트 안의 gsap.set()·타임라인·
            ScrollTrigger는 조건이 어긋나면 스스로 되돌려 주지만, 아래
@@ -538,6 +583,14 @@
               onDone();
             }
           });
+          /* 배경 사진도 같은 시간·같은 이징으로 확대 — 창문이 텍스트
+             자리에서 화면 밖으로 밀려나는 것과 카드 패널이 들어오는
+             것이 한 동작처럼 보이도록 duration·ease를 맞췄습니다. */
+          gsap.to(room, {
+            scale: MOOD_ROOM_PAN_SCALE,
+            duration: REVEAL_SLIDE_DURATION,
+            ease: "power1.out"
+          });
         }
 
         /* 위로 스크롤해 슬라이드를 되돌릴 때(reverse). */
@@ -551,6 +604,11 @@
               step = 1;
               onDone();
             }
+          });
+          gsap.to(room, {
+            scale: 1,
+            duration: REVEAL_SLIDE_DURATION,
+            ease: "power1.out"
           });
         }
 
@@ -631,6 +689,7 @@
             gsap.set(reveal, { width: "100%", height: REVEAL_STAGE_HEIGHT });
             gsap.set(copy, { opacity: 1 });
             gsap.set(moodInner, { x: 0 });
+            gsap.set(room, { scale: MOOD_ROOM_PAN_SCALE });
             step = 2;
             wheelArmed = true;
             window.addEventListener("wheel", handleWheel, { passive: false });
@@ -641,6 +700,7 @@
             gsap.set(reveal, { width: REVEAL_CLOSED_WIDTH, height: REVEAL_CLOSED_HEIGHT });
             gsap.set(copy, { opacity: 0 });
             gsap.set(moodInner, { x: REVEAL_PANEL_SHIFT + REVEAL_TEXT_SETTLE });
+            gsap.set(room, { scale: 1 });
             step = 0;
           }
         });

@@ -1386,6 +1386,36 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     height: 100vh;
   }
 
+  /* ★★★ 후속 — "아래쪽 여백이 너무 크게 남는다" 리포트.
+     --mood_panel_scale은 **가로** 비율만 씁니다(위 --mood_panel_scale
+     주석 참고 — 세로까지 맞추는 cover를 쓰면 카드가 넘칩니다). 그래서
+     16:9보다 납작한 창(예: 1280×800, 1440×900)에서는
+     .mood_inner(세로 1080 × 0.667 ≈ 720)가 .mood_reveal의 실제 높이
+     (100vh = 800)보다 짧습니다. .mood_inner는 기본 흐름상 위쪽에
+     붙으므로, 남는 몫(예: 80px)이 전부 **아래로만** 몰려 있었습니다.
+
+     내용을 세로로 늘리면(카드·글자가 찌그러짐) 안 되므로, 대신 남는
+     몫을 위·아래로 반씩 나눕니다.
+
+     ★★★ 처음엔 .mood_reveal을 flex + align-items:center로 만들어
+     .mood_inner를 세로 가운데에 두려고 했는데, 실측으로 틀렸다는 걸
+     확인했습니다 — .mood_inner 자신은 zoom이 없어서(위 주석 참고)
+     **자기 own box는 항상 원본 1080px 그대로**입니다. 시각적으로
+     줄어든 720px는 그 안 자식(.mood_left/.mood_right)의 zoom
+     때문일 뿐, flexbox가 정렬 기준으로 보는 mood_inner 자신의 크기는
+     여전히 1080입니다. 그래서 800px 컨테이너 기준으로 가운데 정렬하면
+     (800−1080)/2 = **−140px**만큼 오히려 위로 밀려나 카드 윗부분이
+     화면 밖으로 잘렸습니다(실측 확인).
+
+     대신 .mood_inner에 **계산된 margin-top**을 직접 줍니다 — 시각적
+     높이(1080 × --mood_panel_scale)를 기준으로 남는 몫의 절반만
+     내려서, 자식들이 실제로 차지하는 영역만 가운데로 오게 합니다.
+     1920 발표 화면(16:9)에서는 --mood_panel_scale이 1이라 남는 몫이
+     0이 되어 margin-top도 0 — 지금과 완전히 동일합니다. */
+  .mood_inner {
+    margin-top: calc((100vh - 1080px * var(--mood_panel_scale)) / 2);
+  }
+
   /* ★★★ .mood_inner 자신에는 zoom을 걸지 않습니다(원래 1920×1080
      고정폭 그대로) — 이 요소는 GSAP이 x(translateX)로 슬라이드시키는
      대상이라, 여기에 직접 zoom을 걸면 --brand_screen_gain 때와 똑같은
