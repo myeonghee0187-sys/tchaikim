@@ -73,7 +73,17 @@
   /* 문의 시작 크기(닫힌 상태)와 무대 높이(다 열린 상태). CSS(.mood_stage /
      .mood_reveal)와 같은 값이어야 합니다. 가로 폭은 고정 숫자를 쓰지
      않고 실행 시점의 무대 실제 폭("100%")을 그대로 씁니다(아래 play()의
-     width: "100%" 참고) — 세로 높이만 여기 상수로 고정합니다. */
+     width: "100%" 참고) — 세로 높이만 여기 상수로 고정합니다.
+
+     ★ 아래 두 값은 1920 × 1080 시안 캔버스 기준 "기본값"입니다. 실제
+     초기화 시점(initMoodReveal)에서 실제 창 높이(window.innerHeight)로
+     다시 계산해 덮어씁니다 — brand.css의 .mood(★★ 2026-08-22 추가 주석
+     참고)가 자기 자신에 zoom을 걸어 조상의 zoom(노트북·발표 화면 모두)을
+     완전히 상쇄해 두었으므로, 그 안의 .mood_reveal에 실제 창 높이를
+     그대로 써도 화면에는 1:1로 그려집니다 — 배수를 곱하면 오히려
+     틀어집니다. 여기 값을 그대로(1080/484) 두면 노트북 폭에서 문이
+     실제 화면 높이가 아니라 옛 시안 캔버스 비율로 열려 무대와 다른
+     높이에서 끝나버립니다. */
   var REVEAL_CLOSED_WIDTH = 30;
   var REVEAL_CLOSED_HEIGHT = 484;
   var REVEAL_STAGE_HEIGHT = 1080;
@@ -332,6 +342,13 @@
     gsap.matchMedia().add(
       "(min-width: " + MOOD_MIN_WIDTH + "px) and (prefers-reduced-motion: no-preference)",
       function () {
+        /* brand.css의 .mood가 이제 자기 자신에 zoom을 걸어 조상의 zoom을
+           상쇄해 두었으므로(★★ 2026-08-22 추가 주석 참고), 이 안의
+           .mood_reveal에는 실제 창 높이를 배수 없이 그대로 씁니다 —
+           무대(.mood_stage, height:100vh)와 정확히 같은 높이로 열립니다. */
+        REVEAL_STAGE_HEIGHT = window.innerHeight;
+        REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 1080);
+
         /* 시작 상태 — 닫힌 문(30 × 484). 글(.mood_copy)·무드 단어(.mood_right)
            둘 다 투명 + 오른쪽으로(REVEAL_TEXT_SLIDE / REVEAL_WORD_SLIDE만큼).
            배경 사진(.mood_room)은 object-fit: cover라 항상 무대를 채우고
@@ -364,6 +381,18 @@
               start: "top top",
               end: MOOD_PIN_LENGTH,
               pin: true,
+              /* ★★ 2026-08-22 추가 — GSAP은 기본으로 pin된 요소에
+                 position:fixed를 직접 걸고, 그 순간의 화면 픽셀 크기
+                 (getBoundingClientRect, 이미 zoom이 적용된 값)를 그대로
+                 인라인 width/height로 다시 씁니다. 그런데 이 요소는 여전히
+                 zoom이 걸린 조상(.main·html) 안에 있어서, 방금 쓴 그
+                 값에 zoom이 **한 번 더** 곱해져 그려집니다 — 노트북 폭에서
+                 무대가 실제보다 작게(예: 1440px에서 1440→1080px) 그려져
+                 옆·아래로 다음 섹션이 비치던 원인이 이것입니다. "transform"
+                 방식은 position은 그대로 두고 scroll-following만
+                 translate로 처리해 width/height를 전혀 새로 쓰지 않으므로
+                 이 문제 자체가 생기지 않습니다. */
+              pinType: "transform",
               scrub: 1,
               /* ★ 페이지 맨 위의 pin이라 **가장 먼저** 재야 합니다.
                  아래 pin들(tchaikim 1 · heritage 0)이 이 pin이 만든
@@ -555,6 +584,9 @@
           start: "top+=" + TCHAIKIM_PAUSE_START_OFFSET + " top",
           end: TCHAIKIM_PAUSE_LENGTH,
           pin: true,
+          /* mood pin과 같은 이유(zoom 이중 축소 방지)입니다 — 위
+             MOOD_PIN_LENGTH 자리의 "★★ 2026-08-22 추가" 주석 참고. */
+          pinType: "transform",
           /* ★ mood(2) 다음, heritage(0) 앞. 문서에 놓인 순서 그대로입니다. */
           refreshPriority: 1
         });
@@ -629,6 +661,9 @@
             start: "top top",
             end: HERITAGE_PIN_LENGTH,
             pin: true,
+            /* mood pin과 같은 이유(zoom 이중 축소 방지)입니다 — 위
+               MOOD_PIN_LENGTH 자리의 "★★ 2026-08-22 추가" 주석 참고. */
+            pinType: "transform",
             scrub: 1,
             anticipatePin: 1,
             invalidateOnRefresh: true,

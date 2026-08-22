@@ -1279,6 +1279,73 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
   body[data-page="brand"] .main {
     zoom: var(--canvas_gain);
   }
+
+  /* ★★ 2026-08-22 추가 — mood의 "화면 한 장"이 실제 화면 높이를
+     못 채우던 문제 + GSAP pin이 그 값을 한 번 더 줄이던 문제.
+
+     원인 ① — .mood_stage 등은 height: 1080px 리터럴입니다. .main의
+     zoom(canvas_gain)이 html의 zoom(site_view_scale)을 상쇄해 "1920
+     캔버스가 그대로 보인다"를 만드는데, 그 상쇄는 딱 canvas_gain만큼입니다
+     — 노트북 구간은 canvas_gain이 1(상쇄 없음)이라 1080px이
+     site_view_scale만큼 그대로 줄어서 화면에 그려집니다. 1440px 폭에서
+     1080 × 0.75 = 810px밖에 안 그려지는데 실제 창 높이(예: 900px)보다
+     짧아서 핀으로 붙잡아 둔 화면 아래에 다음 섹션이 계속 비쳐 보였습니다.
+
+     원인 ② — GSAP ScrollTrigger의 pin은 이 요소를 고정할 때 그 순간의
+     화면 픽셀 크기(getBoundingClientRect, 이미 zoom이 적용된 값)를
+     그대로 인라인 width/height·transform으로 다시 씁니다. 그런데 이
+     요소는 여전히 zoom이 걸린 조상(.main·html) 안에 있어서, 방금 쓴
+     그 값에 zoom이 **한 번 더** 곱해져 그려집니다 — width도 똑같이
+     줄어들고(1440 → 1080), scroll을 따라가는 transform 값도 같은
+     비율만큼 부족하게 움직여 스크롤할수록 위치가 점점 어긋났습니다.
+
+     ★ 두 원인을 한 번에 없애는 방법: .mood 자기 자신에 zoom을 걸어
+     조상의 zoom을 완전히 상쇄합니다 — --brand_screen_gain =
+     1 ÷ (site_view_scale × canvas_gain), 딱 그 역수입니다. 이러면
+     .mood와 그 자손 전체의 "실효 zoom"이 정확히 1이 되어, GSAP이
+     무엇을 측정해서 무엇을 다시 쓰든(width·height·transform) 항상
+     1:1로 그려집니다 — 이중 축소가 구조적으로 불가능해집니다.
+
+     .mood 자신은 zoom을 새로 걸었으니 width: 100%(부모의 100%)도 그
+     배수만큼 미리 늘려 둬야 합니다 — 안 그러면 zoom만큼 좁아집니다.
+     반대로 안쪽 .mood_stage 등은 이제 .mood가 이미 조상의 zoom을 다
+     상쇄했으므로 배수를 또 곱하면 안 되고(이중 보정), 그냥 100vh만
+     쓰면 됩니다. 1920 발표 화면에서는 --brand_screen_gain이 정확히
+     1이 되어(두 zoom이 이미 서로 상쇄) 전부 지금과 동일합니다.
+
+     brand.js의 REVEAL_STAGE_HEIGHT/REVEAL_CLOSED_HEIGHT도 같은 이유로
+     "실제 창 높이 그대로"(gain을 곱하지 않음)로 계산합니다 —
+     getBrandScreenGain() 주석 참고.
+
+     ★ .heritage_stage는 일부러 넣지 않았습니다 — 같은 클래스가
+     .heritage_photos 안에서 사진 한 장(400×714)을 감싸는 완전히 다른
+     용도로도 쓰이고 있어(더 높은 특정도 규칙이 그건 따로 제어합니다),
+     이번에 실측으로 확인한 mood만 고쳤습니다. heritage·tchaikim pin도
+     같은 zoom 이중 축소 위험이 있어 brand.js에는 pinType: "transform"을
+     같이 적용해 뒀지만, 그 두 섹션의 CSS 쪽(높이가 실제 화면과 맞는지)은
+     이번에 실측하지 않았습니다. */
+  :root {
+    --brand_screen_gain: calc(1 / (var(--site_view_scale) * var(--canvas_gain)));
+  }
+
+  .mood {
+    zoom: var(--brand_screen_gain);
+    /* ★★ 100%가 아니라 100vw입니다 — .mood는 GSAP이 pin을 만들며
+       자동으로 끼워 넣는 pin-spacer(GSAP이 측정해 쓴, 이미 zoom으로
+       한 번 틀어진 값)의 자식이 됩니다. "100%"는 그 오염된 폭을
+       기준으로 삼아 또 어긋납니다. 100vw는 진짜 창 폭이라 부모가
+       무엇이든(어떤 값을 갖고 있든) 흔들리지 않습니다 — 아래
+       .mood_stage 등이 100vh를 쓰는 것과 같은 이유·같은 원리입니다. */
+    width: 100vw;
+  }
+
+  .mood_stage,
+  .mood_reveal,
+  .mood_inner,
+  .mood_left,
+  .mood_right {
+    height: 100vh;
+  }
 }
 
 /* =========================================================
