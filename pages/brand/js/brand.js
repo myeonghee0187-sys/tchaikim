@@ -394,7 +394,15 @@
            .mood_reveal에는 실제 창 높이를 배수 없이 그대로 씁니다 —
            무대(.mood_stage, height:100vh)와 정확히 같은 높이로 열립니다. */
         REVEAL_STAGE_HEIGHT = window.innerHeight;
-        REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 1080);
+        /* ★★★ 2026-08-22 후속 — 분모가 1080이 아니라 700입니다.
+           Figma node 1907:8464를 get_metadata로 직접 확인한 값입니다 —
+           닫힌 문 표시(mood_start, 30 × 484)가 y:108인데, 이건 700 높이
+           프레임 기준 정중앙(108 + 484/2 = 350 = 700/2)입니다. 1080
+           기준으로 두면 문이 실제보다 낮은 비율(44.8%)로 작게
+           시작합니다 — 정확한 비율은 484/700 ≈ 69.1%입니다.
+           css/brand.css의 .mood_inner/.mood_left/.mood_right height도
+           같은 이유로 1080 → 700으로 함께 고쳤습니다. */
+        REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 700);
 
         /* .mood_inner를 얼마나 밀어야 mood_right(무드 단어)가 화면 밖으로
            완전히 나가는지는 mood_right 자신의 실제 렌더 폭입니다.
