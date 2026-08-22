@@ -320,20 +320,29 @@ body[data-header-variant="black"] .common_header_slot {
 
    ★ 1850~1990 값(0.75)은 한 글자도 바꾸지 않았습니다.
      실제 발표 환경(1920 화면)의 결과는 이 수정 전후가 동일합니다.
-   ----------------------------------------------------------- */
 
-/* 배율만 선언합니다. 적용은 아래 공통 블록 한 곳에서 합니다.
-   조절하려면 이 숫자만 만지면 되고 다른 파일은 손댈 필요 없습니다. */
-@media (min-width: 1280px) and (max-width: 1349px) { :root { --site_view_scale: 0.667; } }
-@media (min-width: 1350px) and (max-width: 1409px) { :root { --site_view_scale: 0.708; } }
-@media (min-width: 1410px) and (max-width: 1469px) { :root { --site_view_scale: 0.75;  } }
-@media (min-width: 1470px) and (max-width: 1529px) { :root { --site_view_scale: 0.788; } }
-@media (min-width: 1530px) and (max-width: 1619px) { :root { --site_view_scale: 0.80;  } }
-@media (min-width: 1620px) and (max-width: 1659px) { :root { --site_view_scale: 0.85;  } }
-@media (min-width: 1660px) and (max-width: 1709px) { :root { --site_view_scale: 0.875; } }
-@media (min-width: 1710px) and (max-width: 1769px) { :root { --site_view_scale: 0.90;  } }
-@media (min-width: 1770px) and (max-width: 1849px) { :root { --site_view_scale: 0.933; } }
-@media (min-width: 1850px) and (max-width: 1990px) { :root { --site_view_scale: 0.75;  } }
+   ★★ 2026-08-22 후속 — 9칸을 연속값 하나로 교체 (흔들림 버그 수정)
+
+   처음엔 1280~1849를 9개의 좁은 칸으로 나눠 칸마다 다른 배율을 줬습니다.
+   그런데 실제 창(개발자도구 반응형 모드가 아닌 보통 브라우저 창)에서는
+   OS 화면 배율(윈도우 노트북의 125%·150% 등) 때문에 창 너비가 정수가
+   아니라 소수점 px로 잡힙니다. 이 값이 9칸의 경계선(예: 1349.98 ↔
+   1350.02) 위에 걸리면, 브라우저가 매 프레임 다시 잴 때마다 어느 칸인지
+   판정이 오락가락하며 배율이 옆 칸 값으로 튀어 **화면 전체가 커졌다
+   작아졌다 반복**됩니다. 개발자도구 반응형 모드는 창 너비를 정수로
+   고정해서 재현되지 않았습니다("개발자모드에선 잘 보이는데 일반 화면
+   에서 흔들린다"는 증상이 이 차이에서 나옵니다).
+
+   그래서 경계선 자체를 없앴습니다 — `calc(100vw / 1920)` 연속값
+   하나로 통일하면, 창 너비가 소수점으로 흔들려도 배율도 그만큼만 아주
+   미세하게(눈에 안 보이는 수준으로) 같이 흔들릴 뿐, 옆 칸으로 튈 경계선
+   자체가 1280~1849 구간 안에는 존재하지 않습니다. */
+/* ★ 1920이 아니라 반드시 1920px입니다 — 단위 없는 숫자로 나누면
+   "길이 ÷ 숫자 = 길이"가 되어 zoom이 요구하는 순수 숫자가 아니게 되고,
+   브라우저가 선언 자체를 무시해 zoom이 1(기본값)로 되돌아갑니다.
+   "길이 ÷ 길이 = 숫자"가 되도록 반드시 px 단위를 붙여야 합니다. */
+@media (min-width: 1280px) and (max-width: 1849px) { :root { --site_view_scale: calc(100vw / 1920px); } }
+@media (min-width: 1850px) and (max-width: 1990px) { :root { --site_view_scale: 0.75; } }
 
 @media (min-width: 1280px) and (max-width: 1990px) {
   :root {
