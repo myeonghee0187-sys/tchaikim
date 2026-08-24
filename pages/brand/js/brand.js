@@ -46,10 +46,10 @@
       커서로 눌러서 좌우로 당기면 그만큼 따라 움직이고, 놓으면 그
       자리에서 자동 흐름이 이어집니다.
 
-   5. heritage — 화면을 붙잡아 둔 채(pin) 제목이 커지며 사라지고, 왼쪽
-      사진 세 장이 순서대로 겹쳐 들어옵니다. 오른쪽 고정 텍스트는 첫
-      사진과 함께 한 번만 나타나고, 마지막 사진 뒤에 Bespoke 버튼이
-      뜹니다. 조절 값은 파일 위쪽 HERITAGE_* 상수에 모아 두었습니다.
+   5. heritage — CSS sticky로 화면을 제자리에 고정한 채 제목이 커지며
+      사라지고, 왼쪽 사진 세 장이 순서대로 겹쳐 들어옵니다. 오른쪽 고정
+      텍스트는 첫 사진과 함께 한 번만 나타나고, 마지막 사진 뒤에 Bespoke
+      버튼이 뜹니다. 조절 값은 파일 위쪽 HERITAGE_* 상수에 모아 두었습니다.
 
    6. tchaikim 영상 5개는 그 섹션을 보고 있을 때만 재생합니다.
 
@@ -262,13 +262,10 @@
      커지면서 스크롤 한 번에 이미지 하나씩 오버레이 되고 3번째 사진 하단에
      비스포크로 이동하는 버튼이 나옴"
 
-     구현: 화면에 붙잡아 둔(pin) 채로 스크롤량에 그대로 연결된(scrub) 타임라인
-     하나가 4장면을 순서대로 재생합니다 — initHeritageReveal() 참고. */
+     구현: CSS sticky로 화면을 제자리에 고정하고, 스크롤량에 그대로 연결된
+     (scrub) 타임라인 하나가 4장면을 순서대로 재생합니다 —
+     initHeritageReveal() 참고. */
   var HERITAGE_MIN_WIDTH = 1280;
-
-  /* ★ 화면에 붙잡아 두는 길이. 늘리면 스크롤을 더 많이 해야 다음 장면으로
-     넘어갑니다 — 전체 인터랙션이 더 천천히 진행됩니다. */
-  var HERITAGE_PIN_LENGTH = "+=320%";
 
   /* ★ 제목이 앞으로 커지며 사라질 때의 최종 배율. 1.5면 원래 크기의
      1.5배까지 커진 뒤 사라집니다. */
@@ -315,7 +312,7 @@
      다 온 뒤에야 만들어집니다(아래 initMoodReveal 끝부분). pin이 생기면
      GSAP이 **문서 맨 위에 mood 섹션 높이 + MOOD_PIN_LENGTH만큼의
      pin-spacer를 끼워 넣어** 그 아래 모든 것을 그만큼 밀어냅니다.
-     이때 먼저 만들어져 있던 tchaikim·heritage pin은 옛 좌표를 그대로
+     이때 먼저 만들어져 있던 tchaikim pin·heritage trigger는 옛 좌표를 그대로
      들고 있어서, **실제보다 그만큼 일찍 화면을 붙잡습니다** — 그 결과
      kimyoungjin 글 위에 tchaikim 탭이, 그 위에 heritage 사진이 겹쳐
      보입니다. (구체적인 px 값은 MOOD_PIN_LENGTH·mood 섹션 높이가
@@ -333,7 +330,7 @@
        refresh()만          → drift −2635 (안 고쳐짐)
        sort() + refresh()   → drift 0
 
-     그래서 문서 순서대로 다시 정렬한 뒤에 재야 합니다. 아래 세 pin에
+     그래서 문서 순서대로 다시 정렬한 뒤에 재야 합니다. 아래 세 trigger에
      붙인 `refreshPriority`(mood 2 → tchaikim 1 → heritage 0)가 그 순서를
      정합니다. 창 크기 변경처럼 GSAP이 스스로 부르는 refresh에도 같은
      순서가 적용됩니다.
@@ -393,16 +390,8 @@
            상쇄해 두었으므로(★★ 2026-08-22 추가 주석 참고), 이 안의
            .mood_reveal에는 실제 창 높이를 배수 없이 그대로 씁니다 —
            무대(.mood_stage, height:100vh)와 정확히 같은 높이로 열립니다. */
-        REVEAL_STAGE_HEIGHT = window.innerHeight;
-        /* ★★★ 2026-08-22 후속 — 분모가 1080이 아니라 700입니다.
-           Figma node 1907:8464를 get_metadata로 직접 확인한 값입니다 —
-           닫힌 문 표시(mood_start, 30 × 484)가 y:108인데, 이건 700 높이
-           프레임 기준 정중앙(108 + 484/2 = 350 = 700/2)입니다. 1080
-           기준으로 두면 문이 실제보다 낮은 비율(44.8%)로 작게
-           시작합니다 — 정확한 비율은 484/700 ≈ 69.1%입니다.
-           css/brand.css의 .mood_inner/.mood_left/.mood_right height도
-           같은 이유로 1080 → 700으로 함께 고쳤습니다. */
-        REVEAL_CLOSED_HEIGHT = REVEAL_STAGE_HEIGHT * (484 / 700);
+REVEAL_STAGE_HEIGHT = 700;
+REVEAL_CLOSED_HEIGHT = 484;
 
         /* .mood_inner를 얼마나 밀어야 mood_right(무드 단어)가 화면 밖으로
            완전히 나가는지는 mood_right 자신의 실제 렌더 폭입니다.
@@ -852,9 +841,9 @@
      들어온 뒤 Bespoke 버튼이 뜹니다. 위 HERITAGE_* 상수 설명을 먼저 보세요.
 
      타이밍은 "고정 초"가 아니라 "타임라인 단위"입니다. scrub:1이라
-     타임라인 진행이 스크롤 위치에 그대로 묶여 있고, 전체 길이는
-     HERITAGE_PIN_LENGTH(스크롤 거리)가 정합니다. 그래서 여기 숫자를 조절해도
-     "몇 초"가 아니라 "전체 스크롤 구간에서 몇 %를 쓰는지"가 바뀝니다.
+     타임라인 진행이 스크롤 위치에 그대로 묶여 있습니다. 전체 길이는 CSS의
+     .heritage.is_pinned 420vh에서 고정 화면 100vh를 뺀 320vh이며, ScrollTrigger는
+     섹션의 실제 끝(bottom bottom)을 따라가므로 화면 높이가 바뀌어도 맞습니다.
 
      사진 오버레이는 왼쪽 사진 칼럼(.heritage_photos, CSS에서 400×714로
      고정된 자리) 안에서 세 장을 전부 같은 자리(position:absolute + inset:0)에
@@ -909,16 +898,11 @@
           scrollTrigger: {
             trigger: section,
             start: "top top",
-            end: HERITAGE_PIN_LENGTH,
-            pin: true,
-            /* mood pin과 같은 이유(zoom 이중 축소 방지)입니다 — 위
-               MOOD_PIN_LENGTH 자리의 "★★ 2026-08-22 추가" 주석 참고. */
-            pinType: "transform",
+            end: "bottom bottom",
             scrub: 1,
-            anticipatePin: 1,
             invalidateOnRefresh: true,
-            /* ★ 페이지에서 가장 아래에 있는 pin이라 **맨 나중에** 재야
-               위 두 pin이 만든 자리가 전부 반영된 좌표를 얻습니다. */
+            /* 위 두 pin이 만든 자리를 모두 반영한 뒤 heritage의 실제
+               시작·끝을 재도록 페이지에서 가장 나중에 refresh합니다. */
             refreshPriority: 0
           }
         });
