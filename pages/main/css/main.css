@@ -1825,7 +1825,7 @@
    전체 화면 Hero와 ScrollTrigger pin 구간만 바깥 좌표계까지 복원해야
    화면 잘림, 섹션 겹침, pin 순간 좌측 이동이 생기지 않습니다.
    ========================================================= */
-@media (min-width: 1850px) and (max-width: 1990px) {
+@media (min-width: 1280px) and (max-width: 1990px) {
   .hero {
     width: 100%;
     zoom: calc(1 / var(--site_view_scale));

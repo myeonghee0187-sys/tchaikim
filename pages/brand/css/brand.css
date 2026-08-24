@@ -16,20 +16,8 @@ brand 페이지
   display: block;
   width: 100%;
 
-  /*
-   * 전체 brand 페이지의 배경.
-   * 섹션마다 배경을 따로 지정하지 않고 main 전체에서
-   * 하나의 긴 그라데이션이 이어지도록 설정합니다.
-   */
-  background: linear-gradient(
-    to bottom,
-    #585a4d 0%,
-    #6a6a5e 8%,
-    #f0ebe0 22%,
-    #f7f7f7 42%,
-    #fffdf9 68%,
-    #fffdf9 100%
-  );
+  /* Figma node 1707:6120의 루트 배경. */
+  background-color: var(--color_bg);
 }
 
 /* =========================================================
@@ -54,10 +42,15 @@ mood
   overflow-x: clip;
 }
 
+/* ScrollTrigger가 mood 고정을 위해 남기는 10px pin 공간이 투명하면
+   main 배경이 흰 띠처럼 비칩니다. 다음 섹션의 시작색으로 이어 줍니다. */
+.pin-spacer:has(> .mood) {
+  background-color: var(--brand_olive);
+}
+
 .mood_stage {
   position: relative;
   width: 100%;
-  height: 1080px;
   /* 닫힌 문(.mood_reveal이 30 × 484로 작을 때) 바깥 전부가 이 배경으로
      덮여 #120f0f 한 색만 보입니다. */
   background-color: var(--brand_black);
@@ -68,7 +61,6 @@ mood
   top: 50%;
   left: 50%;
   width: 100%;
-  height: 1080px;
   transform: translate(-50%, -50%);
   overflow: hidden;
 }
@@ -92,11 +84,12 @@ mood
 .mood_inner {
   position: relative;
   z-index: 1;
+
   display: flex;
+
   width: 1920px;
-  height: 1080px;
-  /* .mood_reveal이 1920px보다 넓어질 수 있어(위 참고), 1920px 고정폭인
-     이 안쪽(글 + 무드 단어)을 가운데로 밀어 둡니다. */
+  height: 700px;
+
   margin-inline: auto;
 }
 
@@ -104,12 +97,14 @@ mood
   position: relative;
   flex-shrink: 0;
   width: 768px;
-  height: 1080px;
+  /* .mood_inner와 같은 이유로 1080 그대로 — .mood_copy(제목·본문)가
+     이 기준으로 위·아래 218px씩 대칭입니다. */
 }
 
 .mood_copy {
   position: absolute;
-  top: 218px;
+  top: 50%;
+transform: translateY(-50%);
   left: 0;
   width: 768px;
   height: 644px;
@@ -163,8 +158,9 @@ mood
   position: relative;
   flex-shrink: 0;
   width: 1152px;
-  height: 1080px;
-  background-color: #3b3c32;
+
+  /* Figma node 1907:8464(2026-08-22 갱신) 실측 — 예전 #3b3c32에서 변경. */
+  background-color: #585a4d;
 }
 
 .mood_word {
@@ -184,20 +180,26 @@ mood
   object-fit: cover;
 }
 
+/* 세 카드 좌표는 Figma node 1907:8464(2026-08-22 갱신, mood_con 3개
+   실측)입니다. 이 값으로 바뀌면서 실제 사진 파일(unique.jpg 260×180 ·
+   modern.jpg 200×240 · elegant.jpg 260×180)과 카드 상자 크기가 정확히
+   1:1이 되어, object-fit: cover가 더 이상 사진을 자르거나 늘리지
+   않습니다(예전 298×189 · 306×180 상자는 이 사진들보다 커서 확대
+   되고 있었습니다). */
 .mood_word_unique {
-  top: 263px;
-  left: 130px;
-  width: 298px;
+  top: 88px;
+  left: 171px;
+  width: 260px;
 }
 
 .mood_word_unique .mood_word_media {
-  width: 298px;
-  height: 189px;
+  width: 260px;
+  height: 180px;
 }
 
 .mood_word_modern {
-  top: 639px;
-  left: 458px;
+  top: 350px;
+  left: 466px;
   width: 220px;
 }
 
@@ -211,13 +213,13 @@ mood
 }
 
 .mood_word_elegant {
-  top: 390px;
-  left: 748px;
-  width: 306px;
+  top: 229px;
+  left: 788px;
+  width: 260px;
 }
 
 .mood_word_elegant .mood_word_media {
-  width: 306px;
+  width: 260px;
   height: 180px;
 }
 
@@ -246,20 +248,12 @@ kimyoungjin
   position: relative;
   width: 100%;
 
-  /* .main의 배경(전체 페이지 높이에 걸친 하나의 그라데이션, 0~100%)에
-     기대지 않고 이 섹션 자체의 색을 직접 지정합니다. mood·tchaikim·
-     heritage가 각자 다른 길이로 화면을 붙잡아 두는(pin) 스크롤
-     인터랙션이 있어서, 문서 전체 높이가 화면 폭마다(그리고 같은 폭
-     에서도 pin이 켜지는 1920px 경계를 넘나들 때마다) 크게 달라집니다
-     — .main의 그라데이션은 그 전체 높이에 대한 %이므로, kimyoungjin이
-     실제 화면 몇 %쯤에서 시작하는지가 흔들리고 그만큼 이 섹션 배경색도
-     따라 흔들렸습니다("반응형에서도 1920px 기준과 같은 배경 유지"
-     요청). 1920px·pin이 켜진 상태에서 이 섹션이 시작·끝나는 지점의
-     .main 그라데이션 색을 그대로 옮겨(시작 약 25.06% → #f1ece3,
-     끝 약 42.33% → #f7f7f7) 이 섹션 자신의 높이 기준 그라데이션으로
-     고정했습니다 — 문서 전체 높이가 어떻게 바뀌든 이 두 색과 섹션
-     내부에서의 위치 관계는 항상 그대로입니다. */
-  background: linear-gradient(to bottom, #f1ece3 0%, #f7f7f7 100%);
+  /* Figma node 1707:6150의 섹션 전용 배경. */
+  background: linear-gradient(
+    to bottom,
+    var(--brand_olive) 0%,
+    var(--brand_gray) 100%
+  );
 
   overflow-x: clip;
 }
@@ -386,10 +380,12 @@ tchaikim
   position: relative;
   width: 100%;
 
-  /*
-   * 기존 개별 gradient 제거.
-   */
-  background: transparent;
+  /* Figma node 1707:6173의 섹션 전용 배경. */
+  background: linear-gradient(
+    to bottom,
+    var(--brand_gray) 0%,
+    var(--color_bg) 100%
+  );
 
   overflow-x: clip;
 }
@@ -676,8 +672,14 @@ heritage
   text-align: center;
 }
 
+.heritage.is_pinned {
+  /* 100vh 화면 + 사진 전환에 쓰는 320vh 스크롤 트랙입니다. */
+  height: 420vh;
+}
+
 .heritage.is_pinned .heritage_frame {
-  position: relative;
+  position: sticky;
+  top: 0;
   height: 100vh;
 }
 
@@ -1268,14 +1270,20 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
   }
 }
 
-/* 1920px 발표 화면에서는 공통 html zoom(0.75)이 Brand의 1920px 무대를
-   다시 1440px로 축소합니다. Brand 콘텐츠 영역에서만 역줌해 원래 설계 폭과
-   전체 화면 높이를 복원합니다. 헤더·푸터와 다른 페이지에는 적용되지 않습니다. */
-@media (min-width: 1850px) and (max-width: 1990px) {
-  body[data-page="brand"] .main {
-    zoom: calc(1 / var(--site_view_scale));
-  }
-}
+/* 1920px 발표 화면에서는 공통 html zoom을 Brand 영역에서 보정합니다. */ 
+@media (min-width: 1280px) and (max-width: 1990px) { 
+  body[data-page="brand"] 
+  .main { zoom: var(--canvas_gain); } 
+  :root { --brand_screen_gain: calc( 1 / ( var(--site_view_scale) * var(--canvas_gain) ) ); 
+    --mood_panel_scale: calc(100vw / 1920px); } 
+    .mood { width: 100vw; } 
+    .mood_stage, .mood_reveal { height: 700px; } 
+    /* * left / right는 동일한 높이 계산을 사용. */ 
+    .mood_left, .mood_right { height: calc( 1920px * (100vh / 100vw) ); 
+      zoom: var(--mood_panel_scale); } 
+      /* * 카드 3개의 기존 상대 좌표는 그대로 유지하고 * 카드 묶음 전체만 세로 중앙 보정. */ 
+      .mood_right .mood_word { transform: translateY( calc( ( 1920px * (100vh / 100vw) - 700px ) / 2 ) ); } 
+      .pin-spacer:has(> .mood) { zoom: var(--brand_screen_gain); } }
 
 /* =========================================================
    MOOD RESPONSIVE
@@ -1311,7 +1319,7 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
    ★ 무드 단어(mood_right)는 더 이상 사진 위에 겹치는 코너 카드가
    아니라 사진·텍스트 아래로 내려간 별도 블록입니다("아래로 내려가게
    해달라"는 요청). .mood_reveal을 세로 flex로 바꿔 mood_left(사진 위
-   텍스트) → mood_right(카드, 자기 배경 #3b3c32) 순서로 쌓습니다.
+   텍스트) → mood_right(카드, 자기 배경 #585a4d) 순서로 쌓습니다.
    사진(.mood_room)은 이 세로 배치와 별개로 위쪽 자리에만 높이가
    고정돼(아래 56.25vw 참고) mood_right 밑까지 늘어나지 않습니다.
    mood_right는 더 이상 폭에 상한(max-width)을 두지 않습니다 — "화면이
@@ -1319,31 +1327,27 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
    화면 폭 그대로(100%) 채웁니다.
    ========================================================= */
 
-@media (max-width: 1919.98px) {
+@media (max-width: 1279.98px) {
 
   .mood {
     width: 100%;
     overflow: hidden;
   }
 
-  .mood_stage {
-    position: relative;
-    width: 100%;
-    height: auto;
-    margin-left: 0;
-  }
+.mood_stage { 
+  position: relative; 
+  width: 100%; 
+  height: 700px; 
+  background-color: var(--brand_black); } 
 
-  .mood_reveal {
-    position: relative;
-    top: auto;
-    left: auto;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: auto;
-    transform: none;
-    overflow: hidden;
-  }
+.mood_reveal { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  width: 100%; 
+  height: 700px; 
+  transform: translate(-50%, -50%); 
+  overflow: hidden; }
 
   /* 사진 — 1080 ÷ 1920 × 100 = 56.25vw(= 1920:1080과 같은 16:9 비율).
      세로 flex의 첫 자리(mood_left)와 같은 높이만큼만 차지하고 그 아래
@@ -1377,8 +1381,8 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     z-index: 2;
 
     width: 100%;
-    /* base(desktop) 규칙의 height: 1080px을 풀지 않으면 mood_right가
-       사진 바로 아래가 아니라 1080px 아래로 밀려납니다. */
+    /* base(desktop) 규칙의 height: 700px를 풀지 않으면 mood_right가
+       사진 바로 아래가 아니라 700px 아래로 밀려납니다. */
     height: auto;
     min-height: 56.25vw;
   }
@@ -1444,8 +1448,8 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     box-sizing: border-box;
   }
 
-  /* 카드 3장(.mood_word_unique/modern/elegant)의 desktop 좌표(top:263px/
-     639px/390px, left:130px/458px/748px)는 base 규칙(.mood_word)의
+  /* 카드 3장(.mood_word_unique/modern/elegant)의 desktop 좌표(top:88px/
+     350px/229px, left:171px/466px/788px)는 base 규칙(.mood_word)의
      position: absolute를 그대로 물려받습니다. 여기서 static으로 풀어야
      .mood_right의 flex 행 위에 순서대로 놓입니다. */
   .mood_reveal .mood_word {
@@ -1463,16 +1467,17 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
     width: auto;
   }
 
-  /* mood_word_media도 base 규칙에서 고정 px 크기(298×189 등)를 물려받아
+  /* mood_word_media도 base 규칙에서 고정 px 크기(260×180 등)를 물려받아
      카드 폭보다 넓어져 옆 카드와 겹쳤습니다. 카드 폭을 그대로 채우도록
-     비율만 유지합니다. */
+     비율만 유지합니다 — 비율은 실제 사진 파일(unique/elegant.jpg
+     260×180, modern.jpg 200×240)과 정확히 같은 값입니다. */
   .mood_reveal .mood_word_media {
     width: 100%;
     height: auto;
   }
 
   .mood_reveal .mood_word_unique .mood_word_media {
-    aspect-ratio: 298 / 189;
+    aspect-ratio: 260 / 180;
   }
 
   .mood_reveal .mood_word_modern .mood_word_media {
@@ -1480,7 +1485,7 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
   }
 
   .mood_reveal .mood_word_elegant .mood_word_media {
-    aspect-ratio: 306 / 180;
+    aspect-ratio: 260 / 180;
   }
 
   /* 카드 제목·설명 — 예전에는 767.98px에서 고정 11px로 튀고, 설명은

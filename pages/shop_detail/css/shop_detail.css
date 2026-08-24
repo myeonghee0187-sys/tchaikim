@@ -84,7 +84,7 @@
 
 /* 공통 1920px zoom(0.75)에서는 100dvh도 함께 축소됩니다.
    역보정한 높이를 사용해 상품 첫 화면이 실제 브라우저 하단까지 이어지게 합니다. */
-@media (min-width: 1850px) and (max-width: 1990px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 1280px) and (max-width: 1990px) and (prefers-reduced-motion: no-preference) {
   .product_hero.is_gallery_scroll_ready {
     --product_detail_view_height: calc(100dvh / var(--site_view_scale));
   }
