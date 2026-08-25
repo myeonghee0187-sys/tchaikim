@@ -46,7 +46,7 @@
 ```
 youngjin_yellow.png   heritage_past.png
 atelier_6.png         heritage_ing.png
-                      heritage_now.png
+                      heritage_now.jpg
 ```
 
 `atelier_6`이 빠져 있어서 기존 파일이 1·2·3·4·5·7로 건너뛰고 있었습니다.
