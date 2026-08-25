@@ -1,6 +1,88 @@
 
 # Tchai Kim 현재 상태
 
+## 전 페이지 영상 404 — gitignore + main 깨진 경로 3곳 (2026-08-26)
+
+"pages에 있는 모든 파일에 비디오가 들어있는데, 라이브서버랑 깃허브 배포 링크에 안 보여."
+
+원인이 **두 가지 겹쳐 있었습니다.** 하나는 이 저장소가 반복해서 겪어 온 문제
+(`.gitignore`)이고, 하나는 이번에 처음 발견한 문제(`main`의 끊어진 경로)입니다.
+
+### ★★★ 원인 1 — `.gitignore`의 `*.mp4`가 16개 파일을 한 번도 못 올리게 막고 있었습니다
+
+`.gitignore` 1행이 `*.mp4`이고 예외는 `!pages/main/vid/model.mp4` 하나뿐입니다.
+그 결과 **`pages/` 안의 mp4 18개 중 16개가 디스크에는 있지만 git에는 한 번도 커밋된
+적이 없었습니다**(`pages/intro/assets/intro.mp4`와 `vid/model.mp4`만 추적 중).
+로컬에는 파일이 있으니 그동안 아무도 못 알아챘고, **GitHub Pages는 git이 가진 것만
+서빙하므로 배포본에서는 전부 404**였습니다. PROJECT_CONTEXT.md 안에도 같은 패턴이
+여러 번 기록돼 있습니다("`git add -f`가 필요합니다" — 매번 해당 파일 하나씩만
+고쳐 왔고, 규칙 자체는 그대로 남아 있었습니다).
+
+### ★★ 원인 2 — `pages/main/index.html`이 아예 존재하지 않는 파일 3개를 가리키고 있었습니다
+
+이건 gitignore와 무관하게 **로컬에서도 깨져 있었습니다**(라이브서버가 안 보인다고
+한 것이 main 페이지였다면 이게 원인입니다). `vid/` 폴더에 없는 파일을 가리키고
+있었고, 정작 같은 목적의 파일은 다른 경로에 이름만 다르게 이미 있었습니다.
+
+| 위치 | 깨진 src (파일 없음) | 실제로 있는 파일로 수정 |
+|---|---|---|
+| hero_panel_bespoke (75행) | `vid/tchai_kyj2.mp4` | `assets/main/hero/bespoke.mp4` |
+| hero_panel_shop (92행) | `vid/tchaikim.mp4` | `assets/main/hero/shop.mp4` |
+| promo_shop_video (325행) | `vid/bespoke_vid_nologo.mp4` | `assets/main/shop/shopbanner.mp4` |
+
+세 파일(`hero/bespoke.mp4` · `hero/shop.mp4` · `shop/shopbanner.mp4`)은 폴더 이름과
+용도가 정확히 일치하고 저장소 어디에서도 참조되지 않는 고아 상태였습니다 — 누군가
+파일을 다시 만들거나 옮기면서 `index.html`의 `src`를 같이 안 고친 것으로 보입니다.
+`git log`로 확인해도 `vid/tchai_kyj2.mp4` 등 세 파일은 **이 저장소 커밋 이력에
+한 번도 존재한 적이 없습니다** — gitignore 탓이 아니라 애초에 만들어진 적이
+없는 파일입니다. `main.js`의 `warmHeroVideos()` · `setupPromoVideos()`는 이 `src`
+속성값을 그대로 쓰는 구조라 HTML만 고치면 됩니다(JS는 건드리지 않았습니다).
+
+### 부수 — mp4 파일 대부분이 700 권한이었습니다
+
+`pages/` 안 mp4 18개 중 16개가 소유자만 읽을 수 있는 `-rwx------`였고(같은 폴더의
+jpg·png·webp는 `755`), 이번에 전부 `644`로 맞췄습니다. 이 PC에서는 같은 사용자가
+서버를 돌리므로 실제 증상의 원인은 아니었을 가능성이 높지만, 배포·협업 환경에서
+문제가 될 수 있어 같이 정리했습니다.
+
+### 처리
+
+1. `pages/main/index.html` 세 곳의 `src`를 위 표대로 수정.
+2. `pages/` 안 mp4 18개 전부 `chmod 644`.
+3. `.gitignore`는 그대로 두고(새 mp4가 실수로 커밋되는 것을 막는 역할은 유지),
+   `pages/` 안의 mp4 16개를 `git add -f`로 강제 추가.
+   (사용자 지시: "pages에 있는 모든 파일에 비디오 찾아서" — 참조되지 않는 고아
+   파일 2개, `col_chaikimyoungjin/asset/collection_film.mp4`와
+   `main/assets/main/bespoke/bespoke.mp4`도 "모든 비디오"에 포함해 함께 올렸습니다.)
+4. `main` 브랜치에 직접 커밋 후 `git push origin main`.
+
+### 검증
+
+- 수정 전: 파이썬 파서로 7개 페이지의 모든 `<video src>` / `<source src>`를 실제
+  경로로 풀어 대소문자까지 비교 — **main만 3개 FAIL**, 나머지 페이지는 전부 로컬
+  기준 정상(즉 다른 페이지는 배포 문제만 있었지 로컬 문제는 없었습니다).
+- 수정 후: 같은 검사에서 **7개 페이지 16개 참조 전부 OK**.
+- 로컬 정적 서버(5699)로 주요 영상 11개 경로를 curl — **전부 200**.
+- `git push` 후 `raw.githubusercontent.com`에서 두 파일을 curl —
+  `hero/bespoke.mp4` 200 · 649854 bytes(로컬과 동일), `chaikimhero_web.mp4`
+  200 · 26578489 bytes(로컬과 동일). **GitHub에 실제로 올라간 것을 바이트 단위로
+  확인했습니다.**
+- 커밋에 `pages/main/index.html` 외 mp4 16개(create mode 100644)가 정상 포함.
+
+### 확인하지 못한 부분
+
+- **GitHub Pages는 재배포에 보통 1~2분이 걸립니다.** 지금 확인한 것은 "git
+  저장소에 파일이 정상적으로 올라갔다"이지, 배포 사이트 화면에서 실제로 재생되는
+  모습은 못 봤습니다. 잠시 후 배포 URL을 새로고침(캐시 강제 새로고침)해서 확인이
+  필요합니다.
+- 화면으로 재생 여부를 확인하지 못했습니다(이 환경은 화면을 합성하지 못합니다).
+  경로가 200으로 응답하고 바이트 수가 로컬과 일치하는 것으로 "파일이 정상 전달됨"은
+  확인했지만, **코덱·자동재생이 실제 브라우저에서 매끄러운지는 직접 봐 주세요.**
+- `pages/` 바깥(`asset/`, `test/` 등)의 mp4는 이번 범위(사용자가 "pages에 있는"이라고
+  특정)에 포함하지 않았습니다.
+- `.git` 저장소 용량이 이번 커밋으로 약 90MB 늘었습니다(현재 약 1.3GB). 저장소가
+  계속 커지는 중이라는 점은 기존 메모에도 여러 번 남아 있습니다.
+
 ## Bespoke process — 마우스 hover 제거 (2026-08-11)
 
 "스크롤로 내려가게 해줬으니까 마우스 호버는 없애줘."
