@@ -1285,6 +1285,31 @@ MOOD_MIN_WIDTH=1920, "min-width: 1920px")와 맞물리는 max-width: 1920px을
       .mood_right .mood_word { transform: translateY( calc( ( 1920px * (100vh / 100vw) - 700px ) / 2 ) ); } 
       .pin-spacer:has(> .mood) { zoom: var(--brand_screen_gain); } }
 
+/* ★★★ 2026-08-26 — 위 블록과 아래 "MOOD RESPONSIVE" 블록 사이에 뚫려 있던
+   구멍을 막습니다. 위는 max-width:1990px까지, 아래는 max-width:1279.98px
+   까지만 `.mood_stage`에 height를 줍니다 — **1990.02px 이상은 어느 쪽도
+   안 걸려 `.mood_stage`가 높이 0으로 무너졌습니다.**
+
+   `.mood_stage`(기본 규칙, 51행)는 애초에 height가 없고, 유일한 자식인
+   `.mood_reveal`은 `position: absolute`라 부모의 auto height에 아무것도
+   보태지 못합니다. 그래서 2000px 이상 폭(흔한 데스크톱 모니터 — 예:
+   2560 × 1440 창을 그대로 최대화한 경우)에서 실측하면 `.mood`/`.mood_stage`
+   가 정확히 0px, pin-spacer도 10px(= MOOD_PIN_LENGTH)뿐이라 **문이 열려도
+   무대 자체가 없어 바로 아래 kimyoungjin 섹션이 헤더 밑에 거의 밀착해
+   따라붙습니다** — "mood 섹션이 화면 최상단에 눌려 거의 안 보인다"는
+   리포트의 실제 원인이었습니다(첨부 스크린샷 폭이 이 구간이었습니다).
+
+   `--canvas_gain`은 1990px 밖에서 1로 돌아오므로(공통 파일) 여기는 배수
+   계산 없이 그냥 700px입니다. `.main`의 zoom·`--mood_panel_scale`·
+   pin-spacer 역보정은 1990px까지만 유효한 "발표 줌" 전용 장치라 이 구간까지
+   끌고 오지 않았습니다. */
+@media (min-width: 1990.02px) {
+  .mood_stage,
+  .mood_reveal {
+    height: 700px;
+  }
+}
+
 /* =========================================================
    MOOD RESPONSIVE
    Breakpoint — 1919.98px 하나뿐입니다

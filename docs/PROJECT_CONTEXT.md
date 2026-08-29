@@ -1,6 +1,144 @@
 
 # Tchai Kim 현재 상태
 
+## Brand mood 2000px+ 무대 붕괴 + Bespoke reservation 여백 오염 (2026-08-26)
+
+"1. brand mood섹션이 화면에서 거의 안 보임. 2. bespoke reservation섹션 화면이 다름."
+
+**둘 다 `laptop-viewport` PR(커밋 `6dde0da`, 8/22 병합)이 남긴 회귀입니다.**
+PROJECT_CONTEXT.md는 8/11에서 멈춰 있었는데 그 사이(8/12~8/25)에 이 PR과
+`4805c26`/`89c8119`가 문서화 없이 들어와 있었습니다 — 아래 두 문제는 그 구간의
+결과물입니다. 이번에는 Playwright(Chromium)를 직접 설치해 실제 화면을 캡처하며
+검증했습니다 — 이전 세션들이 반복해 남긴 "미리보기 패널이 프레임을 합성하지
+못한다"는 제약이 이번에는 없었습니다.
+
+### 1) Brand mood — ★★★ 첫 진단이 틀렸습니다. 진짜 원인은 속도가 아니라 폭 2000px 이상에서 무대 높이가 0으로 무너지는 것이었습니다
+
+**1차 시도(속도를 4.7초 → 2.15초로 줄임)는 사용자가 스크린샷으로 반박해
+되돌렸습니다.** "거의 안 보인다"는 애니메이션이 느려서가 아니라, **화면
+최상단에 짓눌려 있어서**였습니다 — 사용자가 첨부한 스크린샷은 mood 섹션이
+가는 세로 줄 하나로 짜부라진 채 헤더 바로 밑에 붙어 있고, 그 아래로 다음
+섹션(kimyoungjin)의 사진 두 장이 거의 바로 이어 붙어 있었습니다. **속도
+조절로는 이 증상을 설명할 수도, 고칠 수도 없었습니다.**
+
+**진짜 원인**: `.mood_stage`에 높이를 주는 미디어쿼리가 두 개뿐입니다 —
+`max-width: 1279.98px`(700px)와 `min-width: 1280px and max-width: 1990px`
+(700px). **1990.02px 이상은 어느 쪽에도 안 걸립니다.** 기본 규칙(51행)엔
+애초에 height가 없고, 유일한 자식 `.mood_reveal`은 `position: absolute`라
+부모의 auto height에 아무것도 보태지 못합니다 — 그래서 2000px 이상 폭에서
+`.mood`/`.mood_stage`가 **정확히 0px**로 무너지고, pin-spacer도
+10px(`MOOD_PIN_LENGTH`)뿐이라 문이 다 열려도 무대 자체가 없어 kimyoungjin이
+바로 따라붙습니다. Playwright로 2000/2200/2560/3020px 전부 `stageH: 0px`·
+`kimyoungjinTop: 10`을 실측해 확인했고, 사용자 스크린샷의 가로 비율과
+정확히 일치합니다(넓은 데스크톱 모니터를 그대로 최대화한 창).
+
+**1280~1990px 구간은 처음부터 정상이었습니다** — 1차 진단 때 이 구간(1280~
+1920)만 확인해서 문제를 놓쳤습니다. 이번엔 2000px 이상도 훑어 실제 원인을
+찾았습니다.
+
+**처리**:
+1. 1차에서 건드린 속도 상수 네 개(`REVEAL_HEIGHT_DURATION` 등)를 **원래 값
+   그대로 되돌렸습니다**(1 / 0.3 / 2.5 / 0.9, 합계 4.7초 — `git diff`가 빈
+   결과로 확인). **자동 재생 속도는 이번 세션에서 손대지 않은 것과 같습니다.**
+2. `pages/brand/css/brand.css`에 `@media (min-width: 1990.02px) { .mood_stage,
+   .mood_reveal { height: 700px; } }` 블록을 새로 추가해 구멍을 막았습니다.
+   `--canvas_gain`은 1990px 밖에서 1로 돌아오므로 배수 계산 없이 그냥
+   700px입니다 — 1280~1990 전용 zoom 보정 장치(`.main`의 zoom·
+   `--mood_panel_scale`·pin-spacer 역보정)는 건드리지 않았습니다.
+
+검증(Playwright, 1920~3020px 8개 폭): 전부 `stageH: 700` · `kimyoungjinTop: 710`
+· `pinSpacerH: 710`으로 통일. 스크린샷(3020px)으로 이른 시점(문이 아직
+가는 상태)에도 700px 무대가 온전히 확보돼 kimyoungjin이 그 아래에서
+시작하는 것, 재생이 끝난 뒤 창문 사진이 무대를 꽉 채우는 것을 눈으로 확인.
+1280~1990·360~1279 구간은 재확인해도 여전히 `h:700`(회귀 없음).
+
+> 자동 재생 4.7초 자체가 느리다고 느껴지시면 말씀해 주세요 — 이번엔 되돌려
+> 손대지 않았습니다.
+
+### 2) Bespoke reservation — `.main section`이 조용히 이겨서 여백이 얹혔습니다
+
+**CSS 특정도 문제였습니다.** 파일 위쪽에 모든 `<section>`에 공통 여백을 주는
+규칙이 있습니다:
+
+```css
+.main section { max-width: calc(var(--layout_inner) + var(--layout_gutter) * 2); /* 1728px */
+                 padding: 60px var(--layout_gutter); }          /* 특정도 (0,1,1) */
+@media (min-width: 1280px) { .main section { padding: 100px var(--layout_gutter); } }
+```
+
+그런데 `.reservation`(영상이 상자 전체를 채우고 글이 그 위에 얹히는 특수
+레이아웃)의 own 규칙은 그냥 `.reservation { max-width: 1700px; ... }` —
+**특정도 (0,1,0)로 위보다 낮습니다.** class 1개 vs class 1개 + 태그 1개라
+`.main section`이 소스 순서와 무관하게 항상 이깁니다. 138행 주석에 "reservation은
+philosophy·quote와 달리 화면 끝까지 닿는 배치가 아니라 그 목록에서 뺐다"고
+정확히 적혀 있었지만, 뺀 다음 정작 `.reservation` 자신에게 필요한 특정도를
+주지 않았습니다 — 1840px 이상에서만 쓰는 `.main .reservation`(0,2,0) 오버라이드가
+있어서 그 구간(≥1840)에서는 우연히 가려져 있었습니다.
+
+**결과 — 1280~1839px(대부분의 노트북·창 크기)에서 실제로 얹힌 값**
+(Playwright로 el.matches()까지 대조해 두 규칙 다 확인):
+
+| | 의도(원래 문서화된 값) | 실제 적용값 |
+|---|---|---|
+| `max-width` | 1700px | **1728px** |
+| `padding` | 0 | **100px 64px**(1280↑) / 60px 64px(그 아래) |
+| 글 시작 x | 왼쪽 끝(0) | **64px 안쪽** |
+
+215px 인셋에 맞춰 튜닝된 크림 그라디언트(`::before`)는 그대로인데 글만 64px
+밀리면서, "글까지의 거리 215px 스크린샷 실측"으로 맞춘 전체 구도가 어긋났습니다.
+
+**처리**: `pages/bespoke/css/bespoke.css`의 기본 `.reservation` 규칙을
+`.main .reservation`(0,2,0)로 올리고 `padding: 0`을 명시했습니다 — 138행 주석
+바로 옆의 `.main .philosophy, .main .quote`와 같은 패턴입니다. 1840px 이상의
+215px 오버라이드는 같은 특정도(0,2,0)에 소스 순서가 더 뒤라 지금까지처럼
+그대로 이깁니다 — 아무것도 안 건드렸습니다.
+
+검증(Playwright, 14개 폭 실측):
+
+| 폭 | max-width | padding-left | 비고 |
+|---|---|---|---|
+| 1280~1839 | **1700px**(전 1728) | **0**(전 64) | 수정 완료 |
+| 1840~1849 | 1700px | 215px | 그대로(원래도 정상) |
+| 1850~1990 | 2266.67px(=1700×1.333) | 286.67px(=215×1.333) | 발표 zoom 보정, 그대로 |
+| 2000~2560 | 1700px | 215px | 그대로 |
+| 360/375/768/1023 | 1700px | **0** | 가로 스크롤 없음, 문서폭=창폭 |
+
+1440·1920에서 스크린샷으로 실제 구도(영상+그라디언트+글) 확인 — 시안 의도대로
+글이 영상의 왼쪽(1440) / 215px 안쪽(1920)에 자연스럽게 얹힙니다.
+
+### 처리한 파일
+
+- `pages/brand/css/brand.css` — `@media (min-width: 1990.02px)` 블록 추가(mood_stage 높이
+  구멍 메움), 버전 `?v=12 → 13`
+- `pages/brand/js/brand.js` — **변경 없음**(1차 시도의 속도 상수 네 개를 원래 값으로
+  되돌려 `git diff` 결과가 빈 상태입니다. 버전도 `?v=10` 그대로)
+- `pages/bespoke/css/bespoke.css` — `.reservation` → `.main .reservation` + `padding:0`
+- `pages/bespoke/index.html` — 버전 `?v=2 → 3`
+
+### 검증 방법 (이번 세션 전용 — 참고용)
+
+이번에는 `npx playwright install chromium`으로 실제 Chromium을 설치해 썼습니다
+(세션 스크래치패드에 설치, 다른 세션에는 없습니다). 정적 서버는 `python3 -m
+http.server`를 임시로 띄웠다 껐습니다(저장소에 남긴 것 없음). 이 방법으로
+실제 스크린샷과 `getComputedStyle`/`el.matches()`/`ScrollTrigger.getAll()`을
+전부 직접 확인했습니다 — 이전 세션들의 "화면 캡처 불가" 제약이 적용되지
+않았습니다. 재현하려면 같은 방식(playwright 설치 + 로컬 정적 서버)을 다시
+구성해야 합니다.
+
+### 확인하지 못한 부분
+
+- **실제 GitHub Pages 배포본에는 아직 반영하지 않았습니다** — 로컬 커밋만
+  했고 push는 사용자 확인 후 하겠습니다.
+- 이번에 고친 `.main section` 특정도 문제가 reservation 말고 다른 섹션에도
+  있는지는 훑어보지 않았습니다 — philosophy·quote·process·materials·begin·
+  atelier·hero는 전부 이미 `.main .<이름>` 형태의 자체 오버라이드가 있는 것을
+  확인했고, reservation만 그 패턴에서 빠져 있었습니다.
+- mood의 `.mood_stage` 높이 구멍(1990.02px 이상)과 완전히 같은 패턴 —
+  "min-width:1280·max-width:1990" 구간 전용 규칙이 그 위 폭을 놓치는 경우 —
+  이 이 페이지의 다른 곳(atelier·heritage 등)에도 더 있는지는 훑어보지
+  않았습니다. 사용자가 쓰는 화면 폭이 2000px대(스크린샷 기준)라 이번엔
+  mood만 확인했습니다.
+
 ## 전 페이지 영상 404 — gitignore + main 깨진 경로 3곳 (2026-08-26)
 
 "pages에 있는 모든 파일에 비디오가 들어있는데, 라이브서버랑 깃허브 배포 링크에 안 보여."

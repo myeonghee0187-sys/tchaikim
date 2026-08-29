@@ -1443,13 +1443,25 @@
    reservation
    ========================================================= */
 
-.reservation {
+/* ★ 선택자에 .main이 필요하다 — 위쪽 `.main section`(특정도 0,1,1)이
+   그냥 `.reservation`(0,1,0)보다 세서, 그 규칙의 padding(60~100px
+   var(--layout_gutter))이 이 만큼 지워지지 않고 그대로 얹혔다. reservation은
+   138행 주석대로 philosophy·quote처럼 화면 끝까지 닿는 배치가 아니라
+   1700px 안쪽 배치이지만, "안쪽"이라고 해서 `.main section`의 padding을
+   그대로 받아도 되는 건 아니다 — 이 섹션은 영상이 상자 전체를 채우고
+   글은 그 위에 좌표로 얹히는 구조라 여백을 직접 지정한다(여기는 0,
+   1840px 이상에서는 아래 블록이 215px로 다시 얹는다).
+   실측: 이 .main 접두어가 없으면 1280~1839px 구간에서 max-width가
+   1700이 아니라 1728px로, padding이 0이 아니라 60~100px 64px로 새어
+   들어와 글이 왼쪽 끝이 아니라 64px 안쪽에서 시작한다. */
+.main .reservation {
   position: relative;
   display: flex;
   align-items: center;
   overflow: hidden;
   width: 100%;
   max-width: 1700px;
+  padding: 0;
   aspect-ratio: 1700 / 650;
   margin: 0 auto;
 }
